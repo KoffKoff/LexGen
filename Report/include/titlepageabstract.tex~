@@ -1,6 +1,6 @@
 % Chalmers title page
 \begin{titlepage}
-\AddToShipoutPicture{\backgroundpic{-4}{56.7}{fig/auxiliary/frontpage}}
+\AddToShipoutPicture{\backgroundpic{-4}{56.7}{fig/auxiliary/frontpage.pdf}}
 \mbox{}
 \vfill
 \addtolength{\voffset}{2cm}
@@ -24,6 +24,7 @@ Lexers} \\[0.5cm]
 \newpage
 
 \ClearShipoutPicture
+\pagestyle{empty}
 \begin{flushleft}
     {\noindent{
 The Author grants to Chalmers University of Technology and University of       Gothenburg  the non-exclusive right to publish the Work electronically and in a non-commercial purpose make it accessible on the Internet. 

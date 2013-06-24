@@ -1,12 +1,12 @@
 
 % ARTICLES (FLUID DYNAMICS)
 
-@article{BernardyKoen,
+@article{BernadieKoen,
     title       = "Efficient Divide-and-Conquer Parsing
                     of Practical Context-Free Languages"
     author      = "Jean-Philippe, Bernardy and Koen, Claessen"
-    journal     = "Chalmers University of Technology and University of Gothenburg",
-    year        = "2013",
+    journal   = "Chalmers University of Technology and University of Gothenburg",
+    year      = "2013",
 }
 
 % BOOKS (FLUID DUNAMICS)

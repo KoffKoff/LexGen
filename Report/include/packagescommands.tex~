@@ -21,6 +21,7 @@
 \usepackage[breaklinks,pdfpagelabels=false]{hyperref}
 \usepackage{lettrine}
 \usepackage{eso-pic}
+\usepackage{datetime}
 
 \newcommand{\rd}{\ensuremath{\mathrm{d}}}
 \newcommand{\id}{\ensuremath{\,\rd}}

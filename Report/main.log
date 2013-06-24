@@ -1,4 +1,4 @@
-This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2013.6.17)  24 JUN 2013 15:56
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2013.6.17)  24 JUN 2013 17:57
 entering extended mode
  %&-line parsing enabled.
 **main.tex
@@ -697,7 +697,7 @@ LaTeX Info: Redefining \pageref on input line 22.
 
 
 ABD: EveryShipout initializing macros (./include/titlepageabstract.tex
-<fig/auxiliary/frontpage.pdf, id=31, 614.295pt x 794.97pt>
+<fig/auxiliary/frontpage.pdf, id=35, 614.295pt x 794.97pt>
 File: fig/auxiliary/frontpage.pdf Graphic file (type pdf)
 
 <use fig/auxiliary/frontpage.pdf> [1
@@ -764,35 +764,39 @@ ame{page.3}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
 l.44 \newpage
-              [3]
+              [3] (./main.bbl
 
-Package natbib Warning: Citation `Brody1996' undefined on input line 48.
+Package natbib Warning: Empty `thebibliography' environment on input line 6.
 
-No file main.bbl.
+)pdfTeX warning (ext4): destination with the same identifier (name{page.4}) has
+ been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.53 \newpage
+              [4
 
-Package natbib Warning: There were undefined citations.
 
-(./main.aux) ) 
+] (./main.aux) ) 
 Here is how much of TeX's memory you used:
- 5948 strings out of 256216
- 78772 string characters out of 1917072
- 160689 words of memory out of 1500000
- 9000 multiletter control sequences out of 10000+200000
+ 5953 strings out of 256216
+ 78821 string characters out of 1917072
+ 160751 words of memory out of 1500000
+ 9002 multiletter control sequences out of 10000+200000
  53215 words of font info for 103 fonts, out of 1200000 for 2000
  645 hyphenation exceptions out of 8191
  37i,15n,43p,1103b,337s stack positions out of 5000i,500n,6000p,200000b,15000s
-</usr/share/texmf/fonts/type1/bluesky/cm/cmbx10.pfb></usr/share/t
-exmf/fonts/type1/bluesky/cm/cmbx12.pfb></usr/share/texmf/fonts/type1/bluesky/cm
-/cmcsc10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/te
-xmf/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/
-cmr10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr12.pfb></usr/share/texmf/
-fonts/type1/bluesky/cm/cmr17.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr8.
-pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmsl10.pfb></usr/share/texmf/fonts
-/type1/bluesky/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmti12.pf
-b>
-Output written on main.pdf (11 pages, 329259 bytes).
+</usr/share/texmf/fonts/type1/bluesky/cm/cmbx10.pfb></usr/share
+/texmf/fonts/type1/bluesky/cm/cmbx12.pfb></usr/share/texmf/fonts/type1/bluesky/
+cm/cmcsc10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmex10.pfb></usr/share/
+texmf/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/type1/bluesky/c
+m/cmr10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr12.pfb></usr/share/texm
+f/fonts/type1/bluesky/cm/cmr17.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr
+8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmsl10.pfb></usr/share/texmf/fon
+ts/type1/bluesky/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmti12.
+pfb>
+Output written on main.pdf (12 pages, 332087 bytes).
 PDF statistics:
- 141 PDF objects out of 1000 (max. 8388607)
- 15 named destinations out of 1000 (max. 131072)
- 70 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 149 PDF objects out of 1000 (max. 8388607)
+ 16 named destinations out of 1000 (max. 131072)
+ 78 words of extra memory for PDF output out of 10000 (max. 10000000)
 

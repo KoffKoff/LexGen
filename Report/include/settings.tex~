@@ -1,6 +1,9 @@
 % References, choose bst-file
 \bibliographystyle{elsart-num}
 
+% DateFormat
+\newdateformat{mydate}{\monthname[\THEMONTH] \THEYEAR}
+
 % PDF Metadata and link styles
 \hypersetup{
 		pdftitle={Master's Thesis: },%
@@ -11,6 +14,9 @@
     linkcolor=black,%
     urlcolor=black
 }
+
+% Reference style
+%\bibliographystyle{plain}
 
 % Dropping initial letter color
 \renewcommand{\LettrineFontHook}{\color[gray]{0.5}}
