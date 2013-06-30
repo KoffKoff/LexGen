@@ -1,0 +1,43 @@
+\chapter{Known techniques}
+\#Some Text describing what the report will enlight in this chapter.
+\section{Lexer}
+This section will describe the techniques used in a lexer, the
+advanteges of using a lexer and existing solutions.
+Regular expressions, regular sets and finite automata are centeral
+consepts in a formal language. \cite{Aho}
+\subsection{Regular Expressions}
+Regular expressions are used to describe a patterns in a string.
+In a formal language, a programming language, this is usefull.
+Since these languages are build on very strict rules on how strings
+must follow a pattern. \#Ref på detta!!
+\begin{definition}[Regular Expressions \cite{Aho}]
+\begin{enumerate}
+  \item The following characters are meta characters $\{ '|', '(', ')', '*' \}$.
+  \item A none meta character $a$ is a regular expression that matches the 
+      string $a$.
+  \item If $r_1$ and $r_2$ are regular expressions then $(r_1 | r_2)$ is a 
+      regular expression that matches any string that matches $r_1$ or $r_2$.
+  \item If $r_1$ and $r_2$ are regular expressions. $(r_1)(r_2)$ is a regular
+      expression of the form that matches the string $xy$ iff $x$ matches $r_1$
+      and $y$ matches $r_2$.
+  \item If $r$ is a regular expression the $r*$ is a regular expression that
+      matches any string of the form $x_1, x_2, \dots , x_n, n \geq 0$.
+      Where $r$ matches $x_i$ for $1 \leq i \leq n$, in particular $(r)*$ 
+      matches the empty string, $\varepsilon$.
+  \item If $r$ is a regular expression, then $(r)$ is a regular expression that
+      matches the same string as $r$.
+\end{enumerate}
+\end{definition}
+Many parantheses can be reduced by adopting the convention that the Kleene
+closure operator $*$ has the highest precedence, then concat and then or
+operator $|$. The two binary operators, cancat and $|$ are left 
+left-associative. \cite{Aho}
+
+\subsection{Finite State Machine}
+\section{FingerTree}
+\section{BNF}
+\section{Yi}
+\section{Haskell}
+\section{Monoid (data type)}
+
+ 

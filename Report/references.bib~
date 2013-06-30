@@ -1,12 +1,12 @@
 
 % ARTICLES (FLUID DYNAMICS)
 
-@article{BernadieKoen,
+@article{BernardyKoen,
     title       = "Efficient Divide-and-Conquer Parsing
-                    of Practical Context-Free Languages"
-    author      = "Jean-Philippe, Bernardy and Koen, Claessen"
-    journal   = "Chalmers University of Technology and University of Gothenburg",
-    year      = "2013",
+                    of Practical Context-Free Languages",
+    author      = "Jean-Philippe, Bernardy and Koen, Claessen",
+    journal     = "Chalmers University of Technology and University of Gothenburg",
+    year        = "2013",
 }
 
 % BOOKS (FLUID DUNAMICS)
@@ -19,4 +19,21 @@
 	publisher	= "College Publications",
 	address		= "London",
 	isbn		= "978-1-84890-064-6",
+}
+
+% OTHERS
+
+@incollection{Aho,
+ author = {Aho, Alfred V.},
+ chapter = {Algorithms for finding patterns in strings},
+ title = {Handbook of theoretical computer science (vol. A)},
+ editor = {van Leeuwen, Jan},
+ year = {1990},
+ isbn = {0-444-88071-2},
+ pages = {255--300},
+ numpages = {46},
+ url = {http://dl.acm.org/citation.cfm?id=114872.114877},
+ acmid = {114877},
+ publisher = {MIT Press},
+ address = {Cambridge, MA, USA},
 }

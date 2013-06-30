@@ -1,6 +1,12 @@
-\begin{thebibliography}{}
+\begin{thebibliography}{1}
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem{Aho}
+A.~V. Aho, Handbook of theoretical computer science (vol. a), MIT Press,
+  Cambridge, MA, USA, 1990, Ch. Algorithms for finding patterns in strings, pp.
+  255--300.
+\newline\urlprefix\url{http://dl.acm.org/citation.cfm?id=114872.114877}
 
 \end{thebibliography}

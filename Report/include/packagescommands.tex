@@ -2,6 +2,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{ae}
 \usepackage{icomma}
 \usepackage{units}
@@ -48,6 +49,14 @@
 			\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{#3}
 			\vfill
 }}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
 
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
 
 
