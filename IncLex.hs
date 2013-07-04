@@ -9,7 +9,7 @@ import Data.Monoid
 import Data.FingerTree
 
 
--- Not good enough, to strict atm, find a way to make it not hardcoded
+-- Placeholder until we decision on wether to use Map or Array as Table
 tabulate :: (State -> Maybe State) -> Table
 tabulate f = array (0,5) [(x,f x) | x <- [0..5]]
 
@@ -17,19 +17,20 @@ type State = Int
 type Size = Sum Int
 type Table = Array State (Maybe State)
 data Token = Token Table Tid
-type Tid = Int --Token id -1 is separator
+type Tid = Int
+-- Make the type more polymorphic?
+type FingerLex = FingerTree Tokens Char
+-- Size mighgt not be needed; newtype since we want to use our instance of Monoid.
+newtype Tokens = T (FingerTree Size Token)
 
 instance Show Token where
   show (Token _ id) = show id
 
-instance Measured Size Token where
-  measure t = Sum 1
-
--- Size mighgt not be needed
-newtype Tokens = T (FingerTree Size Token)
-
 instance Show Tokens where
   show (T ft) = show ft
+
+instance Measured Size Token where
+  measure t = Sum 1
 
 instance Monoid Tokens where
   mempty = T mempty
@@ -41,22 +42,17 @@ instance Monoid Tokens where
       Just s -> (ts1' |> Token (tabulate (\s -> glue t1 t2)) s) >< ts2'
       Nothing -> (ts1' |> Token t1 (fromJust (t1 ! 0))) >< (Token t2 (fromJust (t2 ! 0)) <| ts2')
 
+-- Some index measure might be needed when we insert elements in later stages of the project
+instance Measured Tokens Char where
+  measure c = let t = letters ! c
+              in T $ singleton $ Token t (fromJust (t ! 0))
+
 glue :: Table -> Table -> Maybe State
 glue t1 t2 = case t1 ! 0 of
   Just s -> t2 ! s
   _      -> error $ "state: " ++ show t1
 
--- Size might not be needed
-instance Measured Tokens Char where
-  measure c = let t = letters ! c
-              in T $ singleton $ Token t (fromJust (t ! 0))
-
-type FingerLex = FingerTree Tokens Char
-
--- The state machine that should determine the tokens depends on the bnfc file
-stateMachine :: Char -> State -> Maybe State
-stateMachine = undefined
-
+--Simple state machine to demonstrate the idea
 sm :: Char -> State -> Maybe State
 sm c 0 = case charType c of
   Letter -> Just 1
@@ -80,6 +76,7 @@ string i = toFinger $ take i $ cycle "the quick b2own 22fox jumped over the lazy
 letters :: Array Char Table
 letters = array (' ','z') [(i,tabulate (sm i)) | i <- [' '..'z']]
 
+-- Below code are for use in the statemachine sm.
 data OMG = Letter | Space | Digit
 
 charType :: Char -> OMG
