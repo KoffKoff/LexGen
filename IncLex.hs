@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeSynonymInstances,FlexibleInstances,MultiParamTypeClasses #-}
-module Lexjvl where
+module IncLex where
 
 --import qualified Data.Array as B
 import Data.Maybe
