@@ -1,23 +1,22 @@
 \chapter{Lexer}
-\#Some Text describing what the report will illuminate in this chapter.
-\section{Lexer}
 A Lexer, lexical analyzer, is a program which jobb is to convert a string of a
 formal language into a sequence of tokens. \#Hitta REF.
 This can be done by using regular expressions, regular sets and finite
 automata. Which are centerel consepts in formal language theory. \cite{Aho} 
-\subsection{Languages}
-\subsubsection{Formal Languages}
-\subsubsection{Regular Languages}
+\section{Languages}
+\subsection{Formal Languages}
+\subsection{Regular Languages}
 Like any formal language, a regular language is a set of strings. In other words a sequence of symbols,
 from a finite set of symbols. Only some formal languages are regular; in fact, 
 regular languages are exactly those that can be defined by regulat expressions.
 \cite{Ranta2012}
-\subsection{Regular Expressions}
+\section{Regular Expressions}
 Regular expressions are used to describe a patterns in a string.
 In a regular language, a programming language, this is usefull.
 Since these languages are build on very strict rules on how strings
 must follow a pattern. \#Ref på detta!! 
-
+\#Some text here about how BNFC can be used to get a lexical file filled with
+regualr expressions. 
 \begin{definition}[Regular Expressions \cite{Aho}]
 \begin{enumerate}
   \item The following characters are meta characters $\{ '|', '(', ')', '*' \}$.
@@ -40,12 +39,11 @@ Many parantheses can be reduced by adopting the convention that the Kleene
 closure operator $*$ has the highest precedence, then concat and then or
 operator $|$. The two binary operators, cancat and $|$ are left 
 left-associative. \cite{Aho}
-\subsection{Finite State Machine}
-\subsection{Known Solutions}
-\section{FingerTree}
-\section{BNF}
-\section{Yi}
-\section{Haskell}
-\section{Monoid (data type)}
+\subsection{BNFC}
+\section{Finite State Machine}
+\subsection{NFA}
+\subsection{DFA}
+\section{Known Solutions}
+\subsection{Alex}
 
  
