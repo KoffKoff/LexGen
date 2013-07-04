@@ -1,16 +1,19 @@
 {-# LANGUAGE CPP, FlexibleInstances #-}
 module BuildDFA where
 
-import Alex.AbsSyn
-import Alex.CharSet
-import Alex.DFA
-import Alex.DFAMin
-import Alex.NFA
-import Alex.Map ( Map )
-import qualified Alex.Map as M hiding ( Map )
-import Alex.ParseMonad ( runP )
-import Alex.Parser
-import Alex.Scan
+import AbsSyn
+import CharSet
+import DFA
+import DFAMin
+import NFA
+import Map ( Map )
+import qualified Map as M hiding ( Map )
+import ParseMonad ( runP )
+import Parser
+import Scan
+import Data.IntMap (IntMap)
+import qualified Data.IntMap as IM hiding (IntMap)
+import Data.Monoid
 
 #if __GLASGOW_HASKELL__ < 610
 import Control.Exception as Exception ( block, unblock, catch, throw )
@@ -23,9 +26,6 @@ import Data.Char ( chr )
 import Data.List ( isSuffixOf )
 import Data.Maybe ( isJust, fromJust )
 import Data.Version ( showVersion )
-import Data.IntMap (IntMap)
-import qualified Data.IntMap as IM hiding (IntMap)
-import Data.Monoid (mappend)
 import System.Console.GetOpt ( getOpt, usageInfo, ArgOrder(..), OptDescr(..), ArgDescr(..) )
 import System.Directory ( removeFile )
 import System.Environment ( getProgName, getArgs )
@@ -136,9 +136,9 @@ acceptLookup (Acc i _ _ _) ss = case IM.lookup i ss of
 
 data DFA' s a = DFA'
   { dfa_start_states :: [s]
-  , dfa_states       :: Map (Accept a) (Edges s) }
+  , dfa_states       :: Map (Accept a) (Edge s) }
 
-type Edges s = Map s s
+type Edge s = Map s s
 
 data Accept' a = Acc' {
   	  accAction     :: Maybe a,
