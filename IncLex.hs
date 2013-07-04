@@ -70,7 +70,7 @@ sm c 3 = case charType c of
   _ -> Nothing
 
 toFinger = F.foldl' (|>) empty
-string i = toFinger $ take i $ cycle "the quick b2own 22fox jumped over the lazy dog"
+string i = toFinger $ take i $ cycle "the quick b2own 22 a22fox22a 22 jumped over the lazy dog"
 
 -- A mapping from char to a table for that char, depends on the statemachine
 letters :: Array Char Table

@@ -1,4 +1,16 @@
 \chapter{Introduction}
+This master-thesis is carried out at Chalmers, on the department of computer science. 
+
+\section{Background}
+Editors normally have regular-expression based parsers, which are efficient and robust,
+but lack in precision: they are unable to recognize complex structures. Parsers used in
+compilers are precise, but typically not robust: they fail to recover after an error. They are
+also not efficient for editing purposes, because they have to parse files from the beginning,
+even if the user makes incremental changes to the input. More modern IDEs use compilerstrength
+parsers, but they give delayed feedback to the user. Building a parser with good
+characteristics is challenging: no system offers such a combination of properties
+
+\section{Scope of work}
 *Usage of BNFC
 *With help of regexp build a finit state machine that will lex a code string.
 *Give finite states with corresponding Monoid data type.
@@ -8,15 +20,5 @@
 *Parse the Monoid data type tree, 
     AKA integrate the result with an existing parser.
 *Smile and be happy!
-
-
-Known techniques:
-*Regular Expressions
-*FingerTree
-*Finite State Machine
-*BNF
-*Yi
-*Haskell
-*Monoid (data type)
 
  
