@@ -1,53 +1,48 @@
-This is BibTeX, Version 0.99d (TeX Live 2012/Debian)
-Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+This is BibTeX, Version 0.99c (Web2C 7.5.6)
 The top-level auxiliary file: main.aux
 The style file: elsart-num.bst
 Database file #1: references.bib
-I was expecting a `,' or a `}'---line 18 of file references.bib
- :  
- :  year  = "2012",
-(Error may have been on previous line)
-I'm skipping whatever remains of this entry
 Warning--empty booktitle in Aho
-You've used 1 entry,
+Warning--empty chapter and pages in Ranta2012
+You've used 2 entries,
             2332 wiz_defined-function locations,
-            582 strings with 4358 characters,
-and the built_in function-call counts, 381 in all, are:
-= -- 30
-> -- 4
-< -- 2
-+ -- 2
-- -- 1
-* -- 28
-:= -- 45
-add.period$ -- 1
-call.type$ -- 1
+            590 strings with 4479 characters,
+and the built_in function-call counts, 697 in all, are:
+= -- 56
+> -- 11
+< -- 3
++ -- 5
+- -- 3
+* -- 50
+:= -- 79
+add.period$ -- 2
+call.type$ -- 2
 change.case$ -- 1
 chr.to.int$ -- 0
-cite$ -- 2
-duplicate$ -- 21
-empty$ -- 47
-format.name$ -- 1
-if$ -- 91
+cite$ -- 4
+duplicate$ -- 38
+empty$ -- 87
+format.name$ -- 4
+if$ -- 171
 int.to.chr$ -- 0
-int.to.str$ -- 1
-missing$ -- 1
-newline$ -- 10
-num.names$ -- 1
-pop$ -- 9
+int.to.str$ -- 2
+missing$ -- 3
+newline$ -- 13
+num.names$ -- 2
+pop$ -- 20
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 15
+skip$ -- 28
 stack$ -- 0
-substring$ -- 32
-swap$ -- 10
-text.length$ -- 2
+substring$ -- 56
+swap$ -- 17
+text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
-warning$ -- 1
-while$ -- 4
-width$ -- 2
-write$ -- 15
-(There was 1 error message)
+warning$ -- 2
+while$ -- 8
+width$ -- 3
+write$ -- 23
+(There were 2 warnings)

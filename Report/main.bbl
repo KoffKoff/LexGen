@@ -9,4 +9,8 @@ A.~V. Aho, Handbook of theoretical computer science (vol. a), MIT Press,
   255--300.
 \newline\urlprefix\url{http://dl.acm.org/citation.cfm?id=114872.114877}
 
+\bibitem{Ranta2012}
+A.~Ranta, M.~Forsberg, Implementing Programming Languages, College
+  Publications, London, 2012, pp. 38--47.
+
 \end{thebibliography}
