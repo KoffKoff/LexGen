@@ -1,0 +1,17 @@
+THIS WE NEED TO DO!!!!!
+
+--LEXER STUFF--
+General:
+-Datastructure for DFA (UNASSIGNED)
+-Start building a wrapper (UNASSIGNED)
+
+IncLex.hs:
+-Add so that Monoid Tokens handle lexing errors (UNASSIGNED)
+
+BuildDFA.hs
+-Code cleanup (UNASSIGNED)
+-Implement good error messages (UNASSIGNED)
+
+--REPORT STUFF--
+Chpater 2:
+-JUST DO IT (UNASSIGNED)
