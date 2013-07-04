@@ -8,8 +8,11 @@ General:
 IncLex.hs:
 -Add so that Monoid Tokens handle lexing errors (UNASSIGNED)
 
+Alex:
+-Remove as much as possible (UNASSIGNED)
+
 BuildDFA.hs
--Code cleanup (UNASSIGNED)
+-Code cleanup (KoffKoff)
 -Implement good error messages (UNASSIGNED)
 
 --REPORT STUFF--
