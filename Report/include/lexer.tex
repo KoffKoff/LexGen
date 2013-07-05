@@ -2,7 +2,11 @@
 A Lexer, lexical analyzer, is a program which jobb is to convert a string of a
 formal language into a sequence of tokens. \#Hitta REF.
 This can be done by using regular expressions, regular sets and finite
-automata. Which are centerel consepts in formal language theory. \cite{Aho} 
+automata. Which are centerel consepts in formal language theory. \cite{Aho1990}
+\section{Lexing vs Parsing}
+There are several resons why a compiler should be seperated in to lexical analyser and a parser (syntax analyser) phases. Simplicity of design is the most important reson. When deviding the task in to these to sub task, it allows the system to simplify one of these subtasks. For example, a parser that has to deal with whitespaces and comments as syntactical units would be more complex then one that can assume whitespaces and comments have alreday been removed by an lexer. Also when the two tasks are devided into subtasks it can lead to cleaner overall disgn when designing a new language \cite{Aho2006}
+Also overall efficiency of the compiler can be improved. When seperating the lexical analyser it allows for applience of specielised techniques that serv only the lexical task. \cite{Aho2006}
+Last complier portability can be enhanced. That is Input-device-specific peculiarities can be retricted to the lexical analysis. \cite{Aho2006}
 \section{Languages}
 \subsection{Formal Languages}
 \subsection{Regular Languages}
@@ -17,7 +21,7 @@ Since these languages are build on very strict rules on how strings
 must follow a pattern. \#Ref på detta!! 
 \#Some text here about how BNFC can be used to get a lexical file filled with
 regualr expressions. 
-\begin{definition}[Regular Expressions \cite{Aho}]
+\begin{definition}[Regular Expressions \cite{Aho1990}]
 \begin{enumerate}
   \item The following characters are meta characters $\{ '|', '(', ')', '*' \}$.
   \item A none meta character $a$ is a regular expression that matches the 
@@ -38,7 +42,17 @@ regualr expressions.
 Many parantheses can be reduced by adopting the convention that the Kleene
 closure operator $*$ has the highest precedence, then concat and then or
 operator $|$. The two binary operators, cancat and $|$ are left 
-left-associative. \cite{Aho}
+left-associative. \cite{Aho1990}
+\section{Tokens, Patterns and Lexemes}
+A lexical analyser uses three different terms. All which is described here below. 
+\begin{description}
+  \item[Token]
+    is a pair consosting of a token name and an optional attribute value. The token name is a abstract symbol corresponding to a lexical unit \cite{Aho2006}. For example, a particular keyword, datatype or identifier.  The token names is what is given to the parser. 
+  \item[Pattern]
+    is a description of what form a lexemes of a token may take. \cite{Aho2006} For example, a keyword is just the sequence of characters that forms the keyword, an int is just a sequence consisting of just numbers. 
+  \item[Lexemes]
+    is a sequence of characters in the code that is being analysied which matches the pattern for a token and is identified by the lexical analyser as an instance of a token. \cite{Aho2006}
+\end{description}
 \subsection{BNFC}
 \section{Finite State Machine}
 \subsection{NFA}
