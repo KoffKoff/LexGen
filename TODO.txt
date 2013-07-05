@@ -17,4 +17,4 @@ BuildDFA.hs
 
 --REPORT STUFF--
 Chpater 2:
--JUST DO IT (UNASSIGNED)
+-JUST DO IT (HUGO)
