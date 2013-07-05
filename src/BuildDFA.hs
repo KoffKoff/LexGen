@@ -46,6 +46,17 @@ alexOpenFile file mode = do
 alexOpenFile = openFile
 #endif
 
+-- Reads a file and callse parseScanner followed by makeDFA on the content
+-- MOVE TO WRAPPER
+build :: FilePath -> IO (DFA SNum Code)
+build file = do
+    basename <- case (reverse file) of
+                    'x':'.':r   -> return (reverse r)
+                    _           -> error "File must end with suffix '.x'"
+    prg <- alexReadFile file
+    return (makeDFA $ parseScanner file prg)
+
+-- Gets the scanner from the code in the alex file
 parseScanner :: FilePath -> String -> Scanner
 parseScanner file prg =
   case runP prg initialParserEnv parse of
@@ -55,6 +66,12 @@ parseScanner file prg =
       error (file ++ ": " ++ err ++ "\n")
     Right (maybe_header, directives, scanner, maybe_footer) -> scanner
 -- At the moment we are only interested in the scanner, the directives may be intersting later
+
+-- Does some work on the scanner and turns it into an minimized DFA
+makeDFA :: Scanner -> DFA SNum Code
+makeDFA scanner1 = 
+    let (scanner2, scs, _) = encodeStartCodes scanner1
+    in minimizeDFA $ scanner2dfa UTF8 (fst $ extractActions scanner2) scs
 
 initialParserEnv :: (Map String CharSet, Map String RExp)
 initialParserEnv = (initSetEnv, initREEnv)
@@ -68,20 +85,7 @@ initSetEnv = M.fromList [("white", charSet " \t\n\v\f\r")
 initREEnv :: Map String RExp
 initREEnv = M.empty
 
--- MOVE TO WRAPPER
-build :: FilePath -> IO (DFA SNum Code)
-build file = do
-    basename <- case (reverse file) of
-                    'x':'.':r   -> return (reverse r)
-                    _           -> error "File must end with suffix '.x'"
-    prg <- alexReadFile file
-    return (makeDFA $ parseScanner file prg)
-
-makeDFA :: Scanner -> DFA SNum Code
-makeDFA scanner1 = 
-    let (scanner2, scs, _) = encodeStartCodes scanner1
-    in minimizeDFA $ scanner2dfa UTF8 (fst $ extractActions scanner2) scs
-
+-- Converts an alex DFA into DFA' (The outer map is indexed by Accept 'a')
 dfaToDFA' :: (Ord a, Ord s) => DFA s a -> DFA' s a
 dfaToDFA' (DFA ss dfass) = DFA' ss dfass'
   where dfass' = M.foldlWithKey convert M.empty dfass
@@ -93,6 +97,7 @@ acceptLookup (Acc i _ _ _) ss = case IM.lookup i ss of
   Just s -> s
   Nothing -> error "Incomplete lexer WTF MATE?"
 
+-- dfa_states corresponds to the set of edges between states that 'Accpet a' has
 data DFA' s a = DFA'
   { dfa_start_states :: [s]
   , dfa_states       :: Map (Accept a) (Edges s) }
@@ -105,11 +110,3 @@ data Accept' a = Acc' {
 	  accRightCtx   :: RightContext SNum
     }
     deriving (Eq,Ord)
--- End move
-
--- For testing purposes
-instance Show (DFA SNum Code) where
-  show (DFA sc cs) = "Start codes: " ++ show sc ++ "\nAutomata: " ++ show cs
-
-instance Show (State SNum Code) where
-  show (State _ o) = show o
