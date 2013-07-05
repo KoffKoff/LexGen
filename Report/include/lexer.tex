@@ -1,27 +1,49 @@
 \chapter{Lexer}
-A Lexer, lexical analyzer, is a program which jobb is to convert a string of a
+A Lexer, lexical analyser, is a program which job is to convert a string of a
 formal language into a sequence of tokens. \#Hitta REF.
 This can be done by using regular expressions, regular sets and finite
-automata. Which are centerel consepts in formal language theory. \cite{Aho1990}
+automata. Which are central concepts in formal language theory. \cite{Aho1990}
 \section{Lexing vs Parsing}
-There are several resons why a compiler should be seperated in to lexical analyser and a parser (syntax analyser) phases. Simplicity of design is the most important reson. When deviding the task in to these to sub task, it allows the system to simplify one of these subtasks. For example, a parser that has to deal with whitespaces and comments as syntactical units would be more complex then one that can assume whitespaces and comments have alreday been removed by an lexer. Also when the two tasks are devided into subtasks it can lead to cleaner overall disgn when designing a new language \cite{Aho2006}
-Also overall efficiency of the compiler can be improved. When seperating the lexical analyser it allows for applience of specielised techniques that serv only the lexical task. \cite{Aho2006}
-Last complier portability can be enhanced. That is Input-device-specific peculiarities can be retricted to the lexical analysis. \cite{Aho2006}
-\section{Languages}
-\subsection{Formal Languages}
-\subsection{Regular Languages}
-Like any formal language, a regular language is a set of strings. In other words a sequence of symbols,
+There are several reasons why a compiler should be separated in to lexical 
+analyser and a parser (syntax analyser) phases. Simplicity of design is the most
+important reason. When dividing the task in to these to sub task, it allows the
+system to simplify one of these sub-tasks. For example, a parser that has to 
+deal with white-spaces and comments as syntactical units would be more complex 
+then one that can assume white-spaces and comments have already been removed by 
+an lexer. Also when the two tasks are divided into sub-tasks it can lead to 
+cleaner overall design when designing a new language \cite{Aho2006}
+Also overall efficiency of the compiler can be improved. When separating the 
+lexical analyser it allows for appliance of specialised techniques that serve 
+only the lexical task. \cite{Aho2006}
+Last compiler portability can be enhanced. That is Input-device-specific 
+peculiarities can be restricted to the lexical analysis. \cite{Aho2006}
+\section{Token Specification}
+This section will describe how to write rules for the tokens patterns. 
+\subsection{Languages}
+An alphabet is an finite set of symbols, such an alphabet is for example the 
+unicode, which includes approximately $100,000$ characters. A language is any 
+countable set of strings over some fixed alphabet. \cite{Aho2006}
+
+\#More text on languages!!!!
+
+Like any formal language, a regular language is a set of strings. In other 
+words a sequence of symbols,
 from a finite set of symbols. Only some formal languages are regular; in fact, 
-regular languages are exactly those that can be defined by regulat expressions.
+regular languages are exactly those that can be defined by regular expressions.
 \cite{Ranta2012}
-\section{Regular Expressions}
-Regular expressions are used to describe a patterns in a string.
-In a regular language, a programming language, this is usefull.
-Since these languages are build on very strict rules on how strings
-must follow a pattern. \#Ref på detta!! 
-\#Some text here about how BNFC can be used to get a lexical file filled with
-regualr expressions. 
-\begin{definition}[Regular Expressions \cite{Aho1990}]
+\subsection{Regular Expressions}
+Say that we want to express the set of valid C identifiers. Use of regular 
+expressions make it very easy, as shown in \cref{regexpEx}. 
+\begin{example}[Valid C Idents]\label{regexpEx}
+Say we have a element $letter \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup 
+\{$\_$\}$
+and another element $digit \in \{0 \dots 9\}$
+Then with help of regular expressions the definition of all valid C identifiers 
+would look like this: $letter (letter | digit)*$. \cite{Aho2006}
+\end{example}
+In \cref{regexp} is the formal definition for regular expressions.
+\begin{definition}[Regular Expressions]\label{regexp} \cite{Aho1990}
+\newline
 \begin{enumerate}
   \item The following characters are meta characters $\{ '|', '(', ')', '*' \}$.
   \item A none meta character $a$ is a regular expression that matches the 
@@ -39,25 +61,95 @@ regualr expressions.
       matches the same string as $r$.
 \end{enumerate}
 \end{definition}
-Many parantheses can be reduced by adopting the convention that the Kleene
+Many parentheses can be reduced by adopting the convention that the Kleene
 closure operator $*$ has the highest precedence, then concat and then or
 operator $|$. The two binary operators, cancat and $|$ are left 
 left-associative. \cite{Aho1990}
+\subsection{Regular Definitions}
+In a definition of a language it is useful to give regular expressions names, 
+so they can for example be used in other regular expressions, as these names 
+where themself symbols. If $\Sigma$ is an alphabet of basic symbols, then a 
+regular definition is a sequence of definitions of the form:
+\begin{center}
+\begin{tabular}{l c r}
+$d_1$ & $\to$ & $r_1$\\
+$d_2$ & $\to$ & $r_2$\\
+$\vdots$ & $\to$ & $\vdots$\\
+$d_n$ & $\to$ & $r_n$\\
+
+\end{tabular}
+\end{center}
+where:
+\begin{enumerate}
+\item Each $d_i$ is a new symbol, not in $\Sigma$ and not the same as any other 
+of the $d$'s.
+\item Each $r_i$ is a regular expression over the alphabet $\Sigma  \cup \{d_1, 
+d_2 \dots d_{i-1}\}$
+\end{enumerate}
+By restricting $r_i$ to $\Sigma$ and previously defined $d$'s the regular 
+definitions avoid recursive definitions.  
+\cite{Aho2006}
 \section{Tokens, Patterns and Lexemes}
-A lexical analyser uses three different terms. All which is described here below. 
+A lexical analyser uses three different terms. All which is described here 
+below. 
 \begin{description}
   \item[Token]
-    is a pair consosting of a token name and an optional attribute value. The token name is a abstract symbol corresponding to a lexical unit \cite{Aho2006}. For example, a particular keyword, datatype or identifier.  The token names is what is given to the parser. 
+    is a pair consisting of a token name and an optional attribute value. The 
+token name is a abstract symbol corresponding to a lexical unit \cite{Aho2006}. 
+For example, a particular keyword, datatype or identifier.  The token names is 
+what is given to the parser. 
   \item[Pattern]
-    is a description of what form a lexemes of a token may take. \cite{Aho2006} For example, a keyword is just the sequence of characters that forms the keyword, an int is just a sequence consisting of just numbers. 
+    is a description of what form a lexemes of a token may take. \cite{Aho2006} 
+For example, a keyword is just the sequence of characters that forms the 
+keyword, an int is just a sequence consisting of just numbers. 
   \item[Lexemes]
-    is a sequence of characters in the code that is being analysied which matches the pattern for a token and is identified by the lexical analyser as an instance of a token. \cite{Aho2006}
+    is a sequence of characters in the code that is being analysed which 
+matches the pattern for a token and is identified by the lexical analyser as an 
+instance of a token. \cite{Aho2006}
 \end{description}
-\subsection{BNFC}
-\section{Finite State Machine}
-\subsection{NFA}
-\subsection{DFA}
-\section{Known Solutions}
-\subsection{Alex}
+As mention before a token consist of token name and a optional attribute value. 
+This attribute is used when one lexeme can match more then one pattern. \cite
+{Aho2006} For example the pattern for a digit token matches both $0$ and $1$, 
+but it is important for the code generator to know which lexeme was found. 
+Therefor the lexer often return not just the token but also an attribute value 
+that describes the lexeme found in the source program corresponding to this 
+token. \cite{Aho2006}
+\section{Recognition of Tokens}
+In previous section the topic have been, how to represent a pattern using 
+regular expressions and how these expressions relates to tokens. This section 
+will highlight how to transform a sequence of characters into a sequence of 
+abstract tokens. First some basic understanding with transition diagrams.  
+\subsection{Transition Diagrams}
+A transition diagram is a graph consisting of nodes and edges. Each node 
+represent a state which could occur during the process of scanning the input 
+looking for lexeme that matches one of several patterns. Each edge is labelled 
+with a symbol or set symbols, which tells which input must come next to be able 
+to advance to this next state. Here follows some properties for a transition 
+diagram, One state is said to be initial state. The transition diagram always 
+begins at this state, before any input symbols have been read. Some states are 
+said to be accepting (final). They indicate that a lexeme has been found. The 
+found token should then be returned with any additional optional values, 
+mentioned in previous section. \cite{Aho2006}
+\subsection{Finite Automata}
+A finite automata are essentially graphs, like transitions diagrams, with some 
+differences:
+\begin{itemize}
+  \item Finite automata are recognizers; they simply say "YES" or "NO" about 
+each possible input string.
+  \item Finite automata comes in to different forms:
+    \begin{description}
+      \item [Nondeterministic Finite Automata (NFA)] which have no restriction 
+of the edges, several edges can be labelled by the same symbol out from the 
+same state. $\epsilon$, the empty string, is a possible label. 
+      \item [Deterministic Finite Automata (DFA)] for each state and for each 
+symbol of its input alphabet exactly one edge with that symbol leaving that 
+state
+    \end{description}
+\end{itemize}
+Both these forms of finite automate are capable of recognising the same 
+language, called regular languages. These are languages that regular 
+expressions can describe. \cite{Aho2006}
+\subsubsection{Nondeterministic Finite Automata}
+\subsubsection{Deterministic Finite Automata}
 
  
