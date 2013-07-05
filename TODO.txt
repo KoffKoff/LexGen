@@ -12,9 +12,9 @@ Alex:
 -Remove as much as possible (UNASSIGNED)
 
 BuildDFA.hs
--Code cleanup (KoffKoff)
+-Code cleanup (KoffKoff almost done)
 -Implement good error messages (UNASSIGNED)
 
 --REPORT STUFF--
 Chpater 2:
--JUST DO IT (UNASSIGNED)
+-JUST DO IT (HUGO)
