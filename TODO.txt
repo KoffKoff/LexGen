@@ -17,4 +17,9 @@ BuildDFA.hs
 
 --REPORT STUFF--
 Chpater 2:
--JUST DO IT (HUGO)
+-Find more ref. and fill out the text (UNASSIGNED)
+-Write about NFA & DFA from Aho2006, page 147- 151. (UNASSIGNED)
+
+Chapter 3:
+Start by make a list of what would be written about. (UNASSIGNED)
+    (Just a list, possible it will be changed over 9000 times before final)
