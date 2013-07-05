@@ -12,24 +12,10 @@ import Alex.ParseMonad ( runP )
 import Alex.Parser
 import Alex.Scan
 
-#if __GLASGOW_HASKELL__ < 610
-import Control.Exception as Exception ( block, unblock, catch, throw )
-#endif
-#if __GLASGOW_HASKELL__ >= 610
-import Control.Exception ( bracketOnError )
-#endif
-import Control.Monad ( when, liftM )
 import Data.Char ( chr )
-import Data.List ( isSuffixOf )
-import Data.Maybe ( isJust, fromJust )
-import Data.Version ( showVersion )
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM hiding (IntMap)
 import Data.Monoid (mappend)
-import System.Console.GetOpt ( getOpt, usageInfo, ArgOrder(..), OptDescr(..), ArgDescr(..) )
-import System.Directory ( removeFile )
-import System.Environment ( getProgName, getArgs )
-import System.Exit ( ExitCode(..), exitWith )
 import System.IO ( stderr, Handle, IOMode(..), openFile, hClose, hPutStr, hPutStrLn )
 #if __GLASGOW_HASKELL__ >= 612
 import System.IO ( hGetContents, hSetEncoding, utf8 )
@@ -37,6 +23,7 @@ import System.IO ( hGetContents, hSetEncoding, utf8 )
 
 -- We need to force every file we open to be read in
 -- as UTF8
+-- MOVE TO WRAPPER
 alexReadFile :: FilePath -> IO String
 #if __GLASGOW_HASKELL__ >= 612
 alexReadFile file = do
@@ -48,6 +35,7 @@ alexReadFile = readFile
 
 -- We need to force every file we write to be written
 -- to as UTF8
+-- MOVE TO WRAPPER
 alexOpenFile :: FilePath -> IOMode -> IO Handle
 #if __GLASGOW_HASKELL__ >= 612
 alexOpenFile file mode = do
@@ -58,71 +46,42 @@ alexOpenFile file mode = do
 alexOpenFile = openFile
 #endif
 
-parseScript :: FilePath -> String
-  -> IO (Maybe (AlexPosn,Code), [Directive], Scanner, Maybe (AlexPosn,Code))
-parseScript file prg =
+parseScanner :: FilePath -> String -> Scanner
+parseScanner file prg =
   case runP prg initialParserEnv parse of
     Left (Just (AlexPn _ line col),err) -> 
-	    die (file ++ ":" ++ show line ++ ":" ++ show col
-             ++ ": " ++ err ++ "\n")
+      error (file ++ ":" ++ show line ++ ":" ++ show col ++ ": " ++ err ++ "\n")
     Left (Nothing, err) ->
-        die (file ++ ": " ++ err ++ "\n")
-    Right script -> return script
+      error (file ++ ": " ++ err ++ "\n")
+    Right (maybe_header, directives, scanner, maybe_footer) -> scanner
+-- At the moment we are only interested in the scanner, the directives may be intersting later
 
 initialParserEnv :: (Map String CharSet, Map String RExp)
 initialParserEnv = (initSetEnv, initREEnv)
 
 initSetEnv :: Map String CharSet
-initSetEnv = M.fromList [("white", charSet " \t\n\v\f\r"),
-		           ("printable", charSetRange (chr 32) (chr 0x10FFFF)), -- FIXME: Look it up the unicode standard
-		           (".", charSetComplement emptyCharSet 
-			    `charSetMinus` charSetSingleton '\n')]
+initSetEnv = M.fromList [("white", charSet " \t\n\v\f\r")
+		        ,("printable", charSetRange (chr 32) (chr 0x10FFFF)) -- FIXME: Look it up the unicode standard
+                        ,(".", charSetComplement emptyCharSet
+                               `charSetMinus` charSetSingleton '\n')]
 
 initREEnv :: Map String RExp
 initREEnv = M.empty
 
-bye :: String -> IO a
-bye s = putStr s >> exitWith ExitSuccess
-
-die :: String -> IO a
-die s = hPutStr stderr s >> exitWith (ExitFailure 1)
-
-build :: FilePath -> IO(DFA SNum Code)
+-- MOVE TO WRAPPER
+build :: FilePath -> IO (DFA SNum Code)
 build file = do
     basename <- case (reverse file) of
                     'x':'.':r   -> return (reverse r)
-                    _           -> die "File must end with suffix '.x'"
+                    _           -> error "File must end with suffix '.x'"
     prg <- alexReadFile file
-    script <- parseScript file prg
-    return (makeDFA file basename script)
+    return (makeDFA $ parseScanner file prg)
 
-makeDFA :: FilePath -> FilePath -> 
-    (Maybe (AlexPosn, Code), [Directive], Scanner, Maybe (AlexPosn, Code)) ->
-    DFA SNum Code
-makeDFA file basename script = do
-    let (maybe_header, directives, scanner1, maybe_footer) = script
-        (scanner2, scs, sc_hdr) = encodeStartCodes scanner1
-        (scanner_final, actions) = extractActions scanner2     
-    let dfa = scanner2dfa UTF8 scanner_final scs
-        min_dfa = minimizeDFA dfa
-        nm = scannerName scanner_final
-        usespreds = usesPreds min_dfa
-    min_dfa
-    
-main :: IO ()
-main = do
-    args <- getArgs
-    case getOpt Permute [] args of
-      ([],[file],[]) -> do dfa <- build file
-      -- DO FUNNY STUF
-                           return ()
-      _ -> die "ILLEGAL SYNTAX GO TO JAIL"
+makeDFA :: Scanner -> DFA SNum Code
+makeDFA scanner1 = 
+    let (scanner2, scs, _) = encodeStartCodes scanner1
+    in minimizeDFA $ scanner2dfa UTF8 (fst $ extractActions scanner2) scs
 
-ghciTest :: FilePath -> IO (DFA SNum Code)
-ghciTest file = do dfa <- build file
-                   return dfa
-
--- Move out of main before anything funny happens
 dfaToDFA' :: (Ord a, Ord s) => DFA s a -> DFA' s a
 dfaToDFA' (DFA ss dfass) = DFA' ss dfass'
   where dfass' = M.foldlWithKey convert M.empty dfass
