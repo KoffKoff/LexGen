@@ -103,6 +103,9 @@ data DFA' s a = DFA'
   { dfa_start_states :: [s]
   , dfa_states       :: Map (Accept a) (Edges s) }
 
+instance Show DFA' where
+  show (DFA' ss dfas) = "Initial States: " ++ show ss
+
 type Edges s = Map s s
 {-
 data Accept' a = Acc' {
