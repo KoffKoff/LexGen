@@ -2,8 +2,8 @@ THIS WE NEED TO DO!!!!!
 
 --LEXER STUFF--
 General:
--Datastructure for DFA (UNASSIGNED)
--Start building a wrapper (UNASSIGNED)
+-Datastructure for DFA (KoffKoff)
+-Start building a wrapper (KoffKoff)
 
 IncLex.hs:
 -Add so that Monoid Tokens handle lexing errors (UNASSIGNED)
