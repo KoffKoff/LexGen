@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP, FlexibleInstances #-}
-module BuildDFA where
+module BuildDFA (DFA'(..),Accept(..),Edges(..)
+                ,build, makeDFA) where
 
 import Alex.AbsSyn
 import Alex.CharSet
@@ -48,13 +49,13 @@ alexOpenFile = openFile
 
 -- Reads a file and callse parseScanner followed by makeDFA on the content
 -- MOVE TO WRAPPER
-build :: FilePath -> IO (DFA SNum Code)
+build :: FilePath -> IO (DFA' SNum Code)
 build file = do
     basename <- case (reverse file) of
                     'x':'.':r   -> return (reverse r)
                     _           -> error "File must end with suffix '.x'"
     prg <- alexReadFile file
-    return (makeDFA $ parseScanner file prg)
+    return . dfaToDFA' . makeDFA $ parseScanner file prg
 
 -- Gets the scanner from the code in the alex file
 parseScanner :: FilePath -> String -> Scanner
@@ -103,10 +104,11 @@ data DFA' s a = DFA'
   , dfa_states       :: Map (Accept a) (Edges s) }
 
 type Edges s = Map s s
-
+{-
 data Accept' a = Acc' {
   	  accAction     :: Maybe a,
 	  accLeftCtx    :: Maybe CharSet, -- cannot be converted to byteset at this point.
 	  accRightCtx   :: RightContext SNum
     }
     deriving (Eq,Ord)
+-}

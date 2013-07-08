@@ -2,21 +2,23 @@
 module IncLex where
 
 --import qualified Data.Array as B
+import BuildDFA (DFA'(..), Accept(..),Edges(..))
 import Data.Maybe
-import Data.Array.Unboxed
+--import Data.Array.Unboxed
 import qualified Data.Foldable as F
 import Data.Monoid
 import Data.FingerTree
+import Data.Map (Map)
+import qualified Data.Map as Map hiding (Map)
 
-
--- Placeholder until we decision on wether to use Map or Array as Table
-tabulate :: (State -> Maybe State) -> Table
-tabulate f = array (0,5) [(x,f x) | x <- [0..5]]
+-- hardcoded to be atmost 255 states atm, needs to be more generic
+tabulate :: (State -> Maybe State) -> Edges State
+tabulate f = Map.fromList [(x,fromJust $ f x) | x <- [0..255], isJust (f x)]
 
 type State = Int
 type Size = Sum Int
-type Table = Array State (Maybe State)
-data Token = Token Table Tid
+--type Table = Array State (Maybe State)
+data Token = Token (Edges State) (Maybe Tid)
 type Tid = Int
 -- Make the type more polymorphic?
 type FingerLex = FingerTree Tokens Char
@@ -38,18 +40,21 @@ instance Monoid Tokens where
 -- left most element of the right token sequence and right most element of the left sequence
     let (ts1' :> Token t1 _) = viewr ts1
         (Token t2 _ :< ts2') = viewl ts2
+        f s = Map.lookup (fromJust $ Map.lookup 0 t1) t2
     in T $ case glue t1 t2 of
-      Just s -> (ts1' |> Token (tabulate (\s -> glue t1 t2)) s) >< ts2'
-      Nothing -> (ts1' |> Token t1 (fromJust (t1 ! 0))) >< (Token t2 (fromJust (t2 ! 0)) <| ts2')
+      Nothing -> (ts1' |> Token t1 (Map.lookup 0 t1))
+                 >< (Token t2 (Map.lookup 0 t2) <| ts2')
+      s -> (ts1' |> Token (tabulate f) s) >< ts2'
 
 -- Some index measure might be needed when we insert elements in later stages of the project
 instance Measured Tokens Char where
-  measure c = let t = letters ! c
-              in T $ singleton $ Token t (fromJust (t ! 0))
+  measure c = case Map.lookup c letters of
+    Just t -> T $ singleton $ Token t (Map.lookup 0 t)
+    Nothing -> T $ singleton $ Token Map.empty Nothing
 
-glue :: Table -> Table -> Maybe State
-glue t1 t2 = case t1 ! 0 of
-  Just s -> t2 ! s
+glue :: Edges State -> Edges State -> Maybe State
+glue t1 t2 = case Map.lookup 0 t1 of
+  Just s -> Map.lookup s t2
   _      -> error $ "state: " ++ show t1
 
 --Simple state machine to demonstrate the idea
@@ -68,13 +73,14 @@ sm c 2 = case charType c of
 sm c 3 = case charType c of
   Digit -> Just 3
   _ -> Nothing
+sm _ _ = Nothing
 
 toFinger = F.foldl' (|>) empty
 string i = toFinger $ take i $ cycle "the quick b2own 22 a22fox22a 22 jumped over the lazy dog"
 
 -- A mapping from char to a table for that char, depends on the statemachine
-letters :: Array Char Table
-letters = array (' ','z') [(i,tabulate (sm i)) | i <- [' '..'z']]
+letters :: Map Char (Edges State)
+letters = Map.fromList [(i,tabulate (sm i)) | i <- [' '..'z']]
 
 -- Below code are for use in the statemachine sm.
 data OMG = Letter | Space | Digit
