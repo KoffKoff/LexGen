@@ -2,7 +2,7 @@
 module IncLex where
 
 --import qualified Data.Array as B
-import BuildDFA (DFA'(..), Accept(..),Edges(..))
+import BuildDFA
 import Data.Maybe
 --import Data.Array.Unboxed
 import qualified Data.Foldable as F
