@@ -129,8 +129,7 @@ data DFA' s = DFA'
 instance Show s => Show (DFA' s) where
   show (DFA' ss dfas) = "Initial States: " ++ show ss ++ "\nState map:\n" ++ show dfas
 
-type Edges s = Map s s
-{-
+type Edges s = Map s s{-
 data Accept' a = Acc' {
   	  accAction     :: Maybe a,
 	  accLeftCtx    :: Maybe CharSet, -- cannot be converted to byteset at this point.
