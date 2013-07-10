@@ -1,17 +1,15 @@
 {-# LANGUAGE CPP, FlexibleInstances #-}
-module BuildDFA (DFA'(..),Accept(..),Edges(..)
-                ,build, makeDFA) where
+module BuildDFA (build, makeDFA) where
 
 import Alex.AbsSyn
 import Alex.CharSet
 import Alex.DFA
 import Alex.DFAMin
 import Alex.NFA
+import Alex.ParseMonad ( runP, AlexPosn(..))
+import Alex.Parser
 import Alex.Map ( Map )
 import qualified Alex.Map as M hiding ( Map )
-import Alex.ParseMonad ( runP )
-import Alex.Parser
-import Alex.Scan
 
 import Data.Char ( chr )
 import Data.IntMap (IntMap)
@@ -98,20 +96,3 @@ acceptLookup (Acc i _ _ _) ss = case IM.lookup i ss of
   Just s -> s
   Nothing -> error "Incomplete lexer WTF MATE?"
 
--- dfa_states corresponds to the set of edges between states that 'Accpet a' has
-data DFA' s a = DFA'
-  { dfa_start_states :: [s]
-  , dfa_states       :: Map (Accept a) (Edges s) }
-
-instance (Show s,Show a) => Show (DFA' s a) where
-  show (DFA' ss dfas) = "Initial States: " ++ show ss
-
-type Edges s = Map s s
-{-
-data Accept' a = Acc' {
-  	  accAction     :: Maybe a,
-	  accLeftCtx    :: Maybe CharSet, -- cannot be converted to byteset at this point.
-	  accRightCtx   :: RightContext SNum
-    }
-    deriving (Eq,Ord)
--}
