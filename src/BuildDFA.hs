@@ -47,7 +47,7 @@ alexOpenFile = openFile
 
 -- Reads a file and callse parseScanner followed by makeDFA on the content
 -- MOVE TO WRAPPER
-build :: FilePath -> IO (DFA' SNum Code)
+build :: FilePath -> IO (DFA' SNum)
 build file = do
     basename <- case (reverse file) of
                     'x':'.':r   -> return (reverse r)
@@ -83,9 +83,9 @@ initSetEnv = M.fromList [("white", charSet " \t\n\v\f\r")
 
 initREEnv :: Map String RExp
 initREEnv = M.empty
-
+{-
 -- Converts an alex DFA into DFA' (The outer map is indexed by Accept 'a')
-dfaToDFA' :: (Ord a, Ord s) => DFA s a -> DFA' s a
+dfaToDFA' :: (Ord a,Ord s) => DFA s a -> DFA' s a
 dfaToDFA' (DFA ss dfass) = DFA' ss dfass'
   where dfass' = M.foldlWithKey convert M.empty dfass
         convert dfa' is (State as os) = foldl (\d a -> M.insertWith mappend a
@@ -95,4 +95,10 @@ acceptLookup :: Accept a -> IntMap s -> s
 acceptLookup (Acc i _ _ _) ss = case IM.lookup i ss of
   Just s -> s
   Nothing -> error "Incomplete lexer WTF MATE?"
+-}
 
+dfaToDFA' :: Ord s => DFA s a -> DFA' s
+dfaToDFA' (DFA scs states) = DFA' scs states'
+  where states' = M.foldlWithKey convert IM.empty states
+        convert pStates is (State _ cToOs) = IM.foldlWithKey (insertStuff is) pStates cToOs
+        insertStuff is pStates byte os = IM.insertWith mappend byte (M.singleton is os) pStates
