@@ -121,14 +121,13 @@ type StartCode = Int
 
 -- DFA's
 
-
 -- dfa_states corresponds to the set of edges between states that 'Accpet a' has
-data DFA' s a = DFA'
+data DFA' s = DFA'
   { dfa'_start_states :: [s]
-  , dfa'_states       :: Map (Accept a) (Edges s) }
+  , dfa'_states       :: IntMap (Edges s) }
 
-instance (Show s,Show a) => Show (DFA' s a) where
-  show (DFA' ss dfas) = "Initial States: " ++ show ss
+instance Show s => Show (DFA' s) where
+  show (DFA' ss dfas) = "Initial States: " ++ show ss ++ "\nState map:\n" ++ show dfas
 
 type Edges s = Map s s
 {-

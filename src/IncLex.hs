@@ -2,7 +2,6 @@
 module IncLex where
 
 --import qualified Data.Array as B
-import BuildDFA
 import Data.Maybe
 --import Data.Array.Unboxed
 import qualified Data.Foldable as F
@@ -10,6 +9,7 @@ import Data.Monoid
 import Data.FingerTree
 import Data.Map (Map)
 import qualified Data.Map as Map hiding (Map)
+import Alex.AbsSyn hiding (State)
 
 -- hardcoded to be atmost 255 states atm, needs to be more generic
 tabulate :: (State -> Maybe State) -> Edges State
