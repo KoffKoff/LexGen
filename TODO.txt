@@ -9,7 +9,9 @@ IncLex.hs:
 -Add so that Monoid Tokens handle lexing errors (UNASSIGNED)
 
 Alex:
--Remove as much as possible (Hugo)
+-Remove as much as possible (UNASSIGNED)
+    -Remove not needed files (HUGO)
+    -Remove not needed code (UNASSIGNED)
 
 BuildDFA.hs
 -Code cleanup (KoffKoff almost done)
