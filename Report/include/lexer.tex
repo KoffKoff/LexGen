@@ -1,8 +1,9 @@
 \chapter{Lexer}
-A Lexer, lexical analyser, is a program which job is to convert a string of a
-formal language into a sequence of tokens. \#Hitta REF.
+A Lexer, lexical analyser, is a pattern matcher. It's job is to find sequence of characters in a larger string. The Lexer is a front end of a syntax analyser. \cite{sebesta2012}
 This can be done by using regular expressions, regular sets and finite
 automata. Which are central concepts in formal language theory. \cite{Aho1990}
+All on which will be described in this chapter.
+
 \section{Lexing vs Parsing}
 There are several reasons why a compiler should be separated in to lexical 
 analyser and a parser (syntax analyser) phases. Simplicity of design is the most
@@ -12,11 +13,15 @@ deal with white-spaces and comments as syntactical units would be more complex
 then one that can assume white-spaces and comments have already been removed by 
 an lexer. Also when the two tasks are divided into sub-tasks it can lead to 
 cleaner overall design when designing a new language \cite{Aho2006}
+Lexers work as a subprogram to the parser, giving it's result to the syntax analyser. So the only thing the syntax analyser will see is the output from the lexer, tokens and lexemes which will be described later in this chapter. \cite{sebesta2012}
+The lexer also skips comments and white-spaces, since these are not relevant for the syntax analyser. \cite{sebesta2012}
 Also overall efficiency of the compiler can be improved. When separating the 
 lexical analyser it allows for appliance of specialised techniques that serve 
 only the lexical task. \cite{Aho2006}
 Last compiler portability can be enhanced. That is Input-device-specific 
 peculiarities can be restricted to the lexical analysis. \cite{Aho2006}
+So the lexer can detect syntactical errors in tokens, such as ill-formed floating-points literals, and report these errors to the user. \cite{sebesta2012} Breaking the compilation before running the syntax analyser, saving computing time. 
+
 \section{Token Specification}
 This section will describe how to write rules for the tokens patterns. 
 \subsection{Languages}
@@ -89,6 +94,7 @@ d_2 \dots d_{i-1}\}$
 By restricting $r_i$ to $\Sigma$ and previously defined $d$'s the regular 
 definitions avoid recursive definitions.  
 \cite{Aho2006}
+
 \section{Tokens, Patterns and Lexemes}
 A lexical analyser uses three different terms. All which is described here 
 below. 
@@ -113,23 +119,36 @@ This attribute is used when one lexeme can match more then one pattern. \cite
 but it is important for the code generator to know which lexeme was found. 
 Therefor the lexer often return not just the token but also an attribute value 
 that describes the lexeme found in the source program corresponding to this 
-token. \cite{Aho2006}
+token. \cite{Aho2006} A lexer collects chars into logical groups and assign internal codes to these groups. according to there structure.\cite{sebesta2012} Where the groups of chars are lexemes and the internal codes are tokens. Here follows a example how a small piece of code would be divided.
+\begin{example}[Logical grouping] \label{codeToToken} \cite{sebesta2012} \\
+This is the code being lexed:
+\lstinputlisting[language=c]{examples/token.c}
+This is how it will be divided:
+\begin{center}
+\begin{tabular}{l c}
+\underline{Token} & \underline{Lexeme}\\
+IDENT & result\\
+ASSING\_OP & $=$\\
+IDENT & oldsum\\
+SUB\_OP & $-$\\
+IDENT & value\\
+DIV\_OP & $/$\\
+INT\_LIT & 100\\
+SEMICOLON & ;
+\end{tabular}
+\end{center}
+\end{example}
+
 \section{Recognition of Tokens}
 In previous section the topic have been, how to represent a pattern using 
 regular expressions and how these expressions relates to tokens. This section 
 will highlight how to transform a sequence of characters into a sequence of 
 abstract tokens. First some basic understanding with transition diagrams.  
 \subsection{Transition Diagrams}
-A transition diagram is a graph consisting of nodes and edges. Each node 
+A state transition diagram, or just transition diagram is a directed graph. Where the nodes are labelled with the state name. Each node 
 represent a state which could occur during the process of scanning the input 
-looking for lexeme that matches one of several patterns. Each edge is labelled 
-with a symbol or set symbols, which tells which input must come next to be able 
-to advance to this next state. Here follows some properties for a transition 
-diagram, One state is said to be initial state. The transition diagram always 
-begins at this state, before any input symbols have been read. Some states are 
-said to be accepting (final). They indicate that a lexeme has been found. The 
-found token should then be returned with any additional optional values, 
-mentioned in previous section. \cite{Aho2006}
+looking for lexeme that matches one of several patterns.\cite{Aho2006} The edges are labelled with the input characters that causes the transition among the states. An edge may also contain actions the lexer must perform when transition is token.\cite{sebesta2012} Here follows some properties for a transition diagram, One state is said to be initial state. The transition diagram always begins at this state, before any input symbols have been read. Some states are said to be accepting (final). They indicate that a lexeme has been found. The found token should then be returned with any additional optional values, mentioned in previous section.\cite{Aho2006}
+Transition diagrams of the formed used in lexers are representations of a class of mathematical machines called finite automata. Finite automata can be designed to recognise members of a class of languages called regular languages, mentioned above \#write about this shit in previus sections!!!! \#. \cite{sebesta2012} 
 \subsection{Finite Automata}
 A finite automata are essentially graphs, like transitions diagrams, with some 
 differences:
