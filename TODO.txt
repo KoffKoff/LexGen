@@ -2,11 +2,12 @@ THIS WE NEED TO DO!!!!!
 
 --LEXER STUFF--
 General:
--Datastructure for DFA (KoffKoff)
--Start building a wrapper (KoffKoff)
+-Datastructure for DFA (KoffKoff, changed, might not be best atm)
+-DFA needs to know accepting states. (UNASSIGNED)
+-Start building a wrapper (KoffKoff, started)
 
 IncLex.hs:
--Add so that Monoid Tokens handle lexing errors (UNASSIGNED)
+-Add so that Monoid Tokens handle lexing errors (KoffKoff)
 
 Alex:
 -Remove as much as possible (UNASSIGNED)
