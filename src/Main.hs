@@ -12,6 +12,7 @@ import qualified Data.IntMap as IM
 
 type TokenTree = FingerTree TOKANS (Char,DFA' SNum)
 
+--Only supports the first 256 characters of UTF-8 atm.
 instance Measured TOKANS (Char,DFA' SNum) where
   measure (c,dfa) = let t = (dfa'_states dfa) IM.! (fromEnum c)
                     in T $ S.singleton (Token t [c] (M.lookup (head $ dfa'_start_states dfa) t))
@@ -21,4 +22,5 @@ lex alex_file code_file = do
   dfa <- build alex_file
   h <- openFile code_file ReadMode
   prg <- hGetContents h
+  hSetEncoding h utf8
   return . measure . fromList $ zip prg (repeat dfa)

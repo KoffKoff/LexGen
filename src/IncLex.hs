@@ -23,12 +23,8 @@ tabulate e1 e2 = Map.foldlWithKey f Map.empty e1
           _ -> es'
 
 type State = Int
-type Size = Sum Int
---type Table = Array State (Maybe State)
 data Token = Token (Edges State) String (Maybe Tid)
 type Tid = Int
--- Make the type more polymorphic?
-type FingerLex = FingerTree TOKANS Char
 -- Should DEFFINIATLY NOT BE LIST, is sequence better in this instance?
 data Tokens = Empty
             | One Token
@@ -36,6 +32,9 @@ data Tokens = Empty
 
 -- Alternative produces the same result as the data above but uses sequence.
 newtype TOKANS = T (S.Seq Token)
+
+instance Show TOKANS where
+  show (T tokans) = show tokans
 
 instance Monoid TOKANS where
   mempty = T mempty
@@ -89,7 +88,11 @@ instance Measured Tokens Char where
   measure c = let t = letters IM.! (fromEnum c)
               in One $ Token t [c] (Map.lookup 0 t)
 
--- Below code are for use in the statemachine sm.
+-- Below code are for use in the statemachine sm. Only for simply tests atm.
+-- Make the type more polymorphic?
+type FingerLex = FingerTree TOKANS Char
+
+
 sm :: Int -> Edges State
 sm c = case charType (toEnum c) of
   Letter -> Map.fromList [(0,1),(1,1)]
