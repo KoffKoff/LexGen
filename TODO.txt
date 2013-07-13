@@ -5,6 +5,8 @@ General:
 -Datastructure for DFA (KoffKoff, changed, might not be best atm)
 -DFA needs to know accepting states. (UNASSIGNED)
 -Start building a wrapper (KoffKoff, started)
+-How do we figure out if the lexer should build a token from an accepting state?
+  Does the lexers alex generate have states for error hadndling?
 
 IncLex.hs:
 -Add so that Monoid Tokens handle lexing errors (KoffKoff)
