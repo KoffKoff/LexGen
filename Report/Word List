@@ -1,0 +1,13 @@
+% Words and abrevations we should probably have in a word list in the report
+
+Alex
+BNFC
+Incremental
+DFA
+FingerTree (Might not use this data structure)
+Lexer
+Monoid
+NFA
+Regular Expression (maybe not)
+Scanner
+Token
