@@ -15,7 +15,7 @@ type TokenTree = FingerTree TOKANS (Char,DFA' SNum)
 --Only supports the first 256 characters of UTF-8 atm.
 instance Measured TOKANS (Char,DFA' SNum) where
   measure (c,dfa) = let t = (dfa'_states dfa) IM.! (fromEnum c)
-                    in T $ S.singleton (Token t [c] (M.lookup (head $ dfa'_start_states dfa) t))
+                    in T $ S.singleton (Token t [c] [] (getTokenId (head $ dfa'_start_states dfa) t))
 
 lex :: FilePath -> FilePath -> IO TOKANS
 lex alex_file code_file = do

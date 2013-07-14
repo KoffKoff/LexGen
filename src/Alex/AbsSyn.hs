@@ -69,7 +69,7 @@ data RightContext r
   = NoRightContext 
   | RightContextRExp r
   | RightContextCode Code
-  deriving (Eq,Ord)
+  deriving (Eq,Ord,Show)
 
 instance Show RECtx where
   showsPrec _ (RECtx scs _ r rctx code) = 
@@ -115,7 +115,7 @@ data Accept a
 
 -- debug stuff
 instance Show (Accept a) where
-  showsPrec _ (Acc p _act _lctx _rctx) = shows p --TODO
+  show (Acc p _act _lctx _rctx) = show p ++ "," ++ show _lctx ++ "," ++ show _rctx
 
 type StartCode = Int
 
@@ -129,7 +129,7 @@ data DFA' s = DFA'
 instance Show s => Show (DFA' s) where
   show (DFA' ss dfas) = "Initial States: " ++ show ss ++ "\nState map:\n" ++ show dfas
 
-type Edges s = Map s s{-
+type Edges s = Map s (s,Bool){-
 data Accept' a = Acc' {
   	  accAction     :: Maybe a,
 	  accLeftCtx    :: Maybe CharSet, -- cannot be converted to byteset at this point.

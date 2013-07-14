@@ -8,8 +8,8 @@ import Alex.DFAMin
 import Alex.NFA
 import Alex.ParseMonad ( runP, AlexPosn(..))
 import Alex.Parser
-import Alex.Map ( Map )
-import qualified Alex.Map as M hiding ( Map )
+import Data.Map ( Map )
+import qualified Data.Map as M hiding ( Map )
 
 import Data.Char ( chr )
 import Data.IntMap (IntMap)
@@ -53,7 +53,8 @@ build file = do
                     'x':'.':r   -> return (reverse r)
                     _           -> error "File must end with suffix '.x'"
     prg <- alexReadFile file
-    return . dfaToDFA' . makeDFA $ parseScanner file prg
+    let dfa' = dfaToDFA' . makeDFA $ parseScanner file prg
+    return dfa'
 
 -- Gets the scanner from the code in the alex file
 parseScanner :: FilePath -> String -> Scanner
@@ -101,4 +102,12 @@ dfaToDFA' :: Ord s => DFA s a -> DFA' s
 dfaToDFA' (DFA scs states) = DFA' scs states'
   where states' = M.foldlWithKey convert IM.empty states
         convert pStates is (State _ cToOs) = IM.foldlWithKey (insertStuff is) pStates cToOs
-        insertStuff is pStates byte os = IM.insertWith mappend byte (M.singleton is os) pStates
+        insertStuff is pStates byte os = IM.insertWith mappend byte (creatEdge is os) pStates
+        accepting = M.filter checkAccepting states
+        creatEdge is os = case M.lookup os accepting of
+          Nothing -> M.singleton is (os,False)
+          _       -> M.singleton is (os,True)
+
+checkAccepting :: State s a -> Bool
+checkAccepting (State [] _) = False
+checkAccepting _ = True
