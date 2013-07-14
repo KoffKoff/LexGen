@@ -6,7 +6,7 @@ General:
 -DFA needs to know accepting states. (UNASSIGNED)
 -Start building a wrapper (KoffKoff, started)
 -How do we figure out if the lexer should build a token from an accepting state?
-  Does the lexers alex generate have states for error hadndling?
+  recursive backwards stuffies seems legit...
 
 IncLex.hs:
 -Add so that Monoid Tokens handle lexing errors (KoffKoff)
