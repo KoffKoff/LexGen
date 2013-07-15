@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 module Main where
 
+import System.Environment
 import System.IO
 import BuildDFA
 import IncLex
@@ -18,8 +19,14 @@ instance Measured TOKANS (Char,DFA' SNum) where
                     in T $ S.singleton (Token t [c] []
                                         (getTokenId (head $dfa'_start_states dfa) t))
 
-lex :: FilePath -> FilePath -> IO TOKANS
-lex alex_file code_file = do
+main :: IO ()
+main = do args <- getArgs
+          case args of
+            [alex_file,code_file] -> lexFile alex_file code_file >>= print
+            _ -> putStrLn "Usage: <This programs name> <alex file> <code file>"
+
+lexFile :: FilePath -> FilePath -> IO TOKANS
+lexFile alex_file code_file = do
   dfa <- build alex_file
   h <- openFile code_file ReadMode
   prg <- hGetContents h

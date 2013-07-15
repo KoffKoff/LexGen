@@ -63,21 +63,28 @@ combineToken t1 t2 = let e = tabulate (edges t1) (edges t2)
 
 combineToken' :: Token -> MidTransition -> Seq Token
 combineToken' t1 ts2 = let t2 = head ts2
-                           ts2' = tail ts2
+                           t3 = head $ tail ts2
                            e = tabulate (edges t1) (edges t2)
                        in case Map.null e of
                          True  -> case mid_trans t2 of
-                                    [] -> singleton t1 >< fromList ts2
-                                    mt -> combineToken' t1 mt >< fromList (tail ts2)
-                         False -> case mid_trans (head ts2') of
-                                    [] -> mergeToken e t1 t2 <| fromList ts2'
+                                    [] -> t1 <| combineTOKANS (checkStates t2) (singleton t3)
+                                    mt -> combineToken' t1 mt >< checkStates t3
+                         False -> case mid_trans t3 of
+                                    [] -> mergeToken e t1 t2 <| checkStates t3
                                     mt -> combineToken' (mergeToken e t1 t2) mt
+
+checkStates :: Token -> Seq Token
+checkStates token = case Map.lookup start_state (edges token) of
+  Nothing        -> case mid_trans token of 
+    [] -> singleton $ token {edges = Map.empty}
+    [t1,t2] -> combineTOKANS (checkStates t1) (singleton t2)
+  Just out_state -> singleton $ token {edges = Map.singleton start_state out_state}
 
 -- Merges two tokens using the state sent
 mergeToken :: Edges State -> Token -> Token -> Token
 mergeToken e t1 t2 = let os = case Map.lookup start_state e of
-                             Just (os',True) -> Just os'
-                             _ -> Nothing
+                           Just (os',True) -> Just os'
+                           _ -> Nothing
                        in Token e (str t1 ++ str t2) [t1,t2] os
 
 instance Show Token where
