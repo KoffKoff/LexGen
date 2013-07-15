@@ -3,13 +3,13 @@ THIS WE NEED TO DO!!!!!
 --LEXER STUFF--
 General:
 -Datastructure for DFA (KoffKoff, changed, might not be best atm)
--DFA needs to know accepting states. (UNASSIGNED)
--Start building a wrapper (KoffKoff, started)
--How do we figure out if the lexer should build a token from an accepting state?
-  recursive backwards stuffies seems legit...
+-DFA needs to know accepting states. (Done, Maybe implement the whole accept structure later)
+-Start building a wrapper (KoffKoff, Simple one is done)
+-Implement good error messages (UNASSIGNED)
+-Generate a haskell file with the lexer in it (UNASSIGNED)
 
 IncLex.hs:
--Add so that Monoid Tokens handle lexing errors (KoffKoff)
+-The case of the '"' needs to be fixed (UNASSIGNED)
 
 Alex:
 -Remove as much as possible (UNASSIGNED)
@@ -18,7 +18,6 @@ Alex:
 
 BuildDFA.hs
 -Code cleanup (KoffKoff almost done)
--Implement good error messages (UNASSIGNED)
 
 --REPORT STUFF--
 Chpater 2:
