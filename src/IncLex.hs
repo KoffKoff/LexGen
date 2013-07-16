@@ -1,16 +1,13 @@
 {-# LANGUAGE TypeSynonymInstances,FlexibleInstances,MultiParamTypeClasses #-}
 module IncLex where
 
---import qualified Data.Array as B
 import Data.Maybe
---import Data.Array.Unboxed
 import qualified Data.Foldable as F
+import qualified Data.ByteString as B
+import Data.ByteString.UTF8 (toString)
 import Data.Monoid
---import Data.FingerTree
 import Data.Map (Map)
-import Data.IntMap (IntMap)
 import qualified Data.Map as Map hiding (Map)
-import qualified Data.IntMap as IM hiding (IntMap)
 import Alex.AbsSyn hiding (State)
 
 import Data.Sequence as S
@@ -29,13 +26,12 @@ start_state = 0
 type MidTransition = [Token]
 type OutState = (State,Bool)
 type State = Int
-data Token = Token {edges :: (Edges State)
-                   ,str   :: String
+data Token = Token {edges     :: (Edges State)
+                   ,str       :: B.ByteString
                    ,mid_trans :: MidTransition
-                   ,token_id ::(Maybe Tid)}
+                   ,token_id  :: (Maybe Tid)}
 type Tid = Int
 
--- Alternative produces the same result as the data above but uses sequence.
 data TOKANS = T (Seq Token )
 
 instance Show TOKANS where
@@ -73,6 +69,8 @@ combineToken' t1 ts2 = let t2 = head ts2
                                     [] -> mergeToken e t1 t2 <| checkStates t3
                                     mt -> combineToken' (mergeToken e t1 t2) mt
 
+-- Removes all edges but the one starting in start_state if no such edge exist
+-- It breaks the token up into smaller pieces
 checkStates :: Token -> Seq Token
 checkStates token = case Map.lookup start_state (edges token) of
   Nothing        -> case mid_trans token of 
@@ -80,18 +78,18 @@ checkStates token = case Map.lookup start_state (edges token) of
     [t1,t2] -> combineTOKANS (checkStates t1) (singleton t2)
   Just out_state -> singleton $ token {edges = Map.singleton start_state out_state}
 
--- Merges two tokens using the state sent
+-- Merges two tokens using the edges e
 mergeToken :: Edges State -> Token -> Token -> Token
 mergeToken e t1 t2 = let os = case Map.lookup start_state e of
                            Just (os',True) -> Just os'
                            _ -> Nothing
-                       in Token e (str t1 ++ str t2) [t1,t2] os
+                       in Token e (str t1 `mappend` str t2) [t1,t2] os
 
 instance Show Token where
-  show (Token tab s mts id) = concatMap (\c -> if c == '\n' then "\\n" else [c]) s
-                              ++ ":" ++ show id
+  show (Token tab s mts id) = show s ++ ":" ++ show id
 
-getTokenId :: State -> Edges State -> Maybe State
+-- Returns Just Tid if that state is accepting
+getTokenId :: State -> Edges State -> Maybe Tid
 getTokenId s t = case Map.lookup s t of
   Just (id,True) -> Just id
   _ -> Nothing
