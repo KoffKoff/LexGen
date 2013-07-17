@@ -26,6 +26,26 @@
 \usepackage{natbib}
 \usepackage{cleveref}
 \usepackage{listings}
+\usepackage{tikz}
+
+\usetikzlibrary{arrows,automata}
+
+% \newState{}{}{}{}
+%
+% #1: internal name,
+% #2: (visible) label,
+% #3: node properties (e.g. accepting, initial)
+% #4: relative position (e.g. right of=/left of=/above of=/below of=)
+
+\newcommand{\newState}[4]{\node[state,#3](#1)[#4]{#2};}
+
+% \newTransition{}{}{}{}
+% #1: source state (internal name),
+% #2: target state (internal name)
+% #3: guard/edge label
+% #4: edge direction (loop below/above, bend right/left)
+\newcommand{\newTransition}[4]{\path[->] (#1) edge [#4] node {#3} (#2); } 
+
 
 \newcommand{\rd}{\ensuremath{\mathrm{d}}}
 \newcommand{\id}{\ensuremath{\,\rd}}

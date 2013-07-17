@@ -207,6 +207,103 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 
 \end{definition}
 \subsubsection{Nondeterministic Finite Automata}
+An NFA accept input $x$ if and only if there is a path in the transition diagram from the start state to one of the accepting states. Such that the symbols along the way spells out $x$. \cite{Aho2006}
+
+There are different ways of representing an NFA, one is by transition diagrams another is by transitions table. This example shows how a regular expression can be converted in to a transition diagram.
+\newpage
+\begin{example}[RegExp to Transition Diagram] \label{regexp2td}
+\cite{Aho2006}\\
+Given this regular expression: $(a | b)* abb$ \\
+the transition diagram representing this regular expression is shown the figure below.
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[
+    % Default arrow tip
+    ->,>=stealth',shorten >=1pt,auto,
+    % Default node distance
+    node distance=2cm,
+    % Edge stroke thickness: semithick, thick, thin
+    semithick
+    ]
+
+    \newState{0}{$0$}{initial}{}
+    \newState{1}{$1$}{right of=0}{}
+    \newState{2}{$2$}{right of=1}{}
+    \newState{3}{$3$}{right of=2}{accepting} 
+
+    \newTransition{0}{0}{a}{loop above}
+    \newTransition{0}{0}{b}{loop below}
+    \newTransition{0}{1}{a}{}
+    \newTransition{1}{2}{b}{}
+    \newTransition{2}{3}{b}{}
+  \end{tikzpicture}
+  \label{fig:transition diagram}
+  \caption{Transition Diagram, accepting the pattern  $(a | b)* abb$}
+  \end{figure}
+\end{example}
+
+The following example shows how the transition table would look like for the same regular expression.
+
+\begin{example}[RegExp to Transition Table] \label{regexp2tt}
+\cite{Aho2006}\\
+Given the regular expression from \cref{regexp2td} it can be converted into the following transition table: \\
+  \begin{figure}[h!]
+  \centering
+  \begin{tabular}{| c | c c c |}
+    \hline
+    \hline
+    State & a & b & $\epsilon$\\
+    \hline
+    0 & $\{0, 1\}$ & $\{0\}$ & $\emptyset$ \\
+    1 & $\emptyset$ & $\{2\}$ & $\emptyset$ \\
+    2 & $\emptyset$ & $\{3\}$ & $\emptyset$ \\
+    3 & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
+    \hline
+  \end{tabular}
+  \label{fig:transition table}
+  \caption{Transition Table representation of regular expression in \cref{regexp2td}}
+  \end{figure}
+\end{example}
+Transition tables has the advantage that they have an quick lookup time. But instead it will take allot of data space, when the alphabet is large. Most states do not have any moves on most of the input symbols. \cite{Aho2006}
 \subsubsection{Deterministic Finite Automata}
+DFA is a special case of an NFA where,
+\begin{enumerate}
+  \item there are no moves on input $\epsilon$ and
+  \item for each state $s$ and input symbol $a$, there is exactly one edge out
+        of $s$ labelled with $a$.
+\end{enumerate}
+While NFA is an abstract representation of an algorithm to recognise the string of a language, the DFA is a simple concrete algorithm for recognising strings. Every regular expression can be converted in to a NFA and every NFA can be converted in to a DFA. \cite{Aho2006} It is the DFA that is implemented and used when building lexical analysers. 
+\begin{example}[DFA representation of RegExp] \label{regexp2dfa}
+\cite{Aho2006}\\
+A DFA representation of a regular expression shown in the following figure.
+\begin{figure}[!h]
+  \centering
+  \begin{tikzpicture}[
+    % Default arrow tip
+    ->,>=stealth',shorten >=1pt,auto,
+    % Default node distance
+    node distance=2cm,
+    % Edge stroke thickness: semithick, thick, thin
+    semithick
+    ]
+
+    \newState{0}{$0$}{initial}{}
+    \newState{1}{$1$}{right of=0}{}
+    \newState{2}{$2$}{right of=1}{}
+    \newState{3}{$3$}{right of=2}{accepting} 
+
+    \newTransition{0}{0}{b}{loop above}
+    \newTransition{0}{1}{a}{}
+    \newTransition{1}{1}{a}{loop below}
+    \newTransition{1}{2}{b}{}
+    \newTransition{2}{3}{b}{}
+    \newTransition{2}{1}{a}{bend left}
+    \newTransition{3}{2}{a}{bend left}
+    \newTransition{3}{0}{b}{bend right}
+  \end{tikzpicture}
+  \label{fig:dfa}
+  \caption{DFA, accepting regular expression in \cref{regexp2td}}
+\end{figure}
+\end{example}
 
  
