@@ -1,107 +1,95 @@
 {-# LANGUAGE TypeSynonymInstances,FlexibleInstances,MultiParamTypeClasses #-}
 module IncLex where
 
---import qualified Data.Array as B
 import Data.Maybe
---import Data.Array.Unboxed
 import qualified Data.Foldable as F
+import qualified Data.ByteString as B
+import Data.ByteString.UTF8 (toString)
 import Data.Monoid
-import Data.FingerTree
 import Data.Map (Map)
-import Data.IntMap (IntMap)
 import qualified Data.Map as Map hiding (Map)
-import qualified Data.IntMap as IM hiding (IntMap)
 import Alex.AbsSyn hiding (State)
 
-import qualified Data.Sequence as S
+import Data.Sequence as S
 
 -- combines state maps into one state map
-tabulate :: State -> Edges State -> Edges State -> Edges State
-tabulate start_state e1 e2 = Map.foldlWithKey f Map.empty e1
+tabulate :: Edges State -> Edges State -> Edges State
+tabulate e1 e2 = Map.foldlWithKey f Map.empty e1
   where f es' is (s,_) = case Map.lookup s e2 of
           Just os -> Map.insert is os es'
           _ -> es'
 
+-- Hardcoded atm, needs to be checked from the DFA
+start_state :: State
+start_state = 0
+
 type MidTransition = [Token]
 type OutState = (State,Bool)
 type State = Int
-data Token = Token {edges :: (Edges State)
-                   ,str   :: String
+data Token = Token {edges     :: (Edges State)
+                   ,str       :: B.ByteString
                    ,mid_trans :: MidTransition
-                   ,token_id ::(Maybe Tid)}
+                   ,token_id  :: (Maybe Tid)}
 type Tid = Int
 
--- Alternative produces the same result as the data above but uses sequence.
-data TOKANS = T (S.Seq Token)
+data TOKANS = T (Seq Token )
 
 instance Show TOKANS where
-  show (T tokans) = S.foldlWithIndex (\str _ tok -> str ++ "\n" ++ show tok) "" tokans
+  show (T tokans) = foldlWithIndex (\str _ tok -> str ++ "\n" ++ show tok) "" tokans
 
 instance Monoid TOKANS where
   mempty = T mempty
   (T ts1) `mappend` (T ts2) = T $ combineTOKANS ts1 ts2
 
-combineTOKANS :: S.Seq Token -> S.Seq Token -> S.Seq Token
-combineTOKANS toks1 toks2 = case (S.viewr toks1,S.viewl toks2) of
-  (S.EmptyR,_) -> toks2
-  (_,S.EmptyL) -> toks1
-  (ts1 S.:> t1@(Token tab1 s1 mt1 id1),t2@(Token tab2 s2 mt2 id2) S.:< ts2) ->
-    let t = tabulate 0 tab1 tab2
-    in case Map.null t of
-      True -> let toks1' = case S.null ts1 of
-                    True -> checkMidTrans t1
-                    _ -> combineTOKANS ts1 $ checkMidTrans t1
-                  toks2' = case S.null ts2 of
-                    True -> checkMidTrans t2
-                    _ -> combineTOKANS (checkMidTrans t2) ts2
-              in toks1' `mappend` toks2'
-      _    -> let mts = [t1,t2]
-              in (ts1 S.|> Token t (s1 ++ s2) mts (getTokenId 0 t)) `mappend` ts2
+-- Tries to merge the tokens in the edges of the sequences
+combineTOKANS :: Seq Token -> Seq Token -> Seq Token
+combineTOKANS toks1 toks2 = case (viewr toks1,viewl toks2) of
+  (EmptyR,_) -> toks2
+  (_,EmptyL) -> toks1
+  (ts1 :> t1,t2 :< ts2) -> ts1 >< combineToken t1 t2 >< ts2
 
-checkMidTrans :: Token -> S.Seq Token
-checkMidTrans tok@(Token _ _ _ (Just _)) = S.singleton tok
-checkMidTrans tok = case mid_trans tok of
-  [] -> S.singleton tok
-  [t1,t2] -> combineTOKANS (checkMidTrans t1) (checkMidTrans t2)
-{-
-fix_mid_trans :: [MidTransition] -> [MidTransition] -> String -> String ->
-                 Edges State -> [MidTransition]
-fix_mid_trans mt1 mt2 s1 s2 tab2 = map f1 mt1 -- ++ map f2 mt2
-  where f1 (tok,str,(s,_)) = (tok,str++s2,tab2 Map.! s)
-        f2 (tok,str,os) = (tok,str,os) --more needs to be done
--}
+-- Combines token1 with as much of token2 as possible
+combineToken :: Token -> Token -> Seq Token
+combineToken t1 t2 = let e = tabulate (edges t1) (edges t2)
+                   in case Map.null e of
+                     False -> singleton $ mergeToken e t1 t2
+                     True  -> case mid_trans t2 of
+                                   [] -> fromList [t1,t2]
+                                   mt -> combineToken' t1 mt
+
+combineToken' :: Token -> MidTransition -> Seq Token
+combineToken' t1 ts2 = let t2 = head ts2
+                           t3 = head $ tail ts2
+                           e = tabulate (edges t1) (edges t2)
+                       in case Map.null e of
+                         True  -> case mid_trans t2 of
+                                    [] -> t1 <| combineTOKANS (checkStates t2) (singleton t3)
+                                    mt -> combineToken' t1 mt >< checkStates t3
+                         False -> case mid_trans t3 of
+                                    [] -> mergeToken e t1 t2 <| checkStates t3
+                                    mt -> combineToken' (mergeToken e t1 t2) mt
+
+-- Removes all edges but the one starting in start_state if no such edge exist
+-- It breaks the token up into smaller pieces
+checkStates :: Token -> Seq Token
+checkStates token = case Map.lookup start_state (edges token) of
+  Nothing        -> case mid_trans token of 
+    [] -> singleton $ token {edges = Map.empty}
+    [t1,t2] -> combineTOKANS (checkStates t1) (singleton t2)
+  Just out_state -> singleton $ token {edges = Map.singleton start_state out_state}
+
+-- Merges two tokens using the edges e
+mergeToken :: Edges State -> Token -> Token -> Token
+mergeToken e t1 t2 = let os = case Map.lookup start_state e of
+                           Just (os',True) -> Just os'
+                           _ -> Nothing
+                       in Token e (str t1 `mappend` str t2) [t1,t2] os
+
 instance Show Token where
-  show (Token tab s mts id) = s ++ ":" ++ show id{- ++ "++" ++ drop 2
-                                (foldl (\s1 mt -> s1 ++ "--" ++ str mt ++ ":" ++ show (token_id mt)) "" mts) ++ "\n"--}
+  show (Token tab s mts id) = show s ++ ":" ++ show id
 
-getTokenId :: (Num s,Ord s) => s -> Edges s -> Maybe s
+-- Returns Just Tid if that state is accepting
+getTokenId :: State -> Edges State -> Maybe Tid
 getTokenId s t = case Map.lookup s t of
   Just (id,True) -> Just id
   _ -> Nothing
-{-
--- Below code are for use in the statemachine sm. Only for simply tests atm.
--- Make the type more polymorphic?
-type FingerLex = FingerTree TOKANS Char
-
-
-sm :: Int -> Edges State
-sm c = case charType (toEnum c) of
-  Letter -> Map.fromList [(0,(1,True)),(1,(1,True))]
-  Space -> Map.fromList [(0,(2,True)),(2,(2,True))]
-  Digit -> Map.fromList [(0,(3,True)),(1,(1,True)),(3,(3,True))]
-
-toFinger = F.foldl' (|>) empty
-string i = toFinger $ take i $ cycle "the quick b2own 22 a22fox22a 22a jumped over the lazy dog"
-
--- A mapping from char to a table for that char, depends on the statemachine
-letters :: IntMap (Edges State)
-letters = IM.fromList [(i,sm i) | i <- [0..255]]
-
-data OMG = Letter | Space | Digit
-
-charType :: Char -> OMG
-charType ' ' = Space
-charType c | '0' < c && c < '9' = Digit
-charType _ = Letter -}
-tst = "hej"
---}

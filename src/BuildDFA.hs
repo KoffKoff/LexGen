@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP, FlexibleInstances #-}
-module BuildDFA (build, makeDFA) where
+module BuildDFA (build, makeDFA, alexReadFile) where
 
 import Alex.AbsSyn
 import Alex.CharSet
