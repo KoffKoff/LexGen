@@ -47,7 +47,7 @@ alexOpenFile = openFile
 
 -- Reads a file and callse parseScanner followed by makeDFA on the content
 -- MOVE TO WRAPPER
-build :: FilePath -> IO (DFA' SNum)
+build :: FilePath -> IO (DFA' SNum Code)
 build file = do
     basename <- case (reverse file) of
                     'x':'.':r   -> return (reverse r)
@@ -98,15 +98,16 @@ acceptLookup (Acc i _ _ _) ss = case IM.lookup i ss of
   Nothing -> error "Incomplete lexer WTF MATE?"
 -}
 
-dfaToDFA' :: Ord s => DFA s a -> DFA' s
+dfaToDFA' :: Ord s => DFA s a -> DFA' s a
 dfaToDFA' (DFA scs states) = DFA' scs states'
   where states' = M.foldlWithKey convert IM.empty states
         convert pStates is (State _ cToOs) = IM.foldlWithKey (insertStuff is) pStates cToOs
         insertStuff is pStates byte os = IM.insertWith mappend byte (creatEdge is os) pStates
-        accepting = M.filter checkAccepting states
-        creatEdge is os = case M.lookup os accepting of
+        accepting = M.map state_acc states
+        creatEdge is os = M.singleton is (os,accepting M.! os)
+          {-case M.lookup os accepting of
           Nothing -> M.singleton is (os,False)
-          _       -> M.singleton is (os,True)
+          _       -> M.singleton is (os,True)-}
 
 checkAccepting :: State s a -> Bool
 checkAccepting (State [] _) = False

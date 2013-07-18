@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeSynonymInstances,FlexibleInstances,MultiParamTypeClasses #-}
 module IncLex where
 
+import Prelude as P
 import Data.Maybe
 import qualified Data.Foldable as F
 import qualified Data.ByteString as B
@@ -13,7 +14,7 @@ import Alex.AbsSyn hiding (State)
 import Data.Sequence as S
 
 -- combines state maps into one state map
-tabulate :: Edges State -> Edges State -> Edges State
+tabulate :: Transition -> Transition -> Transition
 tabulate e1 e2 = Map.foldlWithKey f Map.empty e1
   where f es' is (s,_) = case Map.lookup s e2 of
           Just os -> Map.insert is os es'
@@ -24,9 +25,10 @@ start_state :: State
 start_state = 0
 
 type MidTransition = [Token]
-type OutState = (State,Bool)
+type OutState = (State,[Accept Code])
 type State = Int
-data Token = Token {edges     :: (Edges State)
+type Transition = Edges State Code
+data Token = Token {edges     :: Transition
                    ,str       :: B.ByteString
                    ,mid_trans :: MidTransition
                    ,token_id  :: (Maybe Tid)}
@@ -79,7 +81,7 @@ checkStart token = case Map.lookup start_state (edges token) of
 -- Removes all edges but the ones ending in an accepting state if no such edge
 -- exist it breaks the token up into smaller pieces
 checkEnd :: Token -> Seq Token
-checkEnd token = let e' = Map.filter snd (edges token)
+checkEnd token = let e' = Map.filter (not . P.null . snd) (edges token)
              in case Map.null e' of
   True -> case mid_trans token of
     [] -> singleton $ token {edges = Map.empty}
@@ -87,17 +89,14 @@ checkEnd token = let e' = Map.filter snd (edges token)
   False -> singleton $ token {edges = e'}
 
 -- Merges two tokens using the edges e
-mergeToken :: Edges State -> Token -> Token -> Token
-mergeToken e t1 t2 = let os = case Map.lookup start_state e of
-                           Just (os',True) -> Just os'
-                           _ -> Nothing
-                     in Token e (str t1 `mappend` str t2) [t1,t2] os
+mergeToken :: Transition -> Token -> Token -> Token
+mergeToken e t1 t2 = Token e (str t1 `mappend` str t2) [t1,t2] (getTokenId start_state e)
 
 instance Show Token where
   show (Token tab s mts id) = show s ++ ":" ++ if isJust id then show (fromJust id) else show id
 
 -- Returns Just Tid if that state is accepting
-getTokenId :: State -> Edges State -> Maybe Tid
+getTokenId :: State -> Transition -> Maybe Tid
 getTokenId s t = case Map.lookup s t of
-  Just (id,True) -> Just id
+  Just (id,a:as) -> Just id
   _ -> Nothing
