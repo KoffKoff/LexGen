@@ -30,21 +30,18 @@ So the lexer can detect syntactical errors in tokens, such as ill-formed
 floating-points literals, and report these errors to the user. 
 \cite{sebesta2012} Breaking the compilation before running the syntax analyser, 
 saving computing time. 
-
+\sectionbreak
 \section{Token Specification}
 This section will describe how to write rules for the tokens patterns. 
 \subsection{Languages}
 An alphabet is an finite set of symbols, such an alphabet is for example the 
 unicode, which includes approximately $100,000$ characters. A language is any 
 countable set of strings over some fixed alphabet. \cite{Aho2006}
-
-\#More text on languages!!!!
-
-Like any formal language, a regular language is a set of strings. In other 
-words a sequence of symbols,
-from a finite set of symbols. Only some formal languages are regular; in fact, 
-regular languages are exactly those that can be defined by regular expressions.
-\cite{Ranta2012}
+The term formal languages refers to languages which can be described by a body 
+of systematic rules. Like any formal language, a regular language is a set of 
+strings. In other words a sequence of symbols, from a finite set of symbols. 
+Only some formal languages are regular; in fact, regular languages are exactly 
+those that can be defined by regular expressions. \cite{Ranta2012}
 \subsection{Regular Expressions}
 Say that we want to express the set of valid C identifiers. Use of regular 
 expressions make it very easy, as shown in \cref{regexpEx}. 
@@ -174,6 +171,7 @@ of mathematical machines called finite automata. Finite automata can be
 designed to recognise members of a class of languages called regular languages, 
 mentioned above \#write about this shit in previus sections!!!! \#.
 \cite{sebesta2012} 
+\sectionbreak
 \subsection{Finite Automata}
 A finite automata are essentially graphs, like transitions diagrams, with some 
 differences:
@@ -207,14 +205,19 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 
 \end{definition}
 \subsubsection{Nondeterministic Finite Automata}
-An NFA accept input $x$ if and only if there is a path in the transition diagram from the start state to one of the accepting states. Such that the symbols along the way spells out $x$. \cite{Aho2006}
+An NFA accept input $x$ if and only if there is a path in the transition 
+diagram from the start state to one of the accepting states. Such that the 
+symbols along the way spells out $x$. \cite{Aho2006}
 
-There are different ways of representing an NFA, one is by transition diagrams another is by transitions table. This example shows how a regular expression can be converted in to a transition diagram.
+There are different ways of representing an NFA, one is by transition diagrams 
+another is by transitions table. This example shows how a regular expression 
+can be converted in to a transition diagram.
 \newpage
 \begin{example}[RegExp to Transition Diagram] \label{regexp2td}
 \cite{Aho2006}\\
 Given this regular expression: $(a | b)* abb$ \\
-the transition diagram representing this regular expression is shown the figure below.
+the transition diagram representing this regular expression is shown the figure 
+below.
 \begin{figure}[h!]
   \centering
   \begin{tikzpicture}[
@@ -241,12 +244,13 @@ the transition diagram representing this regular expression is shown the figure 
   \caption{Transition Diagram, accepting the pattern  $(a | b)* abb$}
   \end{figure}
 \end{example}
-
-The following example shows how the transition table would look like for the same regular expression.
+The following example shows how the transition table would look like for the 
+same regular expression.
 
 \begin{example}[RegExp to Transition Table] \label{regexp2tt}
 \cite{Aho2006}\\
-Given the regular expression from \cref{regexp2td} it can be converted into the following transition table: \\
+Given the regular expression from \cref{regexp2td} it can be converted into the 
+following transition table: \\
   \begin{figure}[h!]
   \centering
   \begin{tabular}{| c | c c c |}
@@ -261,10 +265,13 @@ Given the regular expression from \cref{regexp2td} it can be converted into the 
     \hline
   \end{tabular}
   \label{fig:transition table}
-  \caption{Transition Table representation of regular expression in \cref{regexp2td}}
+  \caption{Transition Table representation of regular expression in 
+\cref{regexp2td}}
   \end{figure}
 \end{example}
-Transition tables has the advantage that they have an quick lookup time. But instead it will take allot of data space, when the alphabet is large. Most states do not have any moves on most of the input symbols. \cite{Aho2006}
+Transition tables has the advantage that they have an quick lookup time. But 
+instead it will take allot of data space, when the alphabet is large. Most 
+states do not have any moves on most of the input symbols. \cite{Aho2006}
 \subsubsection{Deterministic Finite Automata}
 DFA is a special case of an NFA where,
 \begin{enumerate}
@@ -272,7 +279,11 @@ DFA is a special case of an NFA where,
   \item for each state $s$ and input symbol $a$, there is exactly one edge out
         of $s$ labelled with $a$.
 \end{enumerate}
-While NFA is an abstract representation of an algorithm to recognise the string of a language, the DFA is a simple concrete algorithm for recognising strings. Every regular expression can be converted in to a NFA and every NFA can be converted in to a DFA. \cite{Aho2006} It is the DFA that is implemented and used when building lexical analysers. 
+While NFA is an abstract representation of an algorithm to recognise the string 
+of a language, the DFA is a simple concrete algorithm for recognising strings. 
+Every regular expression can be converted in to a NFA and every NFA can be 
+converted in to a DFA. \cite{Aho2006} It is the DFA that is implemented and 
+used when building lexical analysers. 
 \begin{example}[DFA representation of RegExp] \label{regexp2dfa}
 \cite{Aho2006}\\
 A DFA representation of a regular expression shown in the following figure.
