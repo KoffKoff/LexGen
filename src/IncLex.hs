@@ -41,49 +41,57 @@ instance Monoid TOKANS where
   mempty = T mempty
   (T ts1) `mappend` (T ts2) = T $ combineTOKANS ts1 ts2
 
--- Tries to merge the tokens in the edges of the sequences
+-- Merges two sequences of tokens
 combineTOKANS :: Seq Token -> Seq Token -> Seq Token
 combineTOKANS toks1 toks2 = case (viewr toks1,viewl toks2) of
   (EmptyR,_) -> toks2
   (_,EmptyL) -> toks1
   (ts1 :> t1,t2 :< ts2) -> ts1 >< combineToken t1 t2 >< ts2
 
--- Combines token1 with as much of token2 as possible
+-- Tries to combine to tokens
 combineToken :: Token -> Token -> Seq Token
 combineToken t1 t2 = let e = tabulate (edges t1) (edges t2)
                    in case Map.null e of
                      False -> singleton $ mergeToken e t1 t2
-                     True  -> case mid_trans t2 of
-                                   [] -> fromList [t1,t2]
-                                   mt -> combineToken' t1 mt
+                     True  -> combineToken' t1 t2
 
-combineToken' :: Token -> MidTransition -> Seq Token
-combineToken' t1 ts2 = let t2 = head ts2
-                           t3 = head $ tail ts2
-                           e = tabulate (edges t1) (edges t2)
-                       in case Map.null e of
-                         True  -> case mid_trans t2 of
-                                    [] -> t1 <| combineTOKANS (checkStates t2) (singleton t3)
-                                    mt -> combineToken' t1 mt >< checkStates t3
-                         False -> case mid_trans t3 of
-                                    [] -> mergeToken e t1 t2 <| checkStates t3
-                                    mt -> combineToken' (mergeToken e t1 t2) mt
+-- Combines the first token with as much of the second as possible
+combineToken' :: Token -> Token -> Seq Token
+combineToken' t1 tt2 = case mid_trans tt2 of
+  [] -> checkEnd t1 |> tt2
+  [t2,t3] -> let e = tabulate (edges t1) (edges t2)
+             in case Map.null e of
+               True  -> case mid_trans t2 of
+                 [] -> checkEnd t1 >< combineTOKANS (checkStart t2) (singleton t3)
+                 mt -> combineToken' t1 t2 >< checkStart t3
+               False -> case mid_trans t3 of
+                 mt -> combineToken' (mergeToken e t1 t2) t3
 
 -- Removes all edges but the one starting in start_state if no such edge exist
 -- It breaks the token up into smaller pieces
-checkStates :: Token -> Seq Token
-checkStates token = case Map.lookup start_state (edges token) of
+checkStart :: Token -> Seq Token
+checkStart token = case Map.lookup start_state (edges token) of
   Nothing        -> case mid_trans token of 
     [] -> singleton $ token {edges = Map.empty}
-    [t1,t2] -> combineTOKANS (checkStates t1) (singleton t2)
+    [t1,t2] -> combineTOKANS (checkStart t1) (singleton t2)
   Just out_state -> singleton $ token {edges = Map.singleton start_state out_state}
+
+-- Removes all edges but the ones ending in an accepting state if no such edge
+-- exist it breaks the token up into smaller pieces
+checkEnd :: Token -> Seq Token
+checkEnd token = let e' = Map.filter snd (edges token)
+             in case Map.null e' of
+  True -> case mid_trans token of
+    [] -> singleton $ token {edges = Map.empty}
+    [t1,t2] -> combineTOKANS (singleton t1) (checkEnd t2)
+  False -> singleton $ token {edges = e'}
 
 -- Merges two tokens using the edges e
 mergeToken :: Edges State -> Token -> Token -> Token
 mergeToken e t1 t2 = let os = case Map.lookup start_state e of
                            Just (os',True) -> Just os'
                            _ -> Nothing
-                       in Token e (str t1 `mappend` str t2) [t1,t2] os
+                     in Token e (str t1 `mappend` str t2) [t1,t2] os
 
 instance Show Token where
   show (Token tab s mts id) = show s ++ ":" ++ if isJust id then show (fromJust id) else show id
