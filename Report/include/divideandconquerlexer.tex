@@ -11,162 +11,174 @@ When the code is divided the lexer doesn't know if the string (or character) it
 lexes is the first, last or is somewhere in the middle of a token. Instead of
 checking what type of token the string will be (if it were to begin from the
 starting state) it saves all the possible state transitions for that string.
+
+In the examples that follow below state 0 is considered the starting state and
+state $1-6$ are considered accepting.
 \begin{example}[Transition map for a token]\label{transMap}
-\mbox{}\\
+A hypothetical transition map for the char 'i'.
 \begin{center}$\begin{array}{cc}
-\multicolumn{2}{c}{Token 1}\\
+\multicolumn{2}{c}{'i'}\\
 in & out\\
-1 & 6\\
-2 & 2\\
-4 & 1\\
-\end{array}$
+0 & 1\\
+1 & 1\\
+8 & 7\\
+\end{array}$\\
 \end{center}
 \end{example}
-In the base case the lexer will map all the transitions for all individual
+In the base case the lexer owill map all the transitions for all individual
 characters in the code and construct partial tokens of them. The conquer step
 will then combine two of these at a time by checking which possible outgoing
 states from the first token can be matched with incoming states from the second
 token. If there are such pairs of outgoing states with incomming states, then a
 new partial token is created.
 \begin{example}[Combining two tokens]\label{combTok}
-\mbox{}\\
+'if' can be an ident (state 1) or part of 'else if' (state 5).
 \begin{center}$\begin{array}{cc}
-\multicolumn{2}{c}{Token 1}\\
+\multicolumn{2}{c}{'i'}\\
 in & out\\
-1 & 6\\
-2 & 2\\
-4 & 1\\
+\textcolor{brown}{0} & \textcolor{brown}{1}\\
+1 & 1\\
+\textcolor{blue}{8} & \textcolor{blue}{7}\\
 \end{array}
 `combineToken`
-\begin{array}{cc}\multicolumn{2}{c}{Token 2}\\
+\begin{array}{cc}\multicolumn{2}{c}{'f'}\\
 in & out\\
-1 & 3\\
-4 & 1\\
-6 & 3\\
+0 & 1\\
+\textcolor{brown}{1} & \textcolor{brown}{1}\\
+\textcolor{blue}{7} & \textcolor{blue}{5}\\
 \end{array}
 =
-\begin{array}{cc}\multicolumn{2}{c}{Out Token}\\
+\begin{array}{cc}\multicolumn{2}{c}{'if'}\\
 in & out\\
-1 & 3\\
-4 & 3\\
-\end{array}$
+\textcolor{brown}{0} & \textcolor{brown}{1}\\
+\textcolor{blue}{8} & \textcolor{blue}{5}\\
+\end{array}$\\
 \end{center}
 \end{example}
 If there are no pairs of outgoing states which match the incomming states the
 lexer will try to combine the first token with as much of the second token as
 possible. In this case there will be a remainder of the second token, The lexer
-can now be sure that the begining of the remainder is the begining of a token.
+can now be sure that the begining of the remainder is the begining of a token
+and that the merged part is the end of the token before.
 Since the lexer knows the remainder is the begining of a token it strips all
-transitions but the one that has incomming state as starting state.
+transitions but the one that has incomming state as starting state. Since the
+start token is the end of a Token it strips all but the transitions ending in an
+accepting state.
 \begin{example}[Combining a token a part of the second token]\label{combSplit}
-\mbox{}\\
+'ie' ends in the accepting state for ident (1) and '\_' starts in the
+starting state.
 \begin{center}
-$\begin{array}{cc}\multicolumn{2}{c}{Token 2}\\
+$\begin{array}{cc}\multicolumn{2}{c}{'e\_'}\\
 in & out\\
-1 & 3\\
-4 & 1\\
-6 & 3\\
+\textcolor{brown}{10} & \textcolor{brown}{8}\\
 \end{array}
 =
-\begin{array}{cc}\multicolumn{2}{c}{Start}\\
+\begin{array}{cc}\multicolumn{2}{c}{'e'}\\
 in & out\\
-1 & 5\\
-4 & 2\\
-6 & 3\\
+0 & 11\\
+\textcolor{blue}{1} & \textcolor{blue}{1}\\
+6 & 1\\
+\textcolor{brown}{10} & \textcolor{brown}{9}\\
 \end{array}
 `combineToken`
-\begin{array}{cc}\multicolumn{2}{c}{Remainder}\\
+\begin{array}{cc}\multicolumn{2}{c}{'\_'}\\
 in & out\\
-0 & 1\\
-2 & 1\\
-3 & 3\\
-5 & 3\\
+0 & 2\\
+2 & 2\\
+\textcolor{brown}{9} & \textcolor{brown}{8}\\
 \end{array}
 $\\
 $\begin{array}{cc}
-\multicolumn{2}{c}{Token 1}\\
+\multicolumn{2}{c}{'i'}\\
 in & out\\
-1 & 6\\
-2 & 2\\
-4 & 1\\
+\textcolor{blue}{0} & \textcolor{blue}{1}\\
+\textcolor{blue}{1} & \textcolor{blue}{1}\\
+8 & 7\\
 \end{array}
 `combineToken`
-\begin{array}{cc}\multicolumn{2}{c}{Token 2}\\
+\begin{array}{cc}\multicolumn{2}{c}{'e\_'}\\
 in & out\\
-1 & 3\\
-4 & 1\\
-6 & 3\\
+10 & 8\\
 \end{array}
 =
-\begin{array}{cc}\multicolumn{2}{c}{Out Token}\\
+\begin{array}{cc}\multicolumn{2}{c}{'ie'}\\
 in & out\\
-1 & 3\\
-4 & 5\\
+\textcolor{blue}{0} & \textcolor{blue}{1}\\
+\textcolor{blue}{1} & \textcolor{blue}{1}\\
 \end{array} ++ 
-\begin{array}{cc}\multicolumn{2}{c}{Out Remainder}\\
+\begin{array}{cc}\multicolumn{2}{c}{'\_'}\\
 in & out\\
-0 & 1\\
-\end{array}$
+0 & 2\\
+\end{array}$\\
 \end{center}
 \end{example}
 However the remainder may not have the start state as a possible incomming state.
 In this case the lexer tries to find the largest possible token (that has the
 starting state as incomming state) and tries to construct a token of the rest of
 the remainder, repeating this procedure until the entire remainder has been
-split into acceptable tokens. This case does occur quite frequently since most
-languages has comments and strings which can contain anything.
+split into acceptable tokens. All the tokens accept the one that is on the very
+end of the sequence will have all but their accepting states stripped. This case
+does occur quite frequently since most languages has comments and strings which
+can contain anything.
 \begin{example}[Handling the remainder]\label{remToken}
-\mbox{}\\
+'\_' starts in the starting states and ends in an accepting state and 'e' starts
+in the starting state, it doesn't have to end in an accepting state.
 \begin{center}
-$\begin{array}{cc}\multicolumn{2}{c}{Remainder}\\
+$\begin{array}{cc}\multicolumn{2}{c}{'\_i'}\\
 in & out\\
-2 & 1\\
-3 & 3\\
-5 & 3\\
+\textcolor{brown}{9} & \textcolor{brown}{7}\\
 \end{array}
 =
-\begin{array}{cc}\multicolumn{2}{c}{Token 1}\\
+\begin{array}{cc}\multicolumn{2}{c}{'\_'}\\
 in & out\\
-0 & 5\\
-2 & 1\\
-3 & 3\\
-5 & 3\\
-\end{array} `combineToken`
-\begin{array}{cc}\multicolumn{2}{c}{Token 2}\\
+0 & 2\\
+2 & 2\\
+\textcolor{brown}{9} & \textcolor{brown}{8}\\
+\end{array}
+`combineToken`
+\begin{array}{cc}
+\multicolumn{2}{c}{'i'}\\
 in & out\\
-0 & 4\\
-2 & 1\\
-3 & 3\\
-5 & 3\\
+0 & 1\\
+1 & 1\\
+\textcolor{brown}{8} & \textcolor{brown}{7}\\
 \end{array}$\\
-$checkRemainder \left(\begin{array}{cc}\multicolumn{2}{c}{Remainder}\\
+$checkRemainder \left(\begin{array}{cc}\multicolumn{2}{c}{'\_i'}\\
 in & out\\
-2 & 1\\
-3 & 3\\
-5 & 3\\
+9 & 7\\
 \end{array} \right)
 =
-\begin{array}{cc}\multicolumn{2}{c}{Token 1}\\
+\begin{array}{cc}\multicolumn{2}{c}{'\_'}\\
 in & out\\
-0 & 5\\
+0 & 2\\
 \end{array} ++
-\begin{array}{cc}\multicolumn{2}{c}{Token 1}\\
+\begin{array}{cc}\multicolumn{2}{c}{'i'}\\
 in & out\\
-0 & 4\\
-\end{array}
-$
+0 & 1\\
+\end{array}$\\
 \end{center}
 \end{example}
 When all partial tokens has been combined in this way the resulting sequence of
 tokens represents the the code the lexer was run on.
 
+\section{Lexical Errors}
+Since the lexer has to be able to handle any kind of possible not \"complete\"
+tokens, error handling can be done in different ways. One approach is to simply
+return as many tokens as possible from the code and where there might be lexical
+errors the lexer returns the error in as small parts as possible.
+\begin{example}[A lexer that only lexes letters] When the lexer encounters the
+string \"what @ day\" it would return:
+\begin{center}
+\begin{array}{ll}
+String & Type\\
+What & $Word$\\
+'\_' & $Space$\\
+'@' & $No\_Token$\\
+'\_' & $Space$\\
+day & $Word$\\
+\end{array}
+\end{center}
+% Make some sort of conclusion
 \section{FingerTree}
 \# We should here also talk about some datastructers that is needed for a
 incremental lexer to work.
-
-\section{Update Step}
-\#how dose ot work, what will it do for us?
-
-\subsection{How the state machine works when we use divide and conquer} % perhaps another title
-\#How do we determin where to divide two tokens, i.e. should we take the current
-  accepting state or keep looking for another one that might come?
