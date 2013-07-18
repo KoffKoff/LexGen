@@ -1,20 +1,172 @@
 \chapter{Divide-and-Conquer Lexer}
 An incremental lexer works by dividing the sequence, to be lexicaly analysed,
 into it's smallest part and analyse them and then combining them. In the base
-case the lexical analysis is done on a single character.
-\# Here we should talk about how a incremental lexer work. What specifc
-techniques it uses, how this can be usefull in the real world and so on!
+case the lexical analysis is done on a single character. The conquer step is
+then to combine the smaller tokens into as large tokens as possible. The end
+result should be a sequence of token that represent the code. How this is done
+will be described below. \#Some ref to divide and conquer?
+
+\section{Lexing in the middle attack} %better title
+When the code is divided the lexer doesn't know if the string (or character) it
+lexes is the first, last or is somewhere in the middle of a token. Instead of
+checking what type of token the string will be (if it were to begin from the
+starting state) it saves all the possible state transitions for that string.
+\begin{example}[Transition map for a token]\label{transMap}
+\mbox{}\\
+\begin{center}$\begin{array}{cc}
+\multicolumn{2}{c}{Token 1}\\
+in & out\\
+1 & 6\\
+2 & 2\\
+4 & 1\\
+\end{array}$
+\end{center}
+\end{example}
+In the base case the lexer will map all the transitions for all individual
+characters in the code and construct partial tokens of them. The conquer step
+will then combine two of these at a time by checking which possible outgoing
+states from the first token can be matched with incoming states from the second
+token. If there are such pairs of outgoing states with incomming states, then a
+new partial token is created.
+\begin{example}[Combining two tokens]\label{combTok}
+\mbox{}\\
+\begin{center}$\begin{array}{cc}
+\multicolumn{2}{c}{Token 1}\\
+in & out\\
+1 & 6\\
+2 & 2\\
+4 & 1\\
+\end{array}
+`combineToken`
+\begin{array}{cc}\multicolumn{2}{c}{Token 2}\\
+in & out\\
+1 & 3\\
+4 & 1\\
+6 & 3\\
+\end{array}
+=
+\begin{array}{cc}\multicolumn{2}{c}{Out Token}\\
+in & out\\
+1 & 3\\
+4 & 3\\
+\end{array}$
+\end{center}
+\end{example}
+If there are no pairs of outgoing states which match the incomming states the
+lexer will try to combine the first token with as much of the second token as
+possible. In this case there will be a remainder of the second token, The lexer
+can now be sure that the begining of the remainder is the begining of a token.
+Since the lexer knows the remainder is the begining of a token it strips all
+transitions but the one that has incomming state as starting state.
+\begin{example}[Combining a token a part of the second token]\label{combSplit}
+\mbox{}\\
+\begin{center}
+$\begin{array}{cc}\multicolumn{2}{c}{Token 2}\\
+in & out\\
+1 & 3\\
+4 & 1\\
+6 & 3\\
+\end{array}
+=
+\begin{array}{cc}\multicolumn{2}{c}{Start}\\
+in & out\\
+1 & 5\\
+4 & 2\\
+6 & 3\\
+\end{array}
+`combineToken`
+\begin{array}{cc}\multicolumn{2}{c}{Remainder}\\
+in & out\\
+0 & 1\\
+2 & 1\\
+3 & 3\\
+5 & 3\\
+\end{array}
+$\\
+$\begin{array}{cc}
+\multicolumn{2}{c}{Token 1}\\
+in & out\\
+1 & 6\\
+2 & 2\\
+4 & 1\\
+\end{array}
+`combineToken`
+\begin{array}{cc}\multicolumn{2}{c}{Token 2}\\
+in & out\\
+1 & 3\\
+4 & 1\\
+6 & 3\\
+\end{array}
+=
+\begin{array}{cc}\multicolumn{2}{c}{Out Token}\\
+in & out\\
+1 & 3\\
+4 & 5\\
+\end{array} ++ 
+\begin{array}{cc}\multicolumn{2}{c}{Out Remainder}\\
+in & out\\
+0 & 1\\
+\end{array}$
+\end{center}
+\end{example}
+However the remainder may not have the start state as a possible incomming state.
+In this case the lexer tries to find the largest possible token (that has the
+starting state as incomming state) and tries to construct a token of the rest of
+the remainder, repeating this procedure until the entire remainder has been
+split into acceptable tokens. This case does occur quite frequently since most
+languages has comments and strings which can contain anything.
+\begin{example}[Handling the remainder]\label{remToken}
+\mbox{}\\
+\begin{center}
+$\begin{array}{cc}\multicolumn{2}{c}{Remainder}\\
+in & out\\
+2 & 1\\
+3 & 3\\
+5 & 3\\
+\end{array}
+=
+\begin{array}{cc}\multicolumn{2}{c}{Token 1}\\
+in & out\\
+0 & 5\\
+2 & 1\\
+3 & 3\\
+5 & 3\\
+\end{array} `combineToken`
+\begin{array}{cc}\multicolumn{2}{c}{Token 2}\\
+in & out\\
+0 & 4\\
+2 & 1\\
+3 & 3\\
+5 & 3\\
+\end{array}$\\
+$checkRemainder \left(\begin{array}{cc}\multicolumn{2}{c}{Remainder}\\
+in & out\\
+2 & 1\\
+3 & 3\\
+5 & 3\\
+\end{array} \right)
+=
+\begin{array}{cc}\multicolumn{2}{c}{Token 1}\\
+in & out\\
+0 & 5\\
+\end{array} ++
+\begin{array}{cc}\multicolumn{2}{c}{Token 1}\\
+in & out\\
+0 & 4\\
+\end{array}
+$
+\end{center}
+\end{example}
+When all partial tokens has been combined in this way the resulting sequence of
+tokens represents the the code the lexer was run on.
 
 \section{FingerTree}
 \# We should here also talk about some datastructers that is needed for a
-incremental lexer to work. 
+incremental lexer to work.
 
-\section{Devide and Conquer}
-\#how dose ot work, how can we use it, what will it do for us?
+\section{Update Step}
+\#how dose ot work, what will it do for us?
 
 \subsection{How the state machine works when we use divide and conquer} % perhaps another title
 \#How do we determin where to divide two tokens, i.e. should we take the current
   accepting state or keep looking for another one that might come?
-
-%\section{Branch and Bound} % This is a method to find optimum, we aren't interested in that
-%\#Maybe something about this???

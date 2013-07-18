@@ -2,12 +2,13 @@
 
 Alex
 BNFC
-Incremental
 DFA
 FingerTree (Might not use this data structure)
+Incremental
 Lexer
 Monoid
 NFA
 Regular Expression (maybe not)
 Scanner
 Token
+Transition (Incomming state -> Outgoing State)

@@ -12,6 +12,7 @@ Main.hs
 -Instead of lexing it should generate a .hs file that lexes (UNASSIGNED)
 
 IncLex.hs:
+-Handle the case when two tokens can't be combined at all (UNASSIGNED)
 -Needs to ba able to handle special characters (UNASSIGNED)
 -Fix so that the lexer can lex single "else" or more general we need to be able
  to backtrack when we know a token can't be changed at a later stage (UNASSIGNED)
