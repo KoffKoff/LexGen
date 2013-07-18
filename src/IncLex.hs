@@ -86,7 +86,7 @@ mergeToken e t1 t2 = let os = case Map.lookup start_state e of
                        in Token e (str t1 `mappend` str t2) [t1,t2] os
 
 instance Show Token where
-  show (Token tab s mts id) = show s ++ ":" ++ show id
+  show (Token tab s mts id) = show s ++ ":" ++ if isJust id then show (fromJust id) else show id
 
 -- Returns Just Tid if that state is accepting
 getTokenId :: State -> Edges State -> Maybe Tid

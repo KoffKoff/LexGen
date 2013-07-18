@@ -8,8 +8,15 @@ General:
 -Implement good error messages (UNASSIGNED)
 -Generate a haskell file with the lexer in it (UNASSIGNED)
 
+Main.hs
+-Instead of lexing it should generate a .hs file that lexes (UNASSIGNED)
+
 IncLex.hs:
+-Needs to ba able to handle special characters (UNASSIGNED)
+-Fix so that the lexer can lex single "else" or more general we need to be able
+ to backtrack when we know a token can't be changed at a later stage (UNASSIGNED)
 -The case of the '"' needs to be fixed (UNASSIGNED)
+-Check for more bugs (UNASSIGNED)
 
 Alex:
 -Remove as much as possible (UNASSIGNED)
@@ -25,5 +32,6 @@ Chpater 2:
 -Write about NFA & DFA from Aho2006, page 147- 151. (UNASSIGNED)
 
 Chapter 3:
-Start by make a list of what would be written about. (UNASSIGNED)
-    (Just a list, possible it will be changed over 9000 times before final)
+-Write an introduction part (KoffKoff)
+-Start by make a list of what would be written about. (UNASSIGNED)
+-Formal proof that our combination yields the correct token. (UNASSIGNED)
