@@ -12,9 +12,11 @@ Main.hs
 -Instead of lexing it should generate a .hs file that lexes (UNASSIGNED)
 
 IncLex.hs:
+-Lexes wrong when the string starts without start state or ends without accepting state (HACK ATM)
+-Updates aren't handled correctly since states are stripped of transitions
 -Needs to ba able to handle special characters (UNASSIGNED)
--The case of the '"' needs to be fixed (UNASSIGNED)
 -Check for more bugs (UNASSIGNED)
+-Check for the case when two tokens are completly uncombinable (UNASSIGNED)
 
 Alex:
 -Remove as much as possible (UNASSIGNED)

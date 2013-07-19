@@ -54,7 +54,11 @@ build file = do
                     _           -> error "File must end with suffix '.x'"
     prg <- alexReadFile file
     let dfa' = dfaToDFA' . makeDFA $ parseScanner file prg
-    return dfa'
+    return $ dfa' {dfa'_states = insertNullState (dfa'_states dfa')}
+
+-- Hack to get the first character to only start in state 0
+insertNullState :: IntMap (Edges SNum Code) -> IntMap (Edges SNum Code)
+insertNullState = IM.insert 0 (M.singleton (-1) (0,[]))
 
 -- Gets the scanner from the code in the alex file
 parseScanner :: FilePath -> String -> Scanner
