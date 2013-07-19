@@ -6,6 +6,7 @@ DFA
 FingerTree (Might not use this data structure)
 Incremental
 Lexer
+Lexemes
 Monoid
 NFA
 Regular Expression (maybe not)
