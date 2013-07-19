@@ -30,12 +30,14 @@ So the lexer can detect syntactical errors in tokens, such as ill-formed
 floating-points literals, and report these errors to the user. 
 \cite{sebesta2012} Breaking the compilation before running the syntax analyser, 
 saving computing time. 
-\sectionbreak
 \section{Token Specification}
-This section will describe how to write rules for the tokens patterns. 
+A lexical analyser job is to translate a human readable string to a abstract 
+computer readable list of tokens. To define these abstract data-types in form of
+strings the lexer uses different techniques. This section will describe these
+techniques used when writing rules for the tokens patterns. 
 \subsection{Languages}
 An alphabet is an finite set of symbols, such an alphabet is for example the 
-unicode, which includes approximately $100,000$ characters. A language is any 
+Unicode, which includes approximately $100,000$ characters. A language is any 
 countable set of strings over some fixed alphabet. \cite{Aho2006}
 The term formal languages refers to languages which can be described by a body 
 of systematic rules. Like any formal language, a regular language is a set of 
@@ -45,16 +47,15 @@ those that can be defined by regular expressions. \cite{Ranta2012}
 \subsection{Regular Expressions}
 Say that we want to express the set of valid C identifiers. Use of regular 
 expressions make it very easy, as shown in \cref{regexpEx}. 
-\begin{example}[Valid C Idents]\label{regexpEx}
+\begin{example}[Valid C Idents]\label{regexpEx} \cite{Aho2006}\\
 Say we have a element $letter \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup 
 \{$\_$\}$
 and another element $digit \in \{0 \dots 9\}$
 Then with help of regular expressions the definition of all valid C identifiers 
-would look like this: $letter (letter | digit)*$. \cite{Aho2006}
+would look like this: $letter (letter | digit)*$. 
 \end{example}
 In \cref{regexp} is the formal definition for regular expressions.
 \begin{definition}[Regular Expressions]\label{regexp} \cite{Aho1990}
-\newline
 \begin{enumerate}
   \item The following characters are meta characters $\{ '|', '(', ')', '*' \}$.
   \item A none meta character $a$ is a regular expression that matches the 
@@ -102,13 +103,19 @@ definitions avoid recursive definitions.
 \cite{Aho2006}
 
 \section{Tokens, Patterns and Lexemes}
+When the rules are defined, the lexer needs structures of representing theses 
+rules and the result from lexing the code-string. This section will describe the 
+data-structures the lexical analyser works with for representing the abstract 
+data. What the lexer use them for and what is sent forward to the syntactical 
+analyser. 
+
 A lexical analyser uses three different terms. All which is described here 
 below. 
 \begin{description}
   \item[Token]
     is a pair consisting of a token name and an optional attribute value. The 
 token name is a abstract symbol corresponding to a lexical unit \cite{Aho2006}. 
-For example, a particular keyword, datatype or identifier.  The token names is 
+For example, a particular keyword, data-type or identifier.  The token names is 
 what is given to the parser. 
   \item[Pattern]
     is a description of what form a lexemes of a token may take. \cite{Aho2006} 
@@ -123,7 +130,7 @@ As mention before a token consist of token name and a optional attribute value.
 This attribute is used when one lexeme can match more then one pattern. \cite
 {Aho2006} For example the pattern for a digit token matches both $0$ and $1$, 
 but it is important for the code generator to know which lexeme was found. 
-Therefor the lexer often return not just the token but also an attribute value 
+Therefore the lexer often return not just the token but also an attribute value 
 that describes the lexeme found in the source program corresponding to this 
 token. \cite{Aho2006} A lexer collects chars into logical groups and assign 
 internal codes to these groups. according to there structure.\cite{sebesta2012} 
@@ -169,9 +176,8 @@ optional values, mentioned in previous section.\cite{Aho2006}
 Transition diagrams of the formed used in lexers are representations of a class 
 of mathematical machines called finite automata. Finite automata can be 
 designed to recognise members of a class of languages called regular languages, 
-mentioned above \#write about this shit in previus sections!!!! \#.
+mentioned above.
 \cite{sebesta2012} 
-\sectionbreak
 \subsection{Finite Automata}
 A finite automata are essentially graphs, like transitions diagrams, with some 
 differences:
@@ -180,7 +186,7 @@ differences:
 each possible input string.
   \item Finite automata comes in to different forms:
     \begin{description}
-      \item [Nondeterministic Finite Automata (NFA)] which have no restriction 
+      \item [Non-deterministic Finite Automata (NFA)] which have no restriction 
 of the edges, several edges can be labelled by the same symbol out from the 
 same state. $\epsilon$, the empty string, is a possible label. 
       \item [Deterministic Finite Automata (DFA)] for each state and for each 
@@ -204,20 +210,24 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 \end{enumerate}
 
 \end{definition}
-\subsubsection{Nondeterministic Finite Automata}
+\subsubsection{Non-deterministic Finite Automata}
 An NFA accept input $x$ if and only if there is a path in the transition 
 diagram from the start state to one of the accepting states. Such that the 
 symbols along the way spells out $x$. \cite{Aho2006}
 
-There are different ways of representing an NFA, one is by transition diagrams 
-another is by transitions table. This example shows how a regular expression 
-can be converted in to a transition diagram.
-\newpage
+There are two different ways of representing an NFA which this report will
+describe. One is by transition diagrams, where the regular expression will be
+represented by a graph structure. Another is by transitions table, where the 
+regular expression will be converted in to a table of states and the 
+transitions for these states given the input. The following examples shows how 
+the transition diagram and transition table representation will look like for a 
+given regular expression.
+
 \begin{example}[RegExp to Transition Diagram] \label{regexp2td}
 \cite{Aho2006}\\
 Given this regular expression: $(a | b)* abb$ \\
-the transition diagram representing this regular expression is shown the figure 
-below.
+the transition diagram in \cref{fig:td} representing this regular expression.
+\end{example}
 \begin{figure}[h!]
   \centering
   \begin{tikzpicture}[
@@ -240,18 +250,15 @@ below.
     \newTransition{1}{2}{b}{}
     \newTransition{2}{3}{b}{}
   \end{tikzpicture}
-  \label{fig:transition diagram}
-  \caption{Transition Diagram, accepting the pattern  $(a | b)* abb$}
+  \caption{Transition Diagram, accepting the pattern  $(a | b)* abb$ 
+  \label{fig:td}}
   \end{figure}
-\end{example}
-The following example shows how the transition table would look like for the 
-same regular expression.
 
 \begin{example}[RegExp to Transition Table] \label{regexp2tt}
 \cite{Aho2006}\\
-Given the regular expression from \cref{regexp2td} it can be converted into the 
-following transition table: \\
-  \begin{figure}[h!]
+Given the regular expression from \cref{regexp2td} it can be converted into transition table shown in \cref{fig:tt}
+\end{example}
+\begin{figure}[h!]
   \centering
   \begin{tabular}{| c | c c c |}
     \hline
@@ -264,11 +271,9 @@ following transition table: \\
     3 & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
     \hline
   \end{tabular}
-  \label{fig:transition table}
   \caption{Transition Table representation of regular expression in 
-\cref{regexp2td}}
-  \end{figure}
-\end{example}
+        \cref{regexp2td} \label{fig:tt}}
+\end{figure}
 Transition tables has the advantage that they have an quick lookup time. But 
 instead it will take allot of data space, when the alphabet is large. Most 
 states do not have any moves on most of the input symbols. \cite{Aho2006}
@@ -286,7 +291,8 @@ converted in to a DFA. \cite{Aho2006} It is the DFA that is implemented and
 used when building lexical analysers. 
 \begin{example}[DFA representation of RegExp] \label{regexp2dfa}
 \cite{Aho2006}\\
-A DFA representation of a regular expression shown in the following figure.
+A DFA representation of a regular expression from \cref{regexp2td} is shown in \cref{fig:dfa}
+\end{example}
 \begin{figure}[!h]
   \centering
   \begin{tikzpicture}[
@@ -312,9 +318,8 @@ A DFA representation of a regular expression shown in the following figure.
     \newTransition{3}{2}{a}{bend left}
     \newTransition{3}{0}{b}{bend right}
   \end{tikzpicture}
-  \label{fig:dfa}
-  \caption{DFA, accepting regular expression in \cref{regexp2td}}
+  \caption{DFA, accepting regular expression in \cref{regexp2td}
+  \label{fig:dfa}}
 \end{figure}
-\end{example}
 
  
