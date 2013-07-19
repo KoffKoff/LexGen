@@ -28,10 +28,12 @@ type MidTransition = [Token]
 type OutState = (State,[Accept Code])
 type State = Int
 type Transition = Edges State Code
-data Token = Token {edges     :: Transition
-                   ,str       :: B.ByteString
-                   ,mid_trans :: MidTransition
-                   ,token_id  :: (Maybe Tid)}
+data Token = Token {edges      :: Transition
+                   ,str        :: B.ByteString
+                   ,mid_trans  :: MidTransition
+                   ,start_done :: Bool
+                   ,end_done   :: Bool
+                   ,token_id   :: (Maybe Tid)}
 type Tid = Int
 
 data TOKANS = T (Seq Token )
@@ -48,55 +50,69 @@ combineTOKANS :: Seq Token -> Seq Token -> Seq Token
 combineTOKANS toks1 toks2 = case (viewr toks1,viewl toks2) of
   (EmptyR,_) -> toks2
   (_,EmptyL) -> toks1
-  (ts1 :> t1,t2 :< ts2) -> ts1 >< combineToken t1 t2 >< ts2
+  (ts1 :> t1,t2 :< ts2) -> ts1 >< combineToken (t1) (t2) >< ts2
 
--- Tries to combine to tokens
+-- Tries to combine two tokens
 combineToken :: Token -> Token -> Seq Token
 combineToken t1 t2 = let e = tabulate (edges t1) (edges t2)
-                   in case Map.null e of
-                     False -> singleton $ mergeToken e t1 t2
+                         e' = getTransition (start_done t1) (end_done t2) e
+                   in case Map.null e' of
+                     False -> singleton $ mergeToken t1 t2
                      True  -> combineToken' t1 t2
 
 -- Combines the first token with as much of the second as possible
 combineToken' :: Token -> Token -> Seq Token
 combineToken' t1 tt2 = case mid_trans tt2 of
-  [] -> checkEnd t1 |> tt2
+  [] -> t1 {end_done = True} <| singleton tt2
   [t2,t3] -> let e = tabulate (edges t1) (edges t2)
-             in case Map.null e of
+                 e' = getTransition (start_done t1) (end_done t2) e
+             in case Map.null e' of
                True  -> case mid_trans t2 of
-                 [] -> checkEnd t1 >< combineTOKANS (checkStart t2) (singleton t3)
-                 mt -> combineToken' t1 t2 >< checkStart t3
+                 [] -> t1 {end_done = True} <| combineToken (t2 {start_done = True}) t3
+                 mt -> combineToken' t1 t2 >< singleton (t3 {start_done = True})
                False -> case mid_trans t3 of
-                 mt -> combineToken' (mergeToken e t1 t2) t3
-
+                 mt -> combineToken' (mergeToken t1 t2) t3
+{-
 -- Removes all edges but the one starting in start_state if no such edge exist
 -- It breaks the token up into smaller pieces
 checkStart :: Token -> Seq Token
 checkStart token = case Map.lookup start_state (edges token) of
   Nothing        -> case mid_trans token of 
-    [] -> singleton $ token {edges = Map.empty}
+    [] -> singleton $ token --{start_done = True}
     [t1,t2] -> combineTOKANS (checkStart t1) (singleton t2)
-  Just out_state -> singleton $ token {edges = Map.singleton start_state out_state}
+  Just out_state -> singleton $ token --{start_done = True}
 
 -- Removes all edges but the ones ending in an accepting state if no such edge
 -- exist it breaks the token up into smaller pieces
 checkEnd :: Token -> Seq Token
 checkEnd token = let e' = Map.filter (not . P.null . snd) (edges token)
-             in case Map.null e' of
+                 in case Map.null e' of
   True -> case mid_trans token of
-    [] -> singleton $ token {edges = Map.empty}
+    [] -> singleton $ token --{end_done = True}
     [t1,t2] -> combineTOKANS (singleton t1) (checkEnd t2)
-  False -> singleton $ token {edges = e'}
-
+  False -> singleton $ token --{end_done = True}
+-}
 -- Merges two tokens using the edges e
-mergeToken :: Transition -> Token -> Token -> Token
-mergeToken e t1 t2 = Token e (str t1 `mappend` str t2) [t1,t2] (getTokenId start_state e)
+mergeToken :: Token -> Token -> Token
+mergeToken t1 t2 = Token e (str t1 `mappend` str t2) [t1 {end_done = False},t2 {start_done = False}] (start_done t1)
+                     (end_done t2) (getTokenId start_state e)
+  where e = tabulate (edges t1) (edges t2)
 
 instance Show Token where
-  show (Token tab s mts id) = show s ++ ":" ++ if isJust id then show (fromJust id) else show id
+  show (Token tab s mts _ _ id) = show s ++ ":" ++ if isJust id then show (fromJust id) else show id
 
 -- Returns Just Tid if that state is accepting
 getTokenId :: State -> Transition -> Maybe Tid
 getTokenId s t = case Map.lookup s t of
   Just (id,a:as) -> Just id
   _ -> Nothing
+
+getTransition :: Bool -> Bool -> Transition -> Transition
+getTransition True True t = case Map.lookup start_state t of
+  Just (os,a:as) -> Map.singleton start_state (os,a:as)
+  _ -> Map.empty
+getTransition True _    t = case Map.lookup start_state t of
+  Just osa -> Map.singleton start_state osa
+  _ -> Map.empty
+getTransition _    True t = Map.filter (\(_,as) -> P.null as) t
+getTransition _    _    t = t
