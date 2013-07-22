@@ -20,7 +20,7 @@ type TokenTree = FingerTree TOKANS (Byte,DFA' SNum Code)
 --Only supports the first 256 characters of UTF-8 atm.
 instance Measured TOKANS (Byte,DFA' SNum Code) where
   measure (c,dfa) = let t = (dfa'_states dfa) IM.! (fromEnum c)
-                    in T $ S.singleton (Token t (B.singleton c) [] False False
+                    in T $ S.singleton (Token t (B.singleton c) []
                                         (getTokenId (head $dfa'_start_states dfa) t))
 
 main :: IO ()
@@ -33,13 +33,14 @@ lexFileTest :: FilePath -> FilePath -> IO (TokenTree,DFA' SNum Code)
 lexFileTest alex_file code_file = do
   dfa <- build alex_file
   prg <- readCode code_file
-  return (fromList $ zip (0:prg) (repeat dfa),dfa)
+  return (fromList $ zip prg (repeat dfa),dfa)
 
 lexFile :: FilePath -> FilePath -> IO TokenTree
 lexFile alex_file code_file = do
   dfa <- build alex_file
   prg <- readCode code_file
-  return . fromList $ zip (0:prg) (repeat dfa)
+  let code = fromList $ zip prg (repeat dfa)
+  return code
 
 readCode :: FilePath -> IO [Byte]
 readCode code_file = do h <- openFile code_file ReadMode
@@ -49,7 +50,7 @@ readCode code_file = do h <- openFile code_file ReadMode
 
 -- Functions for some debugging
 insertStart :: Byte -> TokenTree -> TokenTree
-insertStart b str = (h,dfa) <| (b,dfa) <| str'
+insertStart b str = (b,dfa) <| (h,dfa) <| str'
   where ((h,dfa) :< str') = viewl str
 
 insertEnd :: TokenTree -> Byte -> TokenTree
