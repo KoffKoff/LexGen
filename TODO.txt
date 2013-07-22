@@ -27,7 +27,6 @@ BuildDFA.hs
 --REPORT STUFF--
 Chpater 2:
 -Find more ref. and fill out the text (UNASSIGNED)
--Write about NFA & DFA from Aho2006, page 147- 151. (UNASSIGNED)
 
 Chapter 3:
 -Write an introduction part (KoffKoff)
