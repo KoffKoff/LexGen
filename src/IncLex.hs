@@ -1,16 +1,11 @@
 {-# LANGUAGE TypeSynonymInstances,FlexibleInstances,MultiParamTypeClasses #-}
 module IncLex where
 
-import Prelude as P
 import Data.Maybe
-import qualified Data.Foldable as F
-import qualified Data.ByteString as B
-import Data.ByteString.UTF8 (toString)
 import Data.Monoid
 import Data.Map (Map)
 import qualified Data.Map as Map hiding (Map)
 import Alex.AbsSyn hiding (State)
-
 import Data.Sequence as S
 
 -- combines state maps into one state map
@@ -29,9 +24,9 @@ type OutState = (State,[Accept Code])
 type State = Int
 type Transition = Edges State Code
 data Token = Token {edges      :: Transition
-                   ,str        :: B.ByteString
+                   ,str        :: String
                    ,mid_trans  :: MidTransition
-                   ,token_id   :: (Maybe Tid)}
+                   ,token_id   :: Maybe Tid}
 type Tid = Int
 
 data TOKANS = T (Seq Token )
@@ -45,7 +40,7 @@ instance Monoid TOKANS where
 
 -- Merges two sequences of tokens
 combineTOKANS :: Seq Token -> Seq Token -> Seq Token
-combineTOKANS toks1 toks2 = case (viewr toks1) of
+combineTOKANS toks1 toks2 = case viewr toks1 of
   (EmptyR) -> toks2
   (ts1 :> t1) -> ts1 >< ts2'
     where ts2' = combineToken t1 toks2

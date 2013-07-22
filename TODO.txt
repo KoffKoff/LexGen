@@ -2,18 +2,18 @@ THIS WE NEED TO DO!!!!!
 
 --LEXER STUFF--
 General:
--Datastructure for DFA (KoffKoff, changed, might not be best atm)
 -DFA needs to know accepting states. (Done, Maybe implement the whole accept structure later)
 -Start building a wrapper (KoffKoff, Simple one is done)
 -Implement good error messages (UNASSIGNED)
--Generate a haskell file with the lexer in it (UNASSIGNED)
+
+HsBuilder.hs:
+-Datastructure for DFA (KoffKoff, changed, might not be best atm)
+-Better conversion from DFA then currently implemented (UNASSIGNED)
 
 Main.hs
--Instead of lexing it should generate a .hs file that lexes (UNASSIGNED)
+-Needed for anything but bug testing?
 
 IncLex.hs:
--Lexes wrong when the string starts without start state or ends without accepting state (HACK ATM)
--Updates aren't handled correctly since states are stripped of transitions
 -Needs to ba able to handle special characters (UNASSIGNED)
 -Check for more bugs (UNASSIGNED)
 -Check for the case when two tokens are completly uncombinable (UNASSIGNED)
@@ -29,7 +29,6 @@ BuildDFA.hs
 --REPORT STUFF--
 Chpater 2:
 -Find more ref. and fill out the text (UNASSIGNED)
--Write about NFA & DFA from Aho2006, page 147- 151. (UNASSIGNED)
 
 Chapter 3:
 -Write an introduction part (KoffKoff)

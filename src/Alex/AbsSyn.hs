@@ -114,8 +114,8 @@ data Accept a
     deriving (Eq,Ord)
 
 -- debug stuff
-instance Show (Accept a) where
-  show (Acc p _act _lctx _rctx) = show p ++ "," ++ show _lctx ++ "," ++ show _rctx
+instance Show a => Show (Accept a) where
+  show (Acc p act lctx rctx) = "Acc " ++ show p ++ " (" ++ show act ++ ") " ++ show lctx ++ " " ++ show rctx
 
 type StartCode = Int
 
@@ -126,7 +126,7 @@ data DFA' s a = DFA'
   { dfa'_start_states :: [s]
   , dfa'_states       :: IntMap (Edges s a) }
 
-instance Show s => Show (DFA' s a) where
+instance (Show s, Show a) => Show (DFA' s a) where
   show (DFA' ss dfas) = "Initial States: " ++ show ss ++ "\nState map:\n" ++ show dfas
 
 type Edges s a = Map s (s,[Accept a]){-
