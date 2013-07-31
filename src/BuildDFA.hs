@@ -53,7 +53,8 @@ build file = do
                     'x':'.':r   -> return (reverse r)
                     _           -> error "File must end with suffix '.x'"
     prg <- alexReadFile file
-    let dfa' = dfaToDFA' . makeDFA $ parseScanner file prg
+    let dfa = makeDFA $ parseScanner file prg
+        dfa' = dfaToDFA' dfa
     return dfa'
 
 -- Gets the scanner from the code in the alex file
@@ -104,10 +105,10 @@ dfaToDFA' (DFA scs states) = DFA' scs states'
         convert pStates is (State _ cToOs) = IM.foldlWithKey (insertStuff is) pStates cToOs
         insertStuff is pStates byte os = IM.insertWith mappend byte (creatEdge is os) pStates
         accepting = M.map state_acc states
-        creatEdge is os = M.singleton is (os,accepting M.! os)
-          {-case M.lookup os accepting of
-          Nothing -> M.singleton is (os,False)
-          _       -> M.singleton is (os,True)-}
+        creatEdge is os = M.singleton is (os,getAcc os)
+        getAcc os = case M.lookup os accepting of
+          Nothing -> []
+          Just as -> as
 
 checkAccepting :: State s a -> Bool
 checkAccepting (State [] _) = False

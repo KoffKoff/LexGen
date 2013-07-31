@@ -26,7 +26,7 @@ type Transition = Edges State Code
 data Token = Token {transitions :: Transition
                    ,lexeme      :: String
                    ,sub_tokens  :: MidTransition
-                   ,token_id    :: Maybe Tid}
+                   ,token_id    :: Maybe (Tid,[Accept Code])}
 type Tid = Int
 
 data TOKANS = T (Seq Token )
@@ -79,12 +79,12 @@ mergeToken tok1 tok2 =
   in Token e (lexeme tok1 `mappend` lexeme tok2) [tok1,tok2] (getTokenId start_state e)
 
 instance Show Token where
-  show (Token tab s mts id) = show s ++ ":" ++ if isJust id then show (fromJust id) else show id
+  show (Token tab s mts id) = (if isJust id then show (snd (fromJust id)) else show id) ++ ": " ++ show s
 
 -- Returns Just Tid if that state is accepting
-getTokenId :: State -> Transition -> Maybe Tid
+getTokenId :: State -> Transition -> Maybe (Tid,[Accept Code])
 getTokenId s t = case Map.lookup s t of
-  Just (id,a:as) -> Just id
+  Just (id,a:as) -> Just (id,a:as)
   _ -> Nothing
 
 getTransition :: Transition -> Transition
