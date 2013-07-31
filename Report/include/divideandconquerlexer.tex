@@ -1,6 +1,6 @@
 \chapter{Divide-and-Conquer Lexer}
 An incremental lexer works by dividing the sequence, to be lexicaly analysed,
-into it's smallest part and analyse them and then combining them. In the base
+into it's smallest part and analyse them; and then combining them. In the base
 case the lexical analysis is done on a single character. The conquer step is
 then to combine the smaller tokens into as large tokens as possible. The end
 result should be a sequence of token that represent the code. How this is done
@@ -25,7 +25,7 @@ in & out\\
 \end{array}$\\
 \end{center}
 \end{example}
-In the base case the lexer owill map all the transitions for all individual
+In the base case the lexer will map all the transitions for all individual
 characters in the code and construct partial tokens of them. The conquer step
 will then combine two of these at a time by checking which possible outgoing
 states from the first token can be matched with incoming states from the second
@@ -112,6 +112,7 @@ in & out\\
 \end{array}$\\
 \end{center}
 \end{example}
+\# Perhaps remove this part\\
 However the remainder may not have the start state as a possible incomming state.
 In this case the lexer tries to find the largest possible token (that has the
 starting state as incomming state) and tries to construct a token of the rest of
@@ -160,6 +161,49 @@ in & out\\
 \end{example}
 When all partial tokens has been combined in this way the resulting sequence of
 tokens represents the the code the lexer was run on.
+
+\subsection{Pitfalls}
+The above rules will work for very simple languages. When comments are
+introduced you will get the problem that the whole code can be one long partial
+comment token. To remedy this you can add two rules:
+\begin{itemize}
+\item Every time you combine two tokens you only do so if the combination has a
+transition from the starting state.
+\item If two tokens can be combined completly, check if the next token can be
+combined aswell.
+\end{itemize}
+This ensures that every token starts in the starting state and that each token
+is as long as it can be.
+
+This also has some problems though. When keywords like ``else if'' are
+introduced the lexer will start to lex like in \cref{elseif}. To solve this the
+lexer checks when two tokens are completely uncombinable if the first of these
+have an accepting state as outgoing state. If the token don't have an accepting
+out state, the lexer tries to break up the token until it does. The exception to
+this rule is single characters which are permitted to not have no accepting out
+states.
+\begin{example}[else if lexing]\label{elseif}
+Somewhere in the middle of the code ``... 1 else 0 ...''
+\begin{center}
+\begin{tabular}{ll}
+String & Type\\
+1 & $Number$\\
+\_ & $Space$\\
+else\_ & $Nothing$\\
+0 & $Number$\\
+\end{tabular}
+\end{center}
+\end{example}
+\subsection{The rules}
+To sum up the rules that lexer needs to follow are the following:
+\begin{itemize}
+\item If two tokens can be combined, combine the result with the next token.
+\item All tokens must start in the starting state (exception are single
+character tokens).
+\item If two tokens can't be completly combined, combine the first token with as
+much as possible of the second token and check that the combination ends in an
+accepting state.
+\end{itemize}
 
 \section{Lexical Errors}
 Since the lexer has to be able to handle any kind of possible not \"complete\"
