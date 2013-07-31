@@ -94,7 +94,8 @@ replace ls repl strs | ls == take (length ls) strs = repl ++ replace ls repl
                      | otherwise = head strs : (replace ls repl $ tail strs)
 
 combinatorFuns :: String
-combinatorFuns = start ++ combineTokens ++ tokenAppender ++ divideAppender ++ mergeToken
+combinatorFuns = start ++ combineTokens ++ tokenAppender ++ divideAppender ++
+                 splitToken ++ mergeToken
   where start = createBlockComment "The Combinators for the tokens"
         combineTokens =
           newFun "combineTokens" [("toks1","Seq Token"),("toks2","Seq Token")] "Seq Token" ++
@@ -113,18 +114,23 @@ combinatorFuns = start ++ combineTokens ++ tokenAppender ++ divideAppender ++ me
         divideAppender =
           newFun "divideAppender" [("tok1","Token"),("tok2","Token")] "Seq Token" ++
           "case sub_tokens tok2 of\n" ++
-          "  []                -> case token_id tok1 of\n" ++
-          "    Just _  -> fromList [tok1,tok2]\n" ++
-          "    Nothing -> case sub_tokens tok1 of\n" ++
-          "      [] -> fromList [tok1,tok2]\n" ++
-          "      [subtok1,subtok2] -> divideAppender subtok1 subtok2 |> tok2\n" ++
+          "  [] -> splitToken tok1 tok2\n" ++
           "  [subtok1,subtok2] ->\n" ++
           "    let e = startTransition $ tabulate (transitions tok1) (transitions subtok1)\n" ++
           "    in if Map.null e\n" ++
           "       then case sub_tokens subtok1 of\n" ++
-          "         [] -> fromList [tok1,tok2]\n" ++
+          "         [] -> splitToken tok1 tok2\n" ++
           "         mt -> combineTokens (divideAppender tok1 subtok1) (singleton subtok2)\n" ++
           "       else divideAppender (mergeToken tok1 subtok1) subtok2\n"
+        splitToken =
+          newFun "splitToken" [("tok1","Token"),("tok2","Token")] "Seq Token" ++
+          "case token_id tok1 of\n" ++
+          "  Just _  -> fromList [tok1,tok2]\n" ++
+          "  Nothing -> case sub_tokens tok1 of\n" ++
+          "    [] -> fromList [tok1,tok2]\n" ++
+          "    [subtok1,subtok2] ->\n" ++
+          "      let subsubtok2 :< toks2 = viewl $ tokenAppender subtok2 (singleton tok2)\n" ++
+          "      in splitToken subtok1 subsubtok2 >< toks2\n"
         mergeToken =
           newFun "mergeToken" [("tok1","Token"),("tok2","Token")] "Token" ++ "\n" ++
           "  let e = tabulate (transitions tok1) (transitions tok2)\n" ++

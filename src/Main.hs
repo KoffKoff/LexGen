@@ -62,5 +62,5 @@ headF f = fst h
   where h :< _ = viewl f
 
 lastTransition :: TOKANS -> Transition
-lastTransition (T tree) = edges t
+lastTransition (T tree) = transitions t
   where _ S.:> t = S.viewr tree

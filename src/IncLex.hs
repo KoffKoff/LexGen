@@ -23,10 +23,10 @@ type MidTransition = [Token]
 type OutState = (State,[Accept Code])
 type State = Int
 type Transition = Edges State Code
-data Token = Token {edges      :: Transition
-                   ,str        :: String
-                   ,mid_trans  :: MidTransition
-                   ,token_id   :: Maybe Tid}
+data Token = Token {transitions :: Transition
+                   ,lexeme      :: String
+                   ,sub_tokens  :: MidTransition
+                   ,token_id    :: Maybe Tid}
 type Tid = Int
 
 data TOKANS = T (Seq Token )
@@ -36,47 +36,47 @@ instance Show TOKANS where
 
 instance Monoid TOKANS where
   mempty = T mempty
-  (T ts1) `mappend` (T ts2) = T $ combineTOKANS ts1 ts2
+  (T ts1) `mappend` (T ts2) = T $ combineTokens ts1 ts2
 
 -- Merges two sequences of tokens
-combineTOKANS :: Seq Token -> Seq Token -> Seq Token
-combineTOKANS toks1 toks2 = case viewr toks1 of
-  (EmptyR) -> toks2
-  (ts1 :> t1) -> ts1 >< ts2'
-    where ts2' = combineToken t1 toks2
+combineTokens :: Seq Token -> Seq Token -> Seq Token
+combineTokens toks1 toks2 = case viewr toks1 of
+  EmptyR         -> toks2
+  toks1' :> tok1 -> let toks2' = tokenAppender tok1 toks2
+                    in toks1' >< toks2'
 
--- Tries to combine two tokens, if it does, it calls itself with the new token
--- and the rest of the sequence
-combineToken :: Token -> Seq Token -> Seq Token
-combineToken t1 ts2 | S.null ts2 = singleton t1
-                    | otherwise =
-                      let t2 :< ts2' = viewl ts2
-                          e = getTransition $ tabulate (edges t1) (edges t2)
-                      in case Map.null e of
-                        False -> combineToken (mergeToken t1 t2) ts2'
-                        True  -> combineToken' t1 t2 >< ts2'
+tokenAppender :: Token -> Seq Token -> Seq Token
+tokenAppender tok1 toks2 = case viewl toks2 of
+  EmptyL         -> singleton tok1
+  tok2 :< toks2' -> let e = getTransition $ tabulate (transitions tok1) (transitions tok2)
+                    in if Map.null e
+                       then divideAppender tok1 tok2 >< toks2'
+                       else tokenAppender (mergeToken tok1 tok2) toks2'
 
--- Combines the first token with as much of the second as possible
-combineToken' :: Token -> Token -> Seq Token
-combineToken' t1 tt2 = case mid_trans tt2 of
-  [] -> case token_id t1 of
-    Just _  -> fromList [t1,tt2]
-    Nothing -> case mid_trans t1 of
-      [] -> fromList [t1,tt2]
-      [t11,t12] -> combineToken' t11 t12 |> tt2
-  [t2,t3] -> let e = getTransition $ tabulate (edges t1) (edges t2)
-             in case Map.null e of
-               True  -> case mid_trans t2 of
-                 [] -> t1 <| singleton tt2 --combineToken t2 (singleton t3)
-                 mt -> combineTOKANS (combineToken' t1 t2) (singleton t3)
-               False -> case mid_trans t3 of
-                 mt -> combineToken' (mergeToken t1 t2) t3
+divideAppender :: Token -> Token -> Seq Token
+divideAppender tok1 tok2 = case sub_tokens tok2 of
+  [] -> splitToken tok1 tok2
+  [subtok1,subtok2] ->
+    let e = getTransition $ tabulate (transitions tok1) (transitions subtok1)
+    in if Map.null e
+       then case sub_tokens subtok1 of
+         [] -> splitToken tok1 tok2
+         mt -> combineTokens (divideAppender tok1 subtok1) (singleton subtok2)
+       else divideAppender (mergeToken tok1 subtok1) subtok2
 
--- Merges two tokens
+splitToken :: Token -> Token -> Seq Token
+splitToken tok1 tok2 = case token_id tok1 of
+  Just _  -> fromList [tok1,tok2]
+  Nothing -> case sub_tokens tok1 of
+    [] -> fromList [tok1,tok2]
+    [subtok1,subtok2] ->
+      let subsubtok2 :< toks2 = viewl $ tokenAppender subtok2 (singleton tok2)
+      in splitToken subtok1 subsubtok2 >< toks2
+
 mergeToken :: Token -> Token -> Token
-mergeToken t1 t2 = Token e (str t1 `mappend` str t2) [t1,t2]
-                         (getTokenId start_state e)
-  where e = tabulate (edges t1) (edges t2)
+mergeToken tok1 tok2 = 
+  let e = tabulate (transitions tok1) (transitions tok2)
+  in Token e (lexeme tok1 `mappend` lexeme tok2) [tok1,tok2] (getTokenId start_state e)
 
 instance Show Token where
   show (Token tab s mts id) = show s ++ ":" ++ if isJust id then show (fromJust id) else show id
