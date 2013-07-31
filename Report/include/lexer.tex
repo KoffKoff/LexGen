@@ -291,7 +291,7 @@ converted in to a DFA. \cite{Aho2006} It is the DFA that is implemented and
 used when building lexical analysers. 
 \begin{example}[DFA representation of RegExp] \label{regexp2dfa}
 \cite{Aho2006}\\
-A DFA representation of a regular expression from \cref{regexp2td} is shown in \cref{fig:dfa}
+A DFA representation of same regular expression from \cref{regexp2td} is shown in \cref{fig:dfa}
 \end{example}
 \begin{figure}[!h]
   \centering
@@ -314,11 +314,11 @@ A DFA representation of a regular expression from \cref{regexp2td} is shown in \
     \newTransition{1}{1}{a}{loop below}
     \newTransition{1}{2}{b}{}
     \newTransition{2}{3}{b}{}
-    \newTransition{2}{1}{a}{bend left}
-    \newTransition{3}{2}{a}{bend left}
-    \newTransition{3}{0}{b}{bend right}
+    \newTransition{2}{1}{a}{bend left=45}
+    \newTransition{3}{1}{a}{bend left=60}
+    \newTransition{3}{0}{b}{bend right=45}
   \end{tikzpicture}
-  \caption{DFA, accepting regular expression in \cref{regexp2td}
+  \caption{DFA, accepting the regular expression: $(a | b)* abb$
   \label{fig:dfa}}
 \end{figure}
 
