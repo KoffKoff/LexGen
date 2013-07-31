@@ -59,7 +59,11 @@ combineToken t1 ts2 | S.null ts2 = singleton t1
 -- Combines the first token with as much of the second as possible
 combineToken' :: Token -> Token -> Seq Token
 combineToken' t1 tt2 = case mid_trans tt2 of
-  [] -> fromList [t1,tt2]
+  [] -> case token_id t1 of
+    Just _  -> fromList [t1,tt2]
+    Nothing -> case mid_trans t1 of
+      [] -> fromList [t1,tt2]
+      [t11,t12] -> combineToken' t11 t12 |> tt2
   [t2,t3] -> let e = getTransition $ tabulate (edges t1) (edges t2)
              in case Map.null e of
                True  -> case mid_trans t2 of

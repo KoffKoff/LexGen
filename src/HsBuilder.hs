@@ -113,7 +113,11 @@ combinatorFuns = start ++ combineTokens ++ tokenAppender ++ divideAppender ++ me
         divideAppender =
           newFun "divideAppender" [("tok1","Token"),("tok2","Token")] "Seq Token" ++
           "case sub_tokens tok2 of\n" ++
-          "  []                -> fromList [tok1,tok2]\n" ++
+          "  []                -> case token_id tok1 of\n" ++
+          "    Just _  -> fromList [tok1,tok2]\n" ++
+          "    Nothing -> case sub_tokens tok1 of\n" ++
+          "      [] -> fromList [tok1,tok2]\n" ++
+          "      [subtok1,subtok2] -> divideAppender subtok1 subtok2 |> tok2\n" ++
           "  [subtok1,subtok2] ->\n" ++
           "    let e = startTransition $ tabulate (transitions tok1) (transitions subtok1)\n" ++
           "    in if Map.null e\n" ++

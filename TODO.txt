@@ -9,6 +9,7 @@ General:
 HsBuilder.hs:
 -Datastructure for DFA (KoffKoff, changed, might not be best atm)
 -Better conversion from DFA then currently implemented (UNASSIGNED)
+-How do we handle errors? example ("blablabla \n)
 
 Main.hs
 -Needed for anything but bug testing?
