@@ -115,7 +115,7 @@ data Accept a
 
 -- debug stuff
 instance Show a => Show (Accept a) where
-  show (Acc p act lctx rctx) = "Acc " ++ show p ++ " (" ++ show act ++ ") " ++ show lctx ++ " " ++ show rctx
+  show (Acc p act lctx rctx) = "Acc " ++ show p
 
 type StartCode = Int
 
