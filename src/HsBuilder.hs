@@ -3,8 +3,8 @@ module HsBuilder where
 import System.IO
 import Alex.AbsSyn
 import BuildDFA
-import qualified Data.Map as M
-import qualified Data.IntMap as IM
+--import qualified Data.Map as M
+--import qualified Data.IntMap as IM
 
 constructLexer :: FilePath -> String -> IO ()
 constructLexer alex_file out_file = do
@@ -30,8 +30,7 @@ imports = "import System.IO\n" ++
           "import qualified Data.FingerTree as F\n" ++
           "import Data.Map (Map)\n" ++
           "import qualified Data.Map as Map\n" ++
-          "import Data.IntMap (IntMap)\n" ++
-          "import qualified Data.IntMap as IM\n" ++
+          "import Data.Array\n" ++
           "import Data.Sequence\n" ++
           "import Text.Printf\n --maybe cut this later\n" ++
           "import Alex.AbsSyn\n\n"
@@ -45,7 +44,7 @@ types = createBlockComment "Data Types" ++
         "--type Code       = String\n" ++
         "type Byte       = Word8\n" ++
         "type Transition = Map SNum (SNum,[Accept Code])\n" ++
-        "type Automata   = IntMap Transition\n" ++
+        "type Automata   = Array Int Transition\n" ++
         "type TokenID    = Maybe [Accept Code]\n" ++
         "type Lexeme     = String\n" ++
         "data Tokens     = Toks (Seq Token)\n" ++
@@ -72,7 +71,7 @@ instances = start ++ monoid_tokens ++ measured_tokens ++ show_tokens ++ show_tok
           "  (Toks toks1) `mappend` (Toks toks2) = Toks $ combineTokens toks1 toks2\n\n"
         measured_tokens =
           "instance F.Measured Tokens Byte where\n" ++
-          "  measure byte = let t = automata IM.! fromEnum byte\n" ++
+          "  measure byte = let t = automata ! fromEnum byte\n" ++
           "                 in Toks $ singleton (T t [toEnum" ++
           "(fromEnum byte)] [] (getTokenId t))\n\n"
         show_token =
@@ -93,8 +92,7 @@ dfaOut dfa = start ++ newFun "start_state" [] "SNum" ++ show start_state ++ "\n"
         start = createBlockComment "The automata"
 
 fixAutomata :: String -> String
-fixAutomata ('f':'r':'o':'m':'L':'i':'s':'t':rest) = "IM.fromList" ++ replace
-                                                     "fromList" "Map.fromList" rest
+fixAutomata automata = replace "fromList" "Map.fromList" automata
 
 replace :: String -> String -> String -> String
 replace _ _ "" = ""

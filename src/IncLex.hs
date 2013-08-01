@@ -6,9 +6,21 @@ import Data.Maybe
 import Data.Monoid
 import Data.Map (Map)
 import qualified Data.Map as Map hiding (Map)
+import BuildDFA
 import Alex.AbsSyn hiding (State)
+import AbsSyn
 import Data.Sequence as S
 import Text.Printf
+
+instance Show Token where
+  show (Token tab s mts id) = printf "%-11s:%s" (show_id id) (fix_lex s)
+
+instance Show TOKANS where
+  show (T tokans) = foldlWithIndex (\str _ tok -> str ++ "\n" ++ show tok) "" tokans
+
+instance Monoid TOKANS where
+  mempty = T mempty
+  (T ts1) `mappend` (T ts2) = T $ combineTokens ts1 ts2
 
 -- combines state maps into one state map
 tabulate :: Transition -> Transition -> Transition
@@ -20,25 +32,6 @@ tabulate e1 e2 = Map.foldlWithKey f Map.empty e1
 -- Hardcoded atm, needs to be checked from the DFA
 start_state :: State
 start_state = 0
-
-type MidTransition = [Token]
-type OutState = (State,[Accept Code])
-type State = Int
-type Transition = Edges State Code
-data Token = Token {transitions :: Transition
-                   ,lexeme      :: String
-                   ,sub_tokens  :: MidTransition
-                   ,token_id    :: Maybe [Accept Code]}
---type Tid = Int
-
-data TOKANS = T (Seq Token )
-
-instance Show TOKANS where
-  show (T tokans) = foldlWithIndex (\str _ tok -> str ++ "\n" ++ show tok) "" tokans
-
-instance Monoid TOKANS where
-  mempty = T mempty
-  (T ts1) `mappend` (T ts2) = T $ combineTokens ts1 ts2
 
 -- Merges two sequences of tokens
 combineTokens :: Seq Token -> Seq Token -> Seq Token
@@ -79,9 +72,6 @@ mergeToken :: Token -> Token -> Token
 mergeToken tok1 tok2 = 
   let e = tabulate (transitions tok1) (transitions tok2)
   in Token e (lexeme tok1 `mappend` lexeme tok2) [tok1,tok2] (getTokenId start_state e)
-
-instance Show Token where
-  show (Token tab s mts id) = printf "%-11s:%s" (show_id id) (fix_lex s)
 
 show_id :: Maybe [Accept Code] -> String
 show_id Nothing     = "Nothing"

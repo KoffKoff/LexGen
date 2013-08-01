@@ -9,16 +9,14 @@ import IncLex
 import Data.FingerTree hiding (reverse)
 import Alex.AbsSyn
 import Alex.UTF8
+import AbsSyn
 import qualified Data.Sequence as S
 import qualified Data.Map as M
-import qualified Data.IntMap as IM
-
-type Byte = Word8
-type TokenTree = FingerTree TOKANS (Byte,DFA' SNum Code)
+import Data.Array
 
 --Only supports the first 256 characters of UTF-8 atm.
 instance Measured TOKANS (Byte,DFA' SNum Code) where
-  measure (c,dfa) = let t = (dfa'_states dfa) IM.! (fromEnum c)
+  measure (c,dfa) = let t = (dfa'_states dfa) ! (fromEnum c)
                     in T $ S.singleton (Token t [toEnum (fromEnum c)]
                                         [] (getTokenId (head $dfa'_start_states dfa) t))
 

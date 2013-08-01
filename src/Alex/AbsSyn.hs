@@ -14,7 +14,7 @@ module Alex.AbsSyn (
   Scanner(..),
   RECtx(..),
   RExp(..),
-  DFA'(..),Edges(..), --Accept'(..)
+--  DFA'(..),Edges(..), --Accept'(..)
   DFA(..), State(..), SNum, StartCode, Accept(..),
   RightContext(..), showRCtx,
   encodeStartCodes, extractActions,
@@ -118,26 +118,6 @@ instance Show a => Show (Accept a) where
   show (Acc p act lctx rctx) = "Acc " ++ show p ++ " (" ++ show act ++ ") " ++ show lctx ++ " " ++ show rctx
 
 type StartCode = Int
-
--- DFA's
-
--- dfa_states corresponds to the set of edges between states that 'Accpet a' has
-data DFA' s a = DFA'
-  { dfa'_start_states :: [s]
-  , dfa'_states       :: IntMap (Edges s a) }
-
-instance (Show s, Show a) => Show (DFA' s a) where
-  show (DFA' ss dfas) = "Initial States: " ++ show ss ++ "\nState map:\n" ++ show dfas
-
-type Edges s a = Map s (s,[Accept a]){-
-data Accept' a = Acc' {
-  	  accAction     :: Maybe a,
-	  accLeftCtx    :: Maybe CharSet, -- cannot be converted to byteset at this point.
-	  accRightCtx   :: RightContext SNum
-    }
-    deriving (Eq,Ord)
--}
-
 
 -- -----------------------------------------------------------------------------
 -- Predicates / contexts

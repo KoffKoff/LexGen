@@ -1,5 +1,7 @@
 {-# LANGUAGE CPP, FlexibleInstances #-}
-module BuildDFA (build, makeDFA, alexReadFile) where
+module BuildDFA (build, makeDFA, alexReadFile
+                ,DFA' (..)
+                ,Edges (..)) where
 
 import Alex.AbsSyn
 import Alex.CharSet
@@ -8,10 +10,12 @@ import Alex.DFAMin
 import Alex.NFA
 import Alex.ParseMonad ( runP, AlexPosn(..))
 import Alex.Parser
+import AbsSyn
+
 import Data.Map ( Map )
 import qualified Data.Map as M hiding ( Map )
-
 import Data.Char ( chr )
+import Data.Array as A
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM hiding (IntMap)
 import Data.Monoid (mappend)
@@ -85,23 +89,10 @@ initSetEnv = M.fromList [("white", charSet " \t\n\v\f\r")
 
 initREEnv :: Map String RExp
 initREEnv = M.empty
-{-
--- Converts an alex DFA into DFA' (The outer map is indexed by Accept 'a')
-dfaToDFA' :: (Ord a,Ord s) => DFA s a -> DFA' s a
-dfaToDFA' (DFA ss dfass) = DFA' ss dfass'
-  where dfass' = M.foldlWithKey convert M.empty dfass
-        convert dfa' is (State as os) = foldl (\d a -> M.insertWith mappend a
-          (M.singleton is (acceptLookup a os)) d) dfa' as
-
-acceptLookup :: Accept a -> IntMap s -> s
-acceptLookup (Acc i _ _ _) ss = case IM.lookup i ss of
-  Just s -> s
-  Nothing -> error "Incomplete lexer WTF MATE?"
--}
 
 dfaToDFA' :: Ord s => DFA s a -> DFA' s a
 dfaToDFA' (DFA scs states) = DFA' scs states'
-  where states' = M.foldlWithKey convert IM.empty states
+  where states' = array (0,255) $ IM.toList $ M.foldlWithKey convert IM.empty states
         convert pStates is (State _ cToOs) = IM.foldlWithKey (insertStuff is) pStates cToOs
         insertStuff is pStates byte os = IM.insertWith mappend byte (creatEdge is os) pStates
         accepting = M.map state_acc states
@@ -109,7 +100,3 @@ dfaToDFA' (DFA scs states) = DFA' scs states'
         getAcc os = case M.lookup os accepting of
           Nothing -> []
           Just as -> as
-
-checkAccepting :: State s a -> Bool
-checkAccepting (State [] _) = False
-checkAccepting _ = True
