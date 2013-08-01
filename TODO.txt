@@ -5,6 +5,7 @@ General:
 -Needs to ba able to handle special characters (UNASSIGNED)
 -DFA needs to know accepting states. (Done, Maybe implement the priority structure?)
 -Implement good error messages (UNASSIGNED)
+-Implement test cases for our lexer (UNASSIGNED)
 
 HsBuilder.hs:
 -Datastructure for DFA (KoffKoff, Better datatstructure for the inner map?)
