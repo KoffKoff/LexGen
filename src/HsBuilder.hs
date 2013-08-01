@@ -144,7 +144,7 @@ combinatorFuns = start ++ combineTokens ++ tokenAppender ++ divideAppender ++
           "  in T e (lexeme tok1 `mappend` lexeme tok2) [tok1,tok2] (getTokenId e)\n"
 
 utilFuns :: String
-utilFuns = start ++ tabulate ++ getTokenId ++ startTransition ++ lexCode ++
+utilFuns = start ++ tabulate ++ getTokenId ++ startTransition ++ tokens ++
            encode ++ showID ++ fixLex
   where start = createBlockComment "Utility functions"
         getTokenId =
@@ -164,8 +164,8 @@ utilFuns = start ++ tabulate ++ getTokenId ++ startTransition ++ lexCode ++
           "          case Map.lookup outState trans2 of\n" ++
           "            Just os -> Map.insert inState os currentTrans\n" ++
           "            _       -> currentTrans\n"
-        lexCode =
-          newFun "lexCode" [("","LexTree")] "Tokens" ++ "F.measure\n"
+        tokens =
+          newFun "tokens" [("","LexTree")] "Tokens" ++ "F.measure\n"
         encode =
           newFun "encode" [("","Char")] "[Word8]" ++
           "map fromIntegral . go . fromEnum\n" ++
