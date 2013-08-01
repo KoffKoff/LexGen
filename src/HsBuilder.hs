@@ -33,23 +33,27 @@ imports = "import System.IO\n" ++
           "import Data.IntMap (IntMap)\n" ++
           "import qualified Data.IntMap as IM\n" ++
           "import Data.Sequence\n" ++
+          "import Text.Printf\n --maybe cut this later\n" ++
           "import Alex.AbsSyn\n\n"
 
 langExts :: String
 langExts = "{-#LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}\n"
 
 types :: String
-types = "--type SNum = Int\n" ++
-        "--type Code = String\n" ++
-        "type Byte = Word8\n" ++
-        "type Transition = " ++ "Map SNum (SNum,[Accept Code])\n" ++
-        "type Automata = " ++ "IntMap Transition\n" ++
+types = createBlockComment "Data Types" ++
+        "--type SNum       = Int\n" ++
+        "--type Code       = String\n" ++
+        "type Byte       = Word8\n" ++
+        "type Transition = Map SNum (SNum,[Accept Code])\n" ++
+        "type Automata   = IntMap Transition\n" ++
+        "type TokenID    = Maybe [Accept Code]\n" ++
+        "type Lexeme     = String\n" ++
+        "data Tokens     = Toks (Seq Token)\n" ++
+        "type LexTree    = FingerTree Tokens Byte\n\n" ++
         "data Token = T { transitions :: Transition\n" ++
-        "               , lexeme      :: String\n" ++
+        "               , lexeme      :: Lexeme\n" ++
         "               , sub_tokens  :: [Token]\n" ++
-        "               , token_id    :: Maybe SNum}\n" ++
-        "data Tokens = Toks (Seq Token)\n" ++
-        "type LexTree = FingerTree Tokens Byte\n\n" ++
+        "               , token_id    :: TokenID}\n" ++
         "{-data Accept a\n" ++
         "  = Acc { accPrio       :: Int,\n" ++
         "          accAction     :: Maybe a,\n" ++
@@ -60,20 +64,25 @@ types = "--type SNum = Int\n" ++
         "    deriving (Eq,Ord)-}\n\n"
 
 instances :: String
-instances = "instance Monoid Tokens where\n" ++
-            "  mempty = Toks mempty\n" ++
-            "  (Toks toks1) `mappend` (Toks toks2) = Toks $ combineTokens toks1 toks2\n\n" ++
-            "instance F.Measured Tokens Byte where\n" ++
-            "  measure byte = let t = automata IM.! fromEnum byte\n" ++
-            "                 in Toks $ singleton (T t [toEnum" ++
-            "(fromEnum byte)] [] (getTokenId t))\n\n" ++
-            "instance Show Token where\n" ++
-            "  show token = lexeme token ++ \":\" ++ if isJust id " ++
-            "then show (fromJust id) else show id\n" ++
-            "    where id = token_id token\n\n" ++
-            "instance Show Tokens where\n" ++
-            "  show (Toks toks) = foldlWithIndex (\\str _ tok -> str ++" ++
-            "\"\\n\" ++ show tok) \"\" toks\n"
+instances = start ++ monoid_tokens ++ measured_tokens ++ show_tokens ++ show_token
+  where start = createBlockComment "Instances"
+        monoid_tokens =
+          "instance Monoid Tokens where\n" ++
+          "  mempty = Toks mempty\n" ++
+          "  (Toks toks1) `mappend` (Toks toks2) = Toks $ combineTokens toks1 toks2\n\n"
+        measured_tokens =
+          "instance F.Measured Tokens Byte where\n" ++
+          "  measure byte = let t = automata IM.! fromEnum byte\n" ++
+          "                 in Toks $ singleton (T t [toEnum" ++
+          "(fromEnum byte)] [] (getTokenId t))\n\n"
+        show_token =
+          "instance Show Token where\n" ++
+          "  show token = printf \"%-11s:%s\" (showID $ token_id token)\n" ++
+          "                                   (fixLex $ lexeme token)\n"
+        show_tokens =
+          "instance Show Tokens where\n" ++
+          "  show (Toks toks) = foldlWithIndex (\\str _ tok -> str ++" ++
+          "\"\\n\" ++ show tok) \"\" toks\n\n"
 
 
 dfaOut :: DFA' SNum Code -> String
@@ -137,12 +146,13 @@ combinatorFuns = start ++ combineTokens ++ tokenAppender ++ divideAppender ++
           "  in T e (lexeme tok1 `mappend` lexeme tok2) [tok1,tok2] (getTokenId e)\n"
 
 utilFuns :: String
-utilFuns = start ++ tabulate ++ getTokenId ++ startTransition ++ lexCode ++ encode
+utilFuns = start ++ tabulate ++ getTokenId ++ startTransition ++ lexCode ++
+           encode ++ showID ++ fixLex
   where start = createBlockComment "Utility functions"
         getTokenId =
-          newFun "getTokenId" [("trans","Transition")] "Maybe SNum" ++
+          newFun "getTokenId" [("trans","Transition")] "TokenID" ++
           "case Map.lookup start_state trans of\n" ++
-          "  Just (id,a:as) -> Just id\n" ++
+          "  Just (id,a:as) -> Just (a:as)\n" ++
           "  _              -> Nothing\n"
         startTransition =
           newFun "startTransition" [("trans","Transition")] "Transition" ++
@@ -176,6 +186,17 @@ utilFuns = start ++ tabulate ++ getTokenId ++ startTransition ++ lexCode ++ enco
           "                        , 0x80 + ((oc `shiftR` 6) .&. 0x3f)\n" ++
           "                        , 0x80 + oc .&. 0x3f\n" ++
           "                        ]\n"
+        showID =
+          newFun "showID" [("tokenid","TokenID")] "String" ++
+          "case tokenid of\n" ++
+          "  Just accs -> show $ map show_acc_num accs\n" ++
+          "  Nothing   -> \"No Token\"\n" ++
+          "  where show_acc_num (Acc p _ _ _) = \"Acc \" ++ show p\n"
+        fixLex =
+          newFun "fixLex" [("lexeme","Lexeme")] "Lexeme" ++
+          "foldl convert_linebreaks \"\" lexeme\n" ++
+          "  where convert_linebreaks str '\\n' = str ++ \"\\\\n\"\n" ++
+          "        convert_linebreaks str c = str ++ [c]\n"
 
 mainFuns :: String
 mainFuns = start ++ lexFile ++ readCode
@@ -199,7 +220,7 @@ createBlockComment :: String -> String
 createBlockComment str = "\n\n" ++ take 80 (repeat '-') ++ "\n" ++
                          foldl (\s line -> s ++ "-- " ++ line ++ take (75 - length line)
                                            (repeat ' ') ++ "--\n") "" strs ++
-                         take 80 (repeat '-')
+                         take 80 (repeat '-') ++ "\n"
   where strs = chunkList 74 str
 
 chunkList :: Int -> String -> [String]

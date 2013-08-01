@@ -1,12 +1,14 @@
 {-# LANGUAGE TypeSynonymInstances,FlexibleInstances,MultiParamTypeClasses #-}
 module IncLex where
 
+import Prelude as P
 import Data.Maybe
 import Data.Monoid
 import Data.Map (Map)
 import qualified Data.Map as Map hiding (Map)
 import Alex.AbsSyn hiding (State)
 import Data.Sequence as S
+import Text.Printf
 
 -- combines state maps into one state map
 tabulate :: Transition -> Transition -> Transition
@@ -26,8 +28,8 @@ type Transition = Edges State Code
 data Token = Token {transitions :: Transition
                    ,lexeme      :: String
                    ,sub_tokens  :: MidTransition
-                   ,token_id    :: Maybe (Tid,[Accept Code])}
-type Tid = Int
+                   ,token_id    :: Maybe [Accept Code]}
+--type Tid = Int
 
 data TOKANS = T (Seq Token )
 
@@ -79,13 +81,21 @@ mergeToken tok1 tok2 =
   in Token e (lexeme tok1 `mappend` lexeme tok2) [tok1,tok2] (getTokenId start_state e)
 
 instance Show Token where
-  show (Token tab s mts id) = (if isJust id then show (snd (fromJust id)) else show id) ++ ": " ++ show s
+  show (Token tab s mts id) = printf "%-11s:%s" (show_id id) (fix_lex s)
+
+show_id :: Maybe [Accept Code] -> String
+show_id Nothing     = "Nothing"
+show_id (Just accs) = P.filter ('\"' /=) . show $ map show_acc_num accs
+  where show_acc_num (Acc p _ _ _) = "Acc " ++ show p
+
+fix_lex :: String -> String
+fix_lex lex = foldl (\str c -> if c == '\n' then str ++ "\\n" else str ++ [c]) "" lex
 
 -- Returns Just Tid if that state is accepting
-getTokenId :: State -> Transition -> Maybe (Tid,[Accept Code])
+getTokenId :: State -> Transition -> Maybe [Accept Code]
 getTokenId s t = case Map.lookup s t of
-  Just (id,a:as) -> Just (id,a:as)
-  _ -> Nothing
+  Just (id,a:as) -> Just (a:as)
+  _              -> Nothing
 
 getTransition :: Transition -> Transition
 getTransition t = case Map.lookup start_state t of

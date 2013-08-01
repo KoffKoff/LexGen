@@ -9,7 +9,6 @@ import IncLex
 import Data.FingerTree hiding (reverse)
 import Alex.AbsSyn
 import Alex.UTF8
---import qualified Data.ByteString as B
 import qualified Data.Sequence as S
 import qualified Data.Map as M
 import qualified Data.IntMap as IM
