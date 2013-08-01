@@ -162,6 +162,7 @@ in & out\\
 When all partial tokens has been combined in this way the resulting sequence of
 tokens represents the the code the lexer was run on.
 
+
 \subsection{Pitfalls}
 The above rules will work for very simple languages. When comments are
 introduced you will get the problem that the whole code can be one long partial
@@ -204,7 +205,109 @@ character tokens).
 much as possible of the second token and check that the combination ends in an
 accepting state.
 \end{itemize}
+\newpage
+\begin{example}[Devide and Append]
+The lexer will always try to build as lage tokens as possible. When it realizes that this cant be done it has to backup and try to combine the parts in a different way. This example will show how this is done in theory. 
 
+The code segment for this example is: 
+\begin{center}
+"else return".
+\end{center}
+The tree in \cref{fig1:elseif} shows the first step of the token combine rutine. Clearly this returns a nonexsisting token. 
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[
+    error/.style={rectangle, draw=none, rounded corners=1mm, fill=black!20!red, drop shadow,
+        text centered, anchor=north, text=white},
+    fact/.style={rectangle, draw=none, rounded corners=1mm, fill=black!60!green, drop shadow,
+        text centered, anchor=north, text=white},
+    state/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
+        text centered, anchor=north, text=white},
+    leaf/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
+        text centered, anchor=north, text=white},
+    level distance=0.5cm, growth parent anchor=south
+    ]
+    \node (State00) [error] {NoToken} [->]
+        child{ [sibling distance=9cm]
+            node (State01) [state] {"else return"}
+            child{
+                node (Fact02) [fact] {PossibleToken(ElseIf)}
+                child{ [sibling distance=4cm]
+                    node (State02) [state] {"else "}
+                    child{
+                        node (Fact03) [fact] {Token(Else)}
+                        child{
+                            node (State03) [leaf] {"else"}
+                        }
+                    }
+                    child{
+                        node (Fact04) [fact] {Token(WhiteSpace)}
+                        child{ [sibling distance=1.2cm]
+                            node (State04) [leaf] {" "}
+                        }
+                    }
+                }
+            }
+            child{ [sibling distance=4cm]
+                node (Fact05) [fact] {Token(Return)}
+                child{
+                    node (State05) [leaf] {"return"}
+                }
+            }
+        }
+    ;
+  \end{tikzpicture}
+  \caption{Lexer thinks "else " is an "else if" pattern. 
+  \label{fig1:elseif}}
+\end{figure}
+From here when the lexer has found that there are no tokens for this lexeme it will try to split the left child token.
+\begin{center}
+    split("else ") => ["else"," "]
+\end{center} 
+Now the lexer has a pair of two lexems that represent valid tokens. The lexer knows that combinding these two lexems in the pair returns in a NoToken result. So The only thing to do is to try to combine the right token in the pair with the right child token and let the token to the left in the pair stand alone. 
+\begin{figure}[!h]
+  \centering
+  \begin{tikzpicture}[
+    error/.style={rectangle, draw=none, rounded corners=1mm, fill=black!20!red, drop shadow,
+        text centered, anchor=north, text=white},
+    fact/.style={rectangle, draw=none, rounded corners=1mm, fill=black!60!green, drop shadow,
+        text centered, anchor=north, text=white},
+    state/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
+        text centered, anchor=north, text=white},
+    leaf/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
+        text centered, anchor=north, text=white},
+    level distance=0.5cm, growth parent anchor=south
+    ]
+    \node (State00) [error] {NoToken} [->]
+        child{ [sibling distance=4cm]
+            node (State01) [state] {" return"}
+            child{ [sibling distance=4cm]
+                node (State02) [fact] {Token(WhiteSpace)}
+                child{
+                    node (Fact02) [leaf] {" "}
+                }
+            }
+            child{ [sibling distance=4cm]
+                node (Fact03) [fact] {Token(Return)}
+                child{
+                    node (State03) [leaf] {"return"}
+                }
+            }
+        }
+    ;
+  \end{tikzpicture}
+  \caption{Lexer tries to combine an white space with a return statement
+  \label{fig4:elseif}}
+\end{figure}
+This also return a NoToken. So the same thing will be done again. The lexer tries to split the left child before NoToken was given. In this case the whitespace. 
+\begin{center}
+split(" ") => []
+\end{center}
+But becouse the whitespace is of the lowest form and is not build up by smaller tokens the resulting list from the split function will be empty. Now the lexer knows that this token must be by it self. The "return" is the last lexeme in this example code so the lexer can't combine it futher. Thus the lexer has found the resulting sequence of tokens:
+\begin{center}
+    [(Token(Else), "else"), (Token(WhiteSpace)," "), (Token(Return), "return")]
+\end{center} 
+\end{example}
 \section{Lexical Errors}
 Since the lexer has to be able to handle any kind of possible not \"complete\"
 tokens, error handling can be done in different ways. One approach is to simply
