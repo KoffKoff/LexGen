@@ -3,8 +3,6 @@ module HsBuilder where
 import System.IO
 import Alex.AbsSyn
 import BuildDFA
---import qualified Data.Map as M
---import qualified Data.IntMap as IM
 
 constructLexer :: FilePath -> String -> IO ()
 constructLexer alex_file out_file = do
