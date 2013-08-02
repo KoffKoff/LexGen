@@ -11,12 +11,14 @@ HsBuilder.hs:
 -Datastructure for DFA (KoffKoff, Better datatstructure for the inner map?)
 -Better conversion from DFA then currently implemented (UNASSIGNED)
 -How do we handle errors? example ("blablabla \n)
+-End Of File Check
 
 Main.hs
 -Needed for anything but bug testing?
 
 IncLex.hs:
 -Check for more bugs (UNASSIGNED)
+-End Of File Check
 -Check for the case when two tokens are completly uncombinable (UNASSIGNED)
 
 AbsSyn.hs
