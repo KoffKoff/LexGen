@@ -31,21 +31,15 @@ instance Show LexedTokens where
     Just (toks,_) -> show toks
     _             -> "Lexical error."
 
--- combines state maps into one state map
---tabulate :: Transition -> Transition -> Transition
-tabulate e1 e2 = Map.foldlWithKey f Map.empty e1
-  where f es' is (s,_) = case Map.lookup s e2 of
-          Just os -> Map.insert is os es'
-          _ -> es'
-
 -- Hardcoded atm, needs to be checked from the DFA
 start_state :: State
 start_state = 0
 
--- Merges two sequences of tokens
+-- Merges every possible combinations of two token sequences
 combineTokens :: LexedTokens -> LexedTokens -> LexedTokens
 combineTokens (L seqs1) lseqs2 = Map.foldlWithKey (combineSequence lseqs2) mempty seqs1
 
+-- Checks wether a token sequnce can be combined with a set of token sequences.
 combineSequence :: LexedTokens -> LexedTokens -> SNum -> (Tokens,OutState) -> LexedTokens
 combineSequence (L seqs2) (L updSeqs) is (toks1,(os,acc)) = L $ case Map.lookup os seqs2 of
   Just (toks2,osa) -> Map.insert is (mergeTokens toks1 toks2,osa) updSeqs
@@ -53,6 +47,8 @@ combineSequence (L seqs2) (L updSeqs) is (toks1,(os,acc)) = L $ case Map.lookup 
     (a:as,Just (toks2,osa)) -> Map.insert is (appendTokens toks1 toks2,osa) updSeqs
     _                       -> updSeqs
 
+-- Combines the right partial token with the left partial token and returns a
+-- sequence of tokens.
 mergeTokens :: Tokens -> Tokens -> Tokens
 mergeTokens (Single (tok1,_)) (Single (tok2,acc)) = Single (tok1 ++ tok2,acc)
 mergeTokens (Single (tok1,_)) (Toks (tok2,acc) ts tend) = Toks (tok1 ++ tok2,acc) ts tend
@@ -60,6 +56,7 @@ mergeTokens (Toks tstart ts (tok1,_)) (Single (tok2,acc)) = Toks tstart ts (tok1
 mergeTokens (Toks tstart ts1 (tok1,_)) (Toks (tok2,acc) ts2 tend) =
   Toks tstart ((ts1 |> (Token (tok1 ++ tok2) acc)) >< ts2) tend
 
+-- Appends the second token sequence to the first token sequence
 appendTokens :: Tokens -> Tokens -> Tokens
 appendTokens (Single tstart) (Single tend) = Toks tstart S.empty tend
 appendTokens (Single tstart) (Toks suf ts tend) = Toks tstart (makeTok suf <| ts) tend
@@ -67,25 +64,16 @@ appendTokens (Toks tstart ts pre) (Single tend) = Toks tstart (ts |> makeTok pre
 appendTokens (Toks tstart ts1 pre) (Toks suf ts2 tend) =
   Toks tstart ((ts1 |> makeTok pre) >< (makeTok suf <| ts2)) tend
 
+-- Constructs a token of a string and a list of accepting states
 makeTok :: (String,[Accept Code]) -> Token
 makeTok (lex,acc) = Token lex acc
 
+-- Pretty print for final (accepting) states
 show_id :: [Accept Code] -> String
 show_id []   = "No Token"
 show_id accs = P.filter ('\"' /=) . show $ map show_acc_num accs
   where show_acc_num (Acc p _ _ _) = "Acc " ++ show p
 
+-- Changes line breaks to '\n' in a string
 fix_lex :: String -> String
 fix_lex lex = P.foldl (\str c -> if c == '\n' then str ++ "\\n" else str ++ [c]) "" lex
-{-
--- Returns Just Tid if that state is accepting
-getTokenId :: State -> Transition -> Maybe [Accept Code]
-getTokenId s t = case Map.lookup s t of
-  Just (id,a:as) -> Just (a:as)
-  _              -> Nothing
-
-getTransition :: Transition -> Transition
-getTransition t = case Map.lookup start_state t of
-  Just osa -> Map.singleton start_state osa
-  _ -> Map.empty
--}

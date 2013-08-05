@@ -26,12 +26,8 @@ main = do args <- getArgs
             [alex_file,code_file] -> lexFile alex_file code_file >>= print . measure
             _ -> putStrLn "Usage: <This programs name> <alex file> <code file>"
 
-lexFileTest :: FilePath -> FilePath -> IO (TokenTree,DFA' SNum Code)
-lexFileTest alex_file code_file = do
-  dfa <- build alex_file
-  prg <- readCode code_file
-  return (fromList $ zip prg (repeat dfa),dfa)
-
+-- Constructs a DFA from an Alex specidification (alex_file) and uses it to lex
+-- the code in the file 'code_file' and returns a token tree
 lexFile :: FilePath -> FilePath -> IO TokenTree
 lexFile alex_file code_file = do
   dfa <- build alex_file
@@ -44,7 +40,7 @@ readCode code_file = do h <- openFile code_file ReadMode
                         hSetEncoding h utf8
                         hGetContents h >>= return . concatMap encode
 
-{-
+
 -- Functions for some debugging
 insertStart :: Byte -> TokenTree -> TokenTree
 insertStart b str = (b,dfa) <| (h,dfa) <| str'
@@ -57,7 +53,3 @@ insertEnd str b = str' |> (l,dfa) |> (b,dfa)
 headF :: TokenTree -> Byte
 headF f = fst h
   where h :< _ = viewl f
-
-lastTransition :: TOKANS -> Transition
-lastTransition (T tree) = transitions t
-  where _ S.:> t = S.viewr tree-}
