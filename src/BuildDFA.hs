@@ -1,7 +1,6 @@
 {-# LANGUAGE CPP, FlexibleInstances #-}
 module BuildDFA (build, makeDFA, alexReadFile
-                ,DFA' (..)
-                ,Edges (..)) where
+                ,DFA' (..)) where
 
 import Alex.AbsSyn
 import Alex.CharSet
@@ -51,7 +50,7 @@ alexOpenFile = openFile
 
 -- Reads a file and callse parseScanner followed by makeDFA on the content
 -- MOVE TO WRAPPER
-build :: FilePath -> IO (DFA' SNum Code)
+--build :: FilePath -> IO (DFA' SNum Code)
 build file = do
     basename <- case (reverse file) of
                     'x':'.':r   -> return (reverse r)

@@ -11,19 +11,28 @@ import Alex.AbsSyn hiding (State)
 import AbsSyn
 import Data.Sequence as S
 import Text.Printf
+import Data.Foldable
+
+instance Monoid LexedTokens where
+  mempty = L mempty
+  mappend = combineTokens
 
 instance Show Token where
-  show (Token tab s mts id) = printf "%-11s:%s" (show_id id) (fix_lex s)
+  show (Token s id) = printf "%-11s:%s" (show_id id) (fix_lex s)
 
-instance Show TOKANS where
-  show (T tokans) = foldlWithIndex (\str _ tok -> str ++ "\n" ++ show tok) "" tokans
+instance Show Tokens where
+  show (Single token) = show token
+  show (Toks suf toks pre) = show (makeTok suf) ++ "\n" ++
+                             unlines (map show (toList toks)) ++ "\n" ++
+                             show (makeTok pre)
 
-instance Monoid TOKANS where
-  mempty = T mempty
-  (T ts1) `mappend` (T ts2) = T $ combineTokens ts1 ts2
+instance Show LexedTokens where
+  show (L seqs) = case Map.lookup 0 seqs of
+    Just (toks,_) -> show toks
+    _             -> "Lexical error."
 
 -- combines state maps into one state map
-tabulate :: Transition -> Transition -> Transition
+--tabulate :: Transition -> Transition -> Transition
 tabulate e1 e2 = Map.foldlWithKey f Map.empty e1
   where f es' is (s,_) = case Map.lookup s e2 of
           Just os -> Map.insert is os es'
@@ -34,53 +43,41 @@ start_state :: State
 start_state = 0
 
 -- Merges two sequences of tokens
-combineTokens :: Seq Token -> Seq Token -> Seq Token
-combineTokens toks1 toks2 = case viewr toks1 of
-  EmptyR         -> toks2
-  toks1' :> tok1 -> let toks2' = tokenAppender tok1 toks2
-                    in toks1' >< toks2'
+combineTokens :: LexedTokens -> LexedTokens -> LexedTokens
+combineTokens (L seqs1) lseqs2 = Map.foldlWithKey (combineSequence lseqs2) mempty seqs1
 
-tokenAppender :: Token -> Seq Token -> Seq Token
-tokenAppender tok1 toks2 = case viewl toks2 of
-  EmptyL         -> singleton tok1
-  tok2 :< toks2' -> let e = getTransition $ tabulate (transitions tok1) (transitions tok2)
-                    in if Map.null e
-                       then divideAppender tok1 tok2 >< toks2'
-                       else tokenAppender (mergeToken tok1 tok2) toks2'
+combineSequence :: LexedTokens -> LexedTokens -> SNum -> (Tokens,OutState) -> LexedTokens
+combineSequence (L seqs2) (L updSeqs) is (toks1,(os,acc)) = L $ case Map.lookup os seqs2 of
+  Just (toks2,osa) -> Map.insert is (mergeTokens toks1 toks2,osa) updSeqs
+  Nothing          -> case (acc,Map.lookup 0 seqs2) of
+    (a:as,Just (toks2,osa)) -> Map.insert is (appendTokens toks1 toks2,osa) updSeqs
+    _                       -> updSeqs
 
-divideAppender :: Token -> Token -> Seq Token
-divideAppender tok1 tok2 = case sub_tokens tok2 of
-  [] -> splitToken tok1 tok2
-  [subtok1,subtok2] ->
-    let e = getTransition $ tabulate (transitions tok1) (transitions subtok1)
-    in if Map.null e
-       then case sub_tokens subtok1 of
-         [] -> splitToken tok1 tok2
-         mt -> combineTokens (divideAppender tok1 subtok1) (singleton subtok2)
-       else divideAppender (mergeToken tok1 subtok1) subtok2
+mergeTokens :: Tokens -> Tokens -> Tokens
+mergeTokens (Single (tok1,_)) (Single (tok2,acc)) = Single (tok1 ++ tok2,acc)
+mergeTokens (Single (tok1,_)) (Toks (tok2,acc) ts tend) = Toks (tok1 ++ tok2,acc) ts tend
+mergeTokens (Toks tstart ts (tok1,_)) (Single (tok2,acc)) = Toks tstart ts (tok1++tok2,acc)
+mergeTokens (Toks tstart ts1 (tok1,_)) (Toks (tok2,acc) ts2 tend) =
+  Toks tstart ((ts1 |> (Token (tok1 ++ tok2) acc)) >< ts2) tend
 
-splitToken :: Token -> Token -> Seq Token
-splitToken tok1 tok2 = case token_id tok1 of
-  Just _  -> fromList [tok1,tok2]
-  Nothing -> case sub_tokens tok1 of
-    [] -> fromList [tok1,tok2]
-    [subtok1,subtok2] ->
-      let subsubtok2 :< toks2 = viewl $ tokenAppender subtok2 (singleton tok2)
-      in splitToken subtok1 subsubtok2 >< toks2
+appendTokens :: Tokens -> Tokens -> Tokens
+appendTokens (Single tstart) (Single tend) = Toks tstart S.empty tend
+appendTokens (Single tstart) (Toks suf ts tend) = Toks tstart (makeTok suf <| ts) tend
+appendTokens (Toks tstart ts pre) (Single tend) = Toks tstart (ts |> makeTok pre) tend
+appendTokens (Toks tstart ts1 pre) (Toks suf ts2 tend) =
+  Toks tstart ((ts1 |> makeTok pre) >< (makeTok suf <| ts2)) tend
 
-mergeToken :: Token -> Token -> Token
-mergeToken tok1 tok2 = 
-  let e = tabulate (transitions tok1) (transitions tok2)
-  in Token e (lexeme tok1 `mappend` lexeme tok2) [tok1,tok2] (getTokenId start_state e)
+makeTok :: (String,[Accept Code]) -> Token
+makeTok (lex,acc) = Token lex acc
 
-show_id :: Maybe [Accept Code] -> String
-show_id Nothing     = "Nothing"
-show_id (Just accs) = P.filter ('\"' /=) . show $ map show_acc_num accs
+show_id :: [Accept Code] -> String
+show_id []   = "No Token"
+show_id accs = P.filter ('\"' /=) . show $ map show_acc_num accs
   where show_acc_num (Acc p _ _ _) = "Acc " ++ show p
 
 fix_lex :: String -> String
-fix_lex lex = foldl (\str c -> if c == '\n' then str ++ "\\n" else str ++ [c]) "" lex
-
+fix_lex lex = P.foldl (\str c -> if c == '\n' then str ++ "\\n" else str ++ [c]) "" lex
+{-
 -- Returns Just Tid if that state is accepting
 getTokenId :: State -> Transition -> Maybe [Accept Code]
 getTokenId s t = case Map.lookup s t of
@@ -91,3 +88,4 @@ getTransition :: Transition -> Transition
 getTransition t = case Map.lookup start_state t of
   Just osa -> Map.singleton start_state osa
   _ -> Map.empty
+-}

@@ -13,12 +13,12 @@ import AbsSyn
 import qualified Data.Sequence as S
 import qualified Data.Map as M
 import Data.Array
+import Data.Monoid
 
 --Only supports the first 256 characters of UTF-8 atm.
-instance Measured TOKANS (Byte,DFA' SNum Code) where
+instance Measured LexedTokens (Byte,DFA' SNum Code) where
   measure (c,dfa) = let t = (dfa'_states dfa) ! (fromEnum c)
-                    in T $ S.singleton (Token t [toEnum (fromEnum c)]
-                                        [] (getTokenId (head $dfa'_start_states dfa) t))
+                    in L $ M.map (\os -> (Single ([toEnum (fromEnum c)], snd os),os)) t
 
 main :: IO ()
 main = do args <- getArgs
@@ -44,7 +44,7 @@ readCode code_file = do h <- openFile code_file ReadMode
                         hSetEncoding h utf8
                         hGetContents h >>= return . concatMap encode
 
-
+{-
 -- Functions for some debugging
 insertStart :: Byte -> TokenTree -> TokenTree
 insertStart b str = (b,dfa) <| (h,dfa) <| str'
@@ -60,4 +60,4 @@ headF f = fst h
 
 lastTransition :: TOKANS -> Transition
 lastTransition (T tree) = transitions t
-  where _ S.:> t = S.viewr tree
+  where _ S.:> t = S.viewr tree-}
