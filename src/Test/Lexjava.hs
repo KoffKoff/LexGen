@@ -2,7 +2,7 @@
 {-# LINE 3 ".\Lexjava.x" #-}
 
 {-# OPTIONS -fno-warn-incomplete-patterns #-}
-module Lexjava where
+module Test.Lexjava where
 
 
 

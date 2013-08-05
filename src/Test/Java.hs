@@ -1,5 +1,5 @@
 {-#LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}
-module Java where
+module Test.Java where
 
 import System.IO
 import Data.Monoid
@@ -32,9 +32,9 @@ data Tokens     = Toks (Seq Token)
 type LexTree    = FingerTree Tokens Byte
 
 data Token = T { transitions :: Transition
-               , lexeme      :: Lexeme
+               , lexeme      :: !Lexeme
                , sub_tokens  :: [Token]
-               , token_id    :: TokenID}
+               , token_id    :: !TokenID}
 {-data Accept a
   = Acc { accPrio       :: Int,
           accAction     :: Maybe a,
