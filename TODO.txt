@@ -12,6 +12,7 @@ HsBuilder.hs:
 -Better conversion from DFA then currently implemented (UNASSIGNED)
 -How do we handle errors? example ("blablabla \n)
 -End Of File Check
+-Can we strip som of the transitions??
 
 Main.hs
 -Needed for anything but bug testing?
@@ -19,7 +20,7 @@ Main.hs
 IncLex.hs:
 -Check for more bugs (UNASSIGNED)
 -End Of File Check
--Check for the case when two tokens are completly uncombinable (UNASSIGNED)
+-Can we strip som of the transitions??
 
 AbsSyn.hs
 -Maybe move more data strucures here?
