@@ -42,8 +42,9 @@ types = createBlockComment "Data Types" ++
         "--type Code       = String\n" ++
         "type Byte       = Word8\n" ++
         "type TokenID    = [Accept Code]\n" ++
-        "type Transition = Map SNum (SNum,TokenID)\n" ++
+        "type Transition = Map SNum SNum\n" ++
         "type Automata   = Array Int Transition\n" ++
+        "type Accepts    = Array SNum [Accept Code]\n" ++
         "type Lexeme     = String\n" ++
         "newtype Tokens  = Tokens {getSeq :: Map SNum (Seq Token,SNum)}\n" ++
         "type LexTree    = FingerTree Tokens Byte\n\n" ++
@@ -82,11 +83,14 @@ instances = start ++ monoid_tokens ++ measured_tokens ++ show_tokens ++ show_tok
           "    _             -> \"Lexical error\"\n\n"
 
 
-dfaOut :: DFA' SNum Code -> String
-dfaOut dfa = start ++ newFun "startState" [] "SNum" ++ show start_state ++ "\n" ++
-             newFun "automata" [] "Automata" ++ automata ++ "\n"
-  where start_state:_ = dfa'_start_states dfa
-        automata = fixAutomata $ show $ dfa'_states dfa
+dfaOut :: DFA'' -> String
+dfaOut dfa = start ++ newFun "startState" [] "SNum" ++ show start_state ++ "\n"
+             ++ automata ++ accepting
+  where start_state:_ = start_states dfa
+        automata = newFun "automata" [] "Automata" ++
+                   fixAutomata (show $ states dfa) ++ "\n"
+        accepting = newFun "accepting" [] "Accepts" ++
+                    show (accepts dfa)
         start = createBlockComment "The automata"
 
 fixAutomata :: String -> String

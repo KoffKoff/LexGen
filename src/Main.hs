@@ -9,7 +9,7 @@ import IncLex
 import Data.FingerTree hiding (reverse)
 import Alex.AbsSyn
 import Alex.UTF8
-import AbsSyn
+import AbsSyn as A
 import qualified Data.Sequence as S
 import qualified Data.Map as M
 import Data.Array
@@ -17,9 +17,11 @@ import Data.Monoid
 
 --Only supports the first 256 characters of UTF-8 atm.
 instance Measured LexedTokens (Byte,DFA' SNum Code) where
-  measure (c,dfa) = let t = (dfa'_states dfa) ! (fromEnum c)
-                    in L $ M.map (\os -> (Single ([toEnum (fromEnum c)], snd os),os)) t
-
+  measure (c,dfa) =
+    let t = (A.dfa_states dfa) ! (fromEnum c)
+    in L $ M.map (\os -> (Single ([toEnum (fromEnum c)],accepts dfa ! os)
+                         ,(os,accepts dfa ! os))) t
+                         
 main :: IO ()
 main = do args <- getArgs
           case args of

@@ -10,12 +10,12 @@ import Data.FingerTree
 
 -- Edges represents the transitions possible for a given character
 data DFA' s a = DFA'
-  { dfa'_start_states :: [s]
-  , dfa'_states       :: Array Int (Map s (s,[Accept a]))}
---  , dfa'_accept       :: Map s [Accept a]}
+  { start_states :: [s]
+  , dfa_states   :: Array Int (Map s s)
+  , accepts      :: Array s [Accept a]}
 
-instance (Show s, Show a) => Show (DFA' s a) where
-  show (DFA' ss dfas) = "Initial States: " ++ show ss ++ "\nState map:\n" ++ show dfas
+instance (Ix s, Show s, Show a) => Show (DFA' s a) where
+  show (DFA' ss dfas accs) = "Initial States: " ++ show ss ++ "\nState map:\n" ++ show dfas ++ "\nAccepts:\n" ++ show accs
 
 type OutState = (State,[Accept Code])
 type State = Int

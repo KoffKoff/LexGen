@@ -18,6 +18,7 @@ import Data.Array as A
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM hiding (IntMap)
 import Data.Monoid (mappend)
+import Data.Foldable (toList)
 import System.IO ( stderr, Handle, IOMode(..), openFile, hClose, hPutStr, hPutStrLn )
 #if __GLASGOW_HASKELL__ >= 612
 import System.IO ( hGetContents, hSetEncoding, utf8 )
@@ -89,13 +90,13 @@ initSetEnv = M.fromList [("white", charSet " \t\n\v\f\r")
 initREEnv :: Map String RExp
 initREEnv = M.empty
 
-dfaToDFA' :: Ord s => DFA s a -> DFA' s a
-dfaToDFA' (DFA scs states) = DFA' scs states'
+--dfaToDFA' :: Ix s => DFA s a -> DFA' s a
+dfaToDFA' (DFA scs states) = DFA' scs states' accepting
   where states' = array (0,255) $ IM.toList $ M.foldlWithKey convert IM.empty states
         convert pStates is (State _ cToOs) = IM.foldlWithKey (insertStuff is) pStates cToOs
         insertStuff is pStates byte os = IM.insertWith mappend byte (creatEdge is os) pStates
-        accepting = M.map state_acc states
-        creatEdge is os = M.singleton is (os,getAcc os)
-        getAcc os = case M.lookup os accepting of
-          Nothing -> []
-          Just as -> as
+        accepting = array' . M.toList $ M.map state_acc states
+        creatEdge is os = M.singleton is os
+
+array' :: (Enum i, Ix i) => [(i,b)] -> Array i b
+array' list = array (toEnum 0,toEnum $ length list - 1) list
