@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP, FlexibleInstances #-}
-module BuildDFA (build, makeDFA, alexReadFile) where
+module BuildDFA2 (build, makeDFA, alexReadFile
+                ) where
 
 import Alex.AbsSyn
 import Alex.CharSet
@@ -8,7 +9,7 @@ import Alex.DFAMin
 import Alex.NFA
 import Alex.ParseMonad ( runP, AlexPosn(..))
 import Alex.Parser
-import AbsSyn
+import AbsSyn2
 
 import Data.Map ( Map )
 import qualified Data.Map as M hiding ( Map )
