@@ -52,6 +52,19 @@ insertEnd :: TokenTree -> Byte -> TokenTree
 insertEnd str b = str' |> (l,dfa) |> (b,dfa)
   where (str' :> (l,dfa)) = viewr str
 
+{-
+Just for test to insert text anywere in the code.
+Final datastrukter should have some tuple in the fingertree, with a possision
+for each token. So one could split over the tree to find it. Gets O(log(n)) istead of O(n) which this code has. 
+-}
+insertAtIndex :: String -> Int -> LexTree -> LexTree
+insertAtIndex str i tree 
+  | i <  0    = error "index must be >= 0"
+  | i == 0    = (lexCode str) F.>< tree
+  | otherwise = b F.<| insertAtIndex str (i-1) tree'
+      where (b F.:< tree') = F.viewl tree
+ 
+
 headF :: TokenTree -> Byte
 headF f = fst h
   where h :< _ = viewl f
