@@ -13,6 +13,11 @@ import Data.Sequence as S
 import Text.Printf
 import Data.Foldable
 
+
+instance Monoid Size where
+   mempty = Size 0
+   Size m `mappend` Size n = Size (m+n)
+   
 instance Monoid LexedTokens where
   mempty = L mempty
   mappend = combineTokens

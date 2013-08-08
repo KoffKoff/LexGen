@@ -16,14 +16,15 @@ import Data.Array
 import Data.Monoid
 
 --Only supports the first 256 characters of UTF-8 atm.
-instance Measured LexedTokens (Byte,DFA' SNum Code) where
-  measure (c,dfa) = L $ \is ->
+instance Measured (LexedTokens,Size) (Byte,DFA' SNum Code) where
+  measure (c,dfa) = (L $ \is ->
     let t = (A.dfa_states dfa) ! (fromEnum c)
         os' = M.lookup is t
     in case os' of
       Nothing -> (Single ("",[]),(-1,[]))
       Just os -> let acc = accepts dfa ! os
                  in (Single ([toEnum (fromEnum c)],acc),(os,acc))
+    , Size 1)
 -- error "Something went wrong: " ++ toEnum (fromEnum c) ++ "-" ++ show is
 
 main :: IO ()
@@ -55,6 +56,13 @@ insertStart b str = (b,dfa) <| (h,dfa) <| str'
 insertEnd :: TokenTree -> Byte -> TokenTree
 insertEnd str b = str' |> (l,dfa) |> (b,dfa)
   where (str' :> (l,dfa)) = viewr str
+  
+insertAtIndex :: Byte -> Int -> TokenTree -> TokenTree
+insertAtIndex b i tree 
+  | i <  0 = error "index must be >= 0"
+  | i >= 0 = l >< ((b,dfa) <| r)
+        where (l,r) = split (\(_,Size n) -> n>i) tree
+              (_ :> (_,dfa)) = viewr tree
 
 headF :: TokenTree -> Byte
 headF f = fst h

@@ -16,11 +16,11 @@ import Data.Array
 import Data.Monoid
 
 --Only supports the first 256 characters of UTF-8 atm.
-instance Measured LexedTokens (Byte,DFA' SNum Code) where
+instance Measured (LexedTokens,Size) (Byte,DFA' SNum Code) where
   measure (c,dfa) =
     let t = (A.dfa_states dfa) ! (fromEnum c)
-    in L $ M.map (\os -> (Single ([toEnum (fromEnum c)],accepts dfa ! os)
-                         ,(os,accepts dfa ! os))) t
+    in (L $ M.map (\os -> (Single ([toEnum (fromEnum c)],accepts dfa ! os)
+                         ,(os,accepts dfa ! os))) t, Size 1)
                          
 main :: IO ()
 main = do args <- getArgs
@@ -42,7 +42,6 @@ readCode code_file = do h <- openFile code_file ReadMode
                         hSetEncoding h utf8
                         hGetContents h >>= return . concatMap encode
 
-
 -- Functions for some debugging
 insertStart :: Byte -> TokenTree -> TokenTree
 insertStart b str = (b,dfa) <| (h,dfa) <| str'
@@ -52,18 +51,13 @@ insertEnd :: TokenTree -> Byte -> TokenTree
 insertEnd str b = str' |> (l,dfa) |> (b,dfa)
   where (str' :> (l,dfa)) = viewr str
 
-{-
-Just for test to insert text anywere in the code.
-Final datastrukter should have some tuple in the fingertree, with a possision
-for each token. So one could split over the tree to find it. Gets O(log(n)) istead of O(n) which this code has. 
--}
-insertAtIndex :: String -> Int -> LexTree -> LexTree
-insertAtIndex str i tree 
-  | i <  0    = error "index must be >= 0"
-  | i == 0    = (lexCode str) F.>< tree
-  | otherwise = b F.<| insertAtIndex str (i-1) tree'
-      where (b F.:< tree') = F.viewl tree
- 
+insertAtIndex :: Byte -> Int -> TokenTree -> TokenTree
+insertAtIndex b i tree 
+  | i <  0 = error "index must be >= 0"
+  | i >= 0 = l >< ((b,dfa) <| r)
+        where (l,r) = split (\(_,Size n) -> n>i) tree
+              (_ :> (_,dfa)) = viewr tree
+  
 
 headF :: TokenTree -> Byte
 headF f = fst h

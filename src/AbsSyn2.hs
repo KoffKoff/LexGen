@@ -5,7 +5,8 @@ module AbsSyn2 ( DFA' (..)
                , Tokens (..)
                , Byte
                , TokenTree (..)
-               , LexedTokens (..))where
+               , LexedTokens (..)
+               , Size (..))where
 
 import Data.Monoid
 import Data.Array
@@ -17,4 +18,4 @@ import Data.FingerTree
 import AbsSyn hiding (LexedTokens,TokenTree)
 
 newtype LexedTokens = L {getMap :: SNum -> (Tokens ,OutState)}
-type TokenTree = FingerTree LexedTokens (Byte,DFA' SNum Code)
+type TokenTree = FingerTree (LexedTokens, Size) (Byte,DFA' SNum Code)

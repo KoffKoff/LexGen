@@ -28,4 +28,6 @@ newtype LexedTokens = L {getMap :: Map SNum (Tokens ,OutState)}
 
 type Byte = Word8
 
-type TokenTree = FingerTree LexedTokens (Byte,DFA' SNum Code)
+type TokenTree = FingerTree (LexedTokens, Size) (Byte,DFA' SNum Code)
+data Size = Size Int
+    deriving (Eq,Ord,Show)

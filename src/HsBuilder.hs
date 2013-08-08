@@ -1,7 +1,8 @@
 module HsBuilder where
 
 import System.IO
-import Alex.AbsSyn
+import Alex.AbsSyn hiding (DFA (..))
+import AbsSyn
 import BuildDFA
 
 constructLexer :: FilePath -> String -> IO ()
@@ -34,7 +35,7 @@ imports = "import System.IO\n" ++
           "import Alex.AbsSyn\n\n"
 
 langExts :: String
-langExts = "{-#LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}\n"
+langExts = "{-#LANGUAGE TypeSynonymInstances, MultiParamTypeClasses, FlexibleInstances #-}\n"
 
 types :: String
 types = createBlockComment "Data Types" ++
@@ -47,9 +48,10 @@ types = createBlockComment "Data Types" ++
         "type Accepts    = Array SNum [Accept Code]\n" ++
         "type Lexeme     = String\n" ++
         "newtype Tokens  = Tokens {getSeq :: Map SNum (Seq Token,SNum)}\n" ++
-        "type LexTree    = FingerTree Tokens Byte\n\n" ++
+        "type LexTree    = FingerTree (Tokens,Size) Byte\n\n" ++
         "data Token = Token { lexeme      :: Lexeme\n" ++
         "                   , token_id    :: TokenID}\n" ++
+        "data Size = Size Int" ++
         "{-data Accept a\n" ++
         "  = Acc { accPrio       :: Int,\n" ++
         "          accAction     :: Maybe a,\n" ++
@@ -60,17 +62,25 @@ types = createBlockComment "Data Types" ++
         "    deriving (Eq,Ord)-}\n\n"
 
 instances :: String
-instances = start ++ monoid_tokens ++ measured_tokens ++ show_tokens ++ show_token
+instances = start ++ monoid_size ++ monoid_tokens ++ measured_tokens ++ 
+                show_tokens ++ show_token
   where start = createBlockComment "Instances"
+        monoid_size = 
+          "instance Monoid Size where\n" ++
+          "  mempty = Size 0\n" ++
+          "  Size m `mappend` Size n = Size (m+n)\n\n"
         monoid_tokens =
           "instance Monoid Tokens where\n" ++
           "  mempty = Tokens mempty\n" ++
           "  mappend = combineTokens\n\n"
         measured_tokens =
-          "instance F.Measured Tokens Byte where\n" ++
-          "  measure byte = let t = automata ! fromEnum byte\n" ++
-          "                 in Tokens $ Map.map (\\os -> (" ++
-          "singleton (Token [toEnum (fromEnum byte)] (snd os)),fst os)) t\n\n"
+          "instance F.Measured (Tokens,Size) Byte where\n" ++
+          "  measure byte = \n" ++
+          "    let t = automata ! fromEnum byte\n" ++
+          "    in (Tokens $ Map.map (\\os -> (singleton ("++
+          "Token [toEnum (fromEnum byte)]\n" ++
+          "                                              " ++
+          "(accepting ! os)), os)) t, Size 1)\n\n"
         show_token =
           "instance Show Token where\n" ++
           "  show token = printf \"%-11s:%s\" (showID $ token_id token)\n" ++
@@ -83,12 +93,12 @@ instances = start ++ monoid_tokens ++ measured_tokens ++ show_tokens ++ show_tok
           "    _             -> \"Lexical error\"\n\n"
 
 
-dfaOut :: DFA'' -> String
+dfaOut :: DFA' SNum Code -> String
 dfaOut dfa = start ++ newFun "startState" [] "SNum" ++ show start_state ++ "\n"
              ++ automata ++ accepting
   where start_state:_ = start_states dfa
         automata = newFun "automata" [] "Automata" ++
-                   fixAutomata (show $ states dfa) ++ "\n"
+                   fixAutomata (show $ dfa_states dfa) ++ "\n"
         accepting = newFun "accepting" [] "Accepts" ++
                     show (accepts dfa)
         start = createBlockComment "The automata"
@@ -128,13 +138,13 @@ combinatorFuns = start ++ combineTokens ++ combineSequence ++ mergeTokens ++ app
           "  in (toks1' |> Token (lexeme token1 ++ lexeme token2) (token_id token2)) >< toks2'\n"
         appendTokens =
           newFun "appendTokens" [("","Seq Token"),("","Seq Token")] "Seq Token" ++
-          "mappend"
+          "mappend\n"
 
 utilFuns :: String
-utilFuns = start ++ tokens ++ encode ++ showID ++ fixLex
+utilFuns = start ++ tokens ++ encode ++ showID ++ fixLex ++ insertAtIndex
   where start = createBlockComment "Utility functions"
         tokens =
-          newFun "tokens" [("","LexTree")] "Tokens" ++ "F.measure\n"
+          newFun "tokens" [("","LexTree")] "Tokens" ++ "fst . F.measure\n"
         encode =
           newFun "encode" [("","Char")] "[Word8]" ++
           "map fromIntegral . go . fromEnum\n" ++
@@ -164,9 +174,16 @@ utilFuns = start ++ tokens ++ encode ++ showID ++ fixLex
           "foldl convert_linebreaks \"\" lexeme\n" ++
           "  where convert_linebreaks str '\\n' = str ++ \"\\\\n\"\n" ++
           "        convert_linebreaks str c = str ++ [c]\n"
-
+        insertAtIndex = 
+          newFun "insertAtIndex" [("str","String"),("i","Int"),
+            ("tree","LexTree")] "LexTree" ++ "\n" ++
+          "  if i < 0\n" ++
+          "  then error \"index must be >= 0\"\n" ++
+          "  else l F.>< (lexCode str) F.>< r\n" ++
+          "     where (l,r) = F.split (\\(_,Size n) -> n>i) tree\n\n"
+          
 mainFuns :: String
-mainFuns = start ++ lexFile ++ readCode
+mainFuns = start ++ lexFile ++ readCode ++ lexCode
   where start = createBlockComment "Functions that read the lexfile"
         lexFile =
           newFun "lexFile" [("file","FilePath")] "IO LexTree" ++
@@ -176,6 +193,9 @@ mainFuns = start ++ lexFile ++ readCode
           "  handle <- openFile file ReadMode\n" ++
           "  hSetEncoding handle utf8\n" ++
           "  hGetContents handle >>= return . concatMap encode\n"
+        lexCode =
+          newFun "lexCode" [("","String")] "LexTree" ++
+          "F.fromList . concatMap encode\n"
 
 newFun :: String -> [(String,String)] -> String -> String
 newFun name vars_type return =
