@@ -47,7 +47,7 @@ types = createBlockComment "Data Types" ++
         "type Automata   = Array Int Transition\n" ++
         "type Accepts    = Array SNum [Accept Code]\n" ++
         "type Lexeme     = String\n" ++
-        "newtype Tokens  = Tokens {getSeq :: Map SNum (Seq Token,SNum)}\n" ++
+        "newtype Tokens  = Tokens {getSeq :: SNum -> (Seq Token,SNum)}\n" ++
         "type LexTree    = FingerTree (Tokens,Size) Byte\n\n" ++
         "data Token = Token { lexeme      :: Lexeme\n" ++
         "                   , token_id    :: TokenID}\n" ++
@@ -71,27 +71,25 @@ instances = start ++ monoid_size ++ monoid_tokens ++ measured_tokens ++
           "  Size m `mappend` Size n = Size (m+n)\n\n"
         monoid_tokens =
           "instance Monoid Tokens where\n" ++
-          "  mempty = Tokens mempty\n" ++
+          "  mempty = Tokens $ \\_ -> (mempty,-1)\n" ++
           "  mappend = combineTokens\n\n"
         measured_tokens =
           "instance F.Measured (Tokens,Size) Byte where\n" ++
           "  measure byte = \n" ++
           "    let t = automata ! fromEnum byte\n" ++
-          "    in (Tokens $ Map.map (\\os -> (singleton ("++
-          "Token [toEnum (fromEnum byte)]\n" ++
-          "                                              " ++
-          "(accepting ! os)), os)) t, Size 1)\n\n"
+          "        lex = [toEnum (fromEnum byte)]\n" ++
+          "    in (Tokens $ \\is -> case Map.lookup is t of\n" ++
+          "      Nothing -> (singleton (Token lex []),-1)\n" ++
+          "      Just os -> (singleton (Token lex (accepting ! os)),os),Size 1)\n"
         show_token =
           "instance Show Token where\n" ++
           "  show token = printf \"%-11s:%s\" (showID $ token_id token)\n" ++
           "                                   (fixLex $ lexeme token)\n"
         show_tokens =
           "instance Show Tokens where\n" ++
-          "  show (Tokens seqs) = case Map.lookup (startState) seqs of\n" ++
-          "    Just (toks,_) -> foldlWithIndex (\\str _ tok -> str ++" ++
-          "\"\\n\" ++ show tok) \"\" toks\n" ++
-          "    _             -> \"Lexical error\"\n\n"
-
+          "  show tokens = let (toks,_) = getSeq tokens $ startState\n" ++
+          "                in foldlWithIndex (\\str _ tok -> str ++" ++
+          "\"\\n\" ++ show tok) \"\" toks\n"
 
 dfaOut :: DFA' SNum Code -> String
 dfaOut dfa = start ++ newFun "startState" [] "SNum" ++ show start_state ++ "\n"
@@ -113,23 +111,19 @@ replace ls repl strs | ls == take (length ls) strs = repl ++ replace ls repl
                      | otherwise = head strs : (replace ls repl $ tail strs)
 
 combinatorFuns :: String
-combinatorFuns = start ++ combineTokens ++ combineSequence ++ mergeTokens ++ appendTokens
+combinatorFuns = start ++ combineTokens ++ mergeTokens ++ appendTokens
   where start = createBlockComment "The Combinators for the tokens"
         combineTokens =
           newFun "combineTokens" [("toks1","Tokens"),("toks2","Tokens")] "Tokens" ++
-          "Map.foldlWithKey (combineSequence toks2) mempty (getSeq toks1)\n"
-        combineSequence =
-          newFun "combineSequence" [("toks2","Tokens"),("outToks","Tokens")
-                                   ,("inState","SNum"),("(tokSeq1,midState)","(Seq Token,SNum)")]
-                                   "Tokens" ++ "\n" ++
-          "  Tokens $ case Map.lookup midState (getSeq toks2) of\n" ++
-          "    Just (tokSeq2,outState) ->\n" ++
-          "      Map.insert inState (mergeTokens tokSeq1 tokSeq2,outState) (getSeq outToks)\n" ++
-          "    Nothing -> let _ :> t1end = viewr tokSeq1\n" ++
-          "               in case (token_id t1end,Map.lookup startState (getSeq toks2)) of\n" ++
-          "      (a:as,Just (tokSeq2,outState)) ->\n" ++
-          "        Map.insert inState (appendTokens tokSeq1 tokSeq2,outState) (getSeq outToks)\n" ++
-          "      _                              -> getSeq outToks"
+          "Tokens $ \\in_state ->\n" ++
+          "  let (seq1,mid_state) = getSeq toks1 $ in_state\n" ++
+          "  in case (mid_state,getSeq toks2 $ mid_state) of\n" ++
+          "    (-1,_) -> (mempty,-1)\n" ++
+          "    (_,(_,-1)) -> if isAccepting seq1\n" ++
+          "                  then let (seq2,out_state) = getSeq toks2 $ startState\n" ++
+          "                       in (appendTokens seq1 seq2,out_state)\n" ++
+          "                  else (mempty,-1)\n" ++
+          "    (_,(seq2,out_state)) -> (mergeTokens seq1 seq2,out_state)\n"
         mergeTokens =
           newFun "mergeTokens" [("toks1","Seq Token"),("toks2","Seq Token")] "Seq Token" ++
           "\n" ++
@@ -141,7 +135,7 @@ combinatorFuns = start ++ combineTokens ++ combineSequence ++ mergeTokens ++ app
           "mappend\n"
 
 utilFuns :: String
-utilFuns = start ++ tokens ++ encode ++ showID ++ fixLex ++ insertAtIndex
+utilFuns = start ++ tokens ++ isAccepting ++ encode ++ showID ++ fixLex ++ insertAtIndex
   where start = createBlockComment "Utility functions"
         tokens =
           newFun "tokens" [("","LexTree")] "Tokens" ++ "fst . F.measure\n"
@@ -181,6 +175,10 @@ utilFuns = start ++ tokens ++ encode ++ showID ++ fixLex ++ insertAtIndex
           "  then error \"index must be >= 0\"\n" ++
           "  else l F.>< (lexCode str) F.>< r\n" ++
           "     where (l,r) = F.split (\\(_,Size n) -> n>i) tree\n\n"
+        isAccepting =
+          newFun "isAccepting" [("toks","Seq Token")] "Bool" ++
+          "token_id tok /= []\n" ++
+          "  where _ :> tok = viewr toks\n"
           
 mainFuns :: String
 mainFuns = start ++ lexFile ++ readCode ++ lexCode

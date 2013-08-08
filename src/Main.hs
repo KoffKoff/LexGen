@@ -17,11 +17,16 @@ import Data.Monoid
 
 --Only supports the first 256 characters of UTF-8 atm.
 instance Measured (LexedTokens,Size) (Byte,DFA' SNum Code) where
-  measure (c,dfa) =
+  measure (c,dfa) = (L $ \is ->
     let t = (A.dfa_states dfa) ! (fromEnum c)
-    in (L $ M.map (\os -> (Single ([toEnum (fromEnum c)],accepts dfa ! os)
-                         ,(os,accepts dfa ! os))) t, Size 1)
-                         
+        os' = M.lookup is t
+    in case os' of
+      Nothing -> (Single ("",[]),-1)
+      Just os -> let acc = accepts dfa ! os
+                 in (Single ([toEnum (fromEnum c)],acc),os)
+    , Size 1)
+-- error "Something went wrong: " ++ toEnum (fromEnum c) ++ "-" ++ show is
+
 main :: IO ()
 main = do args <- getArgs
           case args of
@@ -42,6 +47,7 @@ readCode code_file = do h <- openFile code_file ReadMode
                         hSetEncoding h utf8
                         hGetContents h >>= return . concatMap encode
 
+
 -- Functions for some debugging
 insertStart :: Byte -> TokenTree -> TokenTree
 insertStart b str = (b,dfa) <| (h,dfa) <| str'
@@ -50,14 +56,13 @@ insertStart b str = (b,dfa) <| (h,dfa) <| str'
 insertEnd :: TokenTree -> Byte -> TokenTree
 insertEnd str b = str' |> (l,dfa) |> (b,dfa)
   where (str' :> (l,dfa)) = viewr str
-
+  
 insertAtIndex :: Byte -> Int -> TokenTree -> TokenTree
 insertAtIndex b i tree 
   | i <  0 = error "index must be >= 0"
   | i >= 0 = l >< ((b,dfa) <| r)
         where (l,r) = split (\(_,Size n) -> n>i) tree
               (_ :> (_,dfa)) = viewr tree
-  
 
 headF :: TokenTree -> Byte
 headF f = fst h

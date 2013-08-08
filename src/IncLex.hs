@@ -13,13 +13,12 @@ import Data.Sequence as S
 import Text.Printf
 import Data.Foldable
 
-
 instance Monoid Size where
    mempty = Size 0
    Size m `mappend` Size n = Size (m+n)
    
 instance Monoid LexedTokens where
-  mempty = L mempty
+  mempty = L $ \_ -> (Single ("",[]),-1)
   mappend = combineTokens
 
 instance Show Token where
@@ -32,9 +31,8 @@ instance Show Tokens where
                              show (makeTok pre)
 
 instance Show LexedTokens where
-  show (L seqs) = case Map.lookup 0 seqs of
-    Just (toks,_) -> show toks
-    _             -> "Lexical error."
+  show (L seqs) = case seqs start_state of
+    (toks,_) -> show toks
 
 -- Hardcoded atm, needs to be checked from the DFA
 start_state :: State
@@ -42,15 +40,15 @@ start_state = 0
 
 -- Merges every possible combinations of two token sequences
 combineTokens :: LexedTokens -> LexedTokens -> LexedTokens
-combineTokens (L seqs1) lseqs2 = Map.foldlWithKey (combineSequence lseqs2) mempty seqs1
-
--- Checks wether a token sequnce can be combined with a set of token sequences.
-combineSequence :: LexedTokens -> LexedTokens -> SNum -> (Tokens,OutState) -> LexedTokens
-combineSequence (L seqs2) (L updSeqs) is (toks1,(os,acc)) = L $ case Map.lookup os seqs2 of
-  Just (toks2,osa) -> Map.insert is (mergeTokens toks1 toks2,osa) updSeqs
-  Nothing          -> case (acc,Map.lookup 0 seqs2) of
-    (a:as,Just (toks2,osa)) -> Map.insert is (appendTokens toks1 toks2,osa) updSeqs
-    _                       -> updSeqs
+combineTokens toks1 toks2 = L $ \in_state ->
+  let (seq1,mid_state) = getMap toks1 $ in_state
+  in case (mid_state,getMap toks2 $ mid_state) of
+    (-1,_) -> getMap mempty $ -1
+    (_,(_,-1)) -> if isAccepting seq1
+                  then let (seq2,out_state) = getMap toks2 $ start_state
+                       in (appendTokens seq1 seq2,out_state)
+                  else getMap mempty $ -1
+    (_,(seq2,out_state)) -> (mergeTokens seq1 seq2,out_state)
 
 -- Combines the right partial token with the left partial token and returns a
 -- sequence of tokens.
@@ -68,6 +66,10 @@ appendTokens (Single tstart) (Toks suf ts tend) = Toks tstart (makeTok suf <| ts
 appendTokens (Toks tstart ts pre) (Single tend) = Toks tstart (ts |> makeTok pre) tend
 appendTokens (Toks tstart ts1 pre) (Toks suf ts2 tend) =
   Toks tstart ((ts1 |> makeTok pre) >< (makeTok suf <| ts2)) tend
+
+isAccepting :: Tokens -> Bool
+isAccepting (Single (_,acc)) = acc /= []
+isAccepting (Toks _ _ (_,acc)) = acc /= []
 
 -- Constructs a token of a string and a list of accepting states
 makeTok :: (String,[Accept Code]) -> Token

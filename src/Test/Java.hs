@@ -29,7 +29,7 @@ type Transition = Map SNum SNum
 type Automata   = Array Int Transition
 type Accepts    = Array SNum [Accept Code]
 type Lexeme     = String
-newtype Tokens  = Tokens {getSeq :: Map SNum (Seq Token,SNum)}
+newtype Tokens  = Tokens {getSeq :: SNum -> (Seq Token,SNum)}
 type LexTree    = FingerTree Tokens Byte
 
 data Token = Token { lexeme      :: Lexeme
@@ -48,18 +48,19 @@ data Token = Token { lexeme      :: Lexeme
 -- Instances                                                                  --
 --------------------------------------------------------------------------------
 instance Monoid Tokens where
-  mempty = Tokens mempty
+  mempty = Tokens $ \_ -> (mempty,-1)
   mappend = combineTokens
 
 instance F.Measured Tokens Byte where
   measure byte = let t = automata ! fromEnum byte
-                 in Tokens $ Map.map (\os -> (singleton (Token [toEnum (fromEnum byte)]
-                                                         (accepting ! os)),os)) t
+                     char = [toEnum (fromEnum byte)]
+                 in Tokens $ \is -> case Map.lookup is t of
+                   Just os -> (singleton (Token char (accepting ! os)),os)
+                   Nothing -> (mempty,-1)
 
 instance Show Tokens where
-  show (Tokens seqs) = case Map.lookup (startState) seqs of
-    Just (toks,_) -> foldlWithIndex (\str _ tok -> str ++"\n" ++ show tok) "" toks
-    _             -> "Lexical error"
+  show (Tokens seqs) = case seqs startState of
+    (toks,_) -> foldlWithIndex (\str _ tok -> str ++"\n" ++ show tok) "" toks
 
 instance Show Token where
   show token = printf "%-11s:%s" (showID $ token_id token)
@@ -88,18 +89,16 @@ lexCode = F.fromList . concatMap (encode)
 --------------------------------------------------------------------------------
 
 combineTokens :: Tokens -> Tokens -> Tokens
-combineTokens toks1 toks2 = Map.foldlWithKey (combineSequence toks2) mempty (getSeq toks1)
+combineTokens toks1 toks2 = Tokens $ \in_state ->
+  let (seq1,mid_state) = getSeq toks1 $ in_state
+  in case (mid_state,getSeq toks2 $ mid_state) of
+    (-1,_) -> (mempty,-1)
+    (_,(_,-1)) -> if isAccepting seq1
+                  then let (seq2,out_state) = getSeq toks2 $ startState
+                       in (appendTokens seq1 seq2,out_state)
+                  else (mempty,-1)
+    (_,(seq2,out_state)) -> (mergeTokens seq1 seq2,out_state)
 
-combineSequence :: Tokens -> Tokens -> SNum -> (Seq Token,SNum) -> Tokens
-combineSequence toks2 outToks inState (tokSeq1,midState) = 
-  Tokens $ case Map.lookup midState (getSeq toks2) of
-    Just (tokSeq2,outState) ->
-      Map.insert inState (mergeTokens tokSeq1 tokSeq2,outState) (getSeq outToks)
-    Nothing -> let _ :> t1end = viewr tokSeq1
-               in case (token_id t1end,Map.lookup startState (getSeq toks2)) of
-      (a:as,Just (tokSeq2,outState)) ->
-        Map.insert inState (appendTokens tokSeq1 tokSeq2,outState) (getSeq outToks)
-      _                              -> getSeq outToks
 mergeTokens :: Seq Token -> Seq Token -> Seq Token
 mergeTokens toks1 toks2 = 
   let toks1' :> token1 = viewr toks1
@@ -108,6 +107,10 @@ mergeTokens toks1 toks2 =
 
 appendTokens :: Seq Token -> Seq Token -> Seq Token
 appendTokens   = mappend
+
+isAccepting :: Seq Token -> Bool
+isAccepting toks = let _ :> tok = viewr toks
+                   in token_id tok /= []
 
 --------------------------------------------------------------------------------
 -- Utility functions                                                          --
