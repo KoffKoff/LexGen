@@ -1,4 +1,4 @@
-{-#LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}
+{-#LANGUAGE TypeSynonymInstances, MultiParamTypeClasses, FlexibleInstances #-}
 module Test.Java where
 
 import System.IO
@@ -30,11 +30,11 @@ type Automata   = Array Int Transition
 type Accepts    = Array SNum [Accept Code]
 type Lexeme     = String
 newtype Tokens  = Tokens {getSeq :: SNum -> (Seq Token,SNum)}
-type LexTree    = FingerTree Tokens Byte
+type LexTree    = FingerTree (Tokens,Size) Byte
 
 data Token = Token { lexeme      :: Lexeme
                    , token_id    :: TokenID}
-{-data Accept a
+data Size = Size Int{-data Accept a
   = Acc { accPrio       :: Int,
           accAction     :: Maybe a,
           accLeftCtx    :: Maybe CharSet, -- cannot be converted to byteset at this point.
@@ -47,21 +47,24 @@ data Token = Token { lexeme      :: Lexeme
 --------------------------------------------------------------------------------
 -- Instances                                                                  --
 --------------------------------------------------------------------------------
+instance Monoid Size where
+  mempty = Size 0
+  Size m `mappend` Size n = Size (m+n)
+
 instance Monoid Tokens where
   mempty = Tokens $ \_ -> (mempty,-1)
   mappend = combineTokens
 
-instance F.Measured Tokens Byte where
-  measure byte = let t = automata ! fromEnum byte
-                     char = [toEnum (fromEnum byte)]
-                 in Tokens $ \is -> case Map.lookup is t of
-                   Just os -> (singleton (Token char (accepting ! os)),os)
-                   Nothing -> (mempty,-1)
-
+instance F.Measured (Tokens,Size) Byte where
+  measure byte = 
+    let t = automata ! fromEnum byte
+        lex = [toEnum (fromEnum byte)]
+    in (Tokens $ \is -> case Map.lookup is t of
+      Nothing -> (singleton (Token lex []),-1)
+      Just os -> (singleton (Token lex (accepting ! os)),os),Size 1)
 instance Show Tokens where
-  show (Tokens seqs) = case seqs startState of
-    (toks,_) -> foldlWithIndex (\str _ tok -> str ++"\n" ++ show tok) "" toks
-
+  show tokens = let (toks,_) = getSeq tokens $ startState
+                in foldlWithIndex (\str _ tok -> str ++"\n" ++ show tok) "" toks
 instance Show Token where
   show token = printf "%-11s:%s" (showID $ token_id token)
                                    (fixLex $ lexeme token)
@@ -81,7 +84,7 @@ readCode file = do
   hGetContents handle >>= return . concatMap encode
 
 lexCode :: String -> LexTree
-lexCode = F.fromList . concatMap (encode)
+lexCode  = F.fromList . concatMap encode
 
 
 --------------------------------------------------------------------------------
@@ -108,16 +111,17 @@ mergeTokens toks1 toks2 =
 appendTokens :: Seq Token -> Seq Token -> Seq Token
 appendTokens   = mappend
 
-isAccepting :: Seq Token -> Bool
-isAccepting toks = let _ :> tok = viewr toks
-                   in token_id tok /= []
 
 --------------------------------------------------------------------------------
 -- Utility functions                                                          --
 --------------------------------------------------------------------------------
 
 tokens :: LexTree -> Tokens
-tokens  = F.measure
+tokens  = fst . F.measure
+
+isAccepting :: Seq Token -> Bool
+isAccepting toks = token_id tok /= []
+  where _ :> tok = viewr toks
 
 encode :: Char -> [Word8]
 encode  = map fromIntegral . go . fromEnum
@@ -147,6 +151,14 @@ fixLex :: Lexeme -> Lexeme
 fixLex lexeme = foldl convert_linebreaks "" lexeme
   where convert_linebreaks str '\n' = str ++ "\\n"
         convert_linebreaks str c = str ++ [c]
+
+insertAtIndex :: String -> Int -> LexTree -> LexTree
+insertAtIndex str i tree = 
+  if i < 0
+  then error "index must be >= 0"
+  else l F.>< (lexCode str) F.>< r
+     where (l,r) = F.split (\(_,Size n) -> n>i) tree
+
 
 
 --------------------------------------------------------------------------------
