@@ -48,7 +48,9 @@ combineTokens toks1 toks2 = L $ \in_state ->
                   then let (seq2,out_state) = getMap toks2 $ start_state
                        in (appendTokens seq1 seq2,out_state)
                   else getMap mempty $ -1
-    (_,(seq2,out_state)) -> (mergeTokens seq1 seq2,out_state)
+    (_,(seq2,out_state)) -> if isAccepting seq2
+                            then (mergeTokens seq1 seq2,out_state)
+                            else getMap mempty $ -1
 
 -- Combines the right partial token with the left partial token and returns a
 -- sequence of tokens.

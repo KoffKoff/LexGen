@@ -7,7 +7,7 @@ import BuildDFA
 
 constructLexer :: FilePath -> String -> IO ()
 constructLexer alex_file out_file = do
-  dfa <- build alex_file
+  dfa <- showDFA alex_file
   let prg = langExts ++ "module " ++ out_file ++ " where\n\n" ++
             imports ++ types ++ instances ++ mainFuns ++ combinatorFuns ++ utilFuns ++ dfaOut dfa
   out_h <- alexOpenFile (out_file ++ ".hs") WriteMode
@@ -23,43 +23,32 @@ imports :: String
 imports = "import System.IO\n" ++
           "import Data.Monoid\n" ++
           "import Data.Word\n" ++
-          "import Data.Maybe\n" ++
           "import Data.Bits\n" ++
           "import Data.FingerTree (FingerTree)\n" ++
           "import qualified Data.FingerTree as F\n" ++
-          "import Data.Map (Map)\n" ++
-          "import qualified Data.Map as Map\n" ++
           "import Data.Array\n" ++
           "import Data.Sequence\n" ++
-          "import Text.Printf\n --maybe cut this later\n" ++
-          "import Alex.AbsSyn\n\n"
+          "import Text.Printf\n"
+
 
 langExts :: String
 langExts = "{-#LANGUAGE TypeSynonymInstances, MultiParamTypeClasses, FlexibleInstances #-}\n"
 
 types :: String
 types = createBlockComment "Data Types" ++
-        "--type SNum       = Int\n" ++
-        "--type Code       = String\n" ++
+        "type SNum       = Int\n" ++
         "type Byte       = Word8\n" ++
-        "type TokenID    = [Accept Code]\n" ++
-        "type Transition = Map SNum SNum\n" ++
-        "type Automata   = Array Int Transition\n" ++
-        "type Accepts    = Array SNum [Accept Code]\n" ++
         "type Lexeme     = String\n" ++
         "newtype Tokens  = Tokens {getSeq :: SNum -> (Seq Token,SNum)}\n" ++
-        "type LexTree    = FingerTree (Tokens,Size) Byte\n\n" ++
+        "data Size = Size Int\n" ++
+        "type LexTree    = FingerTree (Tokens,Size) Byte\n" ++
         "data Token = Token { lexeme      :: Lexeme\n" ++
-        "                   , token_id    :: TokenID}\n" ++
-        "data Size = Size Int" ++
-        "{-data Accept a\n" ++
-        "  = Acc { accPrio       :: Int,\n" ++
-        "          accAction     :: Maybe a,\n" ++
-        "          accLeftCtx    :: Maybe CharSet," ++
-        " -- cannot be converted to byteset at this point.\n" ++
-        "          accRightCtx   :: RightContext SNum\n" ++
-        "    }\n" ++
-        "    deriving (Eq,Ord)-}\n\n"
+        "                   , token_id    :: AlexAcc (String -> Tok) ()}\n" ++
+        "data Size = Size Int\n" ++
+        "data AlexAcc a user\n" ++
+        "  = AlexAccNone\n" ++
+        "  | AlexAcc a\n" ++
+        "  | AlexAccSkip\n"
 
 instances :: String
 instances = start ++ monoid_size ++ monoid_tokens ++ measured_tokens ++ 
@@ -79,8 +68,8 @@ instances = start ++ monoid_size ++ monoid_tokens ++ measured_tokens ++
           "    let t = automata ! fromEnum byte\n" ++
           "        lex = [toEnum (fromEnum byte)]\n" ++
           "    in (Tokens $ \\is -> case Map.lookup is t of\n" ++
-          "      Nothing -> (singleton (Token lex []),-1)\n" ++
-          "      Just os -> (singleton (Token lex (accepting ! os)),os),Size 1)\n"
+          "      Nothing -> (singleton (Token lex AlexAccNone),-1)\n" ++
+          "      Just os -> (singleton (Token lex (alex_accept ! os)),os),Size 1)\n"
         show_token =
           "instance Show Token where\n" ++
           "  show token = printf \"%-11s:%s\" (showID $ token_id token)\n" ++
@@ -91,24 +80,15 @@ instances = start ++ monoid_size ++ monoid_tokens ++ measured_tokens ++
           "                in foldlWithIndex (\\str _ tok -> str ++" ++
           "\"\\n\" ++ show tok) \"\" toks\n"
 
-dfaOut :: DFA' SNum Code -> String
-dfaOut dfa = start ++ newFun "startState" [] "SNum" ++ show start_state ++ "\n"
-             ++ automata ++ accepting
-  where start_state:_ = start_states dfa
+dfaOut :: ShowS -> String
+dfaOut dfa = start ++ dfa "" -- $ newFun "startState" [] "SNum" ++ show start_state ++ "\n")
+           --  ++ automata ++ accepting
+  where {-start_state = 0 start_states dfa
         automata = newFun "automata" [] "Automata" ++
                    fixAutomata (show $ dfa_states dfa) ++ "\n"
         accepting = newFun "accepting" [] "Accepts" ++
-                    show (accepts dfa)
+                    show (accepts dfa)-}
         start = createBlockComment "The automata"
-
-fixAutomata :: String -> String
-fixAutomata automata = replace "fromList" "Map.fromList" automata
-
-replace :: String -> String -> String -> String
-replace _ _ "" = ""
-replace ls repl strs | ls == take (length ls) strs = repl ++ replace ls repl
-                                                     (drop (length ls) strs)
-                     | otherwise = head strs : (replace ls repl $ tail strs)
 
 combinatorFuns :: String
 combinatorFuns = start ++ combineTokens ++ mergeTokens ++ appendTokens
@@ -123,7 +103,9 @@ combinatorFuns = start ++ combineTokens ++ mergeTokens ++ appendTokens
           "                  then let (seq2,out_state) = getSeq toks2 $ startState\n" ++
           "                       in (appendTokens seq1 seq2,out_state)\n" ++
           "                  else (mempty,-1)\n" ++
-          "    (_,(seq2,out_state)) -> (mergeTokens seq1 seq2,out_state)\n"
+          "    (_,(seq2,out_state)) -> if isAccepting seq2\n" ++
+          "                            then (mergeTokens seq1 seq2,out_state)\n" ++
+          "                            else (mempty,-1)\n"
         mergeTokens =
           newFun "mergeTokens" [("toks1","Seq Token"),("toks2","Seq Token")] "Seq Token" ++
           "\n" ++
@@ -135,7 +117,7 @@ combinatorFuns = start ++ combineTokens ++ mergeTokens ++ appendTokens
           "mappend\n"
 
 utilFuns :: String
-utilFuns = start ++ tokens ++ isAccepting ++ encode ++ showID ++ fixLex ++ insertAtIndex
+utilFuns = start ++ tokens ++ isAccepting ++ encode ++ fixLex ++ insertAtIndex
   where start = createBlockComment "Utility functions"
         tokens =
           newFun "tokens" [("","LexTree")] "Tokens" ++ "fst . F.measure\n"
@@ -157,12 +139,6 @@ utilFuns = start ++ tokens ++ isAccepting ++ encode ++ showID ++ fixLex ++ inser
           "                        , 0x80 + ((oc `shiftR` 6) .&. 0x3f)\n" ++
           "                        , 0x80 + oc .&. 0x3f\n" ++
           "                        ]\n"
-        showID =
-          newFun "showID" [("tokenid","TokenID")] "String" ++
-          "case tokenid of\n" ++
-          "  []   -> \"No Token\"\n" ++
-          "  accs -> show $ map show_acc_num accs\n" ++
-          "  where show_acc_num (Acc p _ _ _) = \"Acc \" ++ show p\n"
         fixLex =
           newFun "fixLex" [("lexeme","Lexeme")] "Lexeme" ++
           "foldl convert_linebreaks \"\" lexeme\n" ++

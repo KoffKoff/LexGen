@@ -1,11 +1,12 @@
 {-# LANGUAGE CPP, FlexibleInstances #-}
-module BuildDFA (build, makeDFA, alexReadFile) where
+module BuildDFA (build, showDFA, alexReadFile) where
 
 import Alex.AbsSyn
 import Alex.CharSet
 import Alex.DFA
 import Alex.DFAMin
 import Alex.NFA
+import Alex.Output
 import Alex.ParseMonad ( runP, AlexPosn(..))
 import Alex.Parser
 import AbsSyn
@@ -48,17 +49,29 @@ alexOpenFile file mode = do
 alexOpenFile = openFile
 #endif
 
+showDFA :: FilePath -> IO ShowS
+showDFA file = do (dfa,acts) <- getDFA file
+                  return $ acts . showString "\n" .
+                    outputDFA HaskellTarget 0 "" dfa . showStart dfa
+
+showStart :: DFA SNum Code -> ShowS
+showStart dfa = showString "\nstartState = " .
+                shows (head $ dfa_start_states dfa) . showString "\n"
+
+build :: FilePath -> IO (DFA' SNum Code)
+build file = getDFA file >>= return . dfaToDFA' . fst
+
 -- Reads a file and callse parseScanner followed by makeDFA on the content
 -- MOVE TO WRAPPER
---build :: FilePath -> IO (DFA' SNum Code)
-build file = do
+getDFA :: FilePath -> IO (DFA SNum Code,ShowS)
+getDFA file = do
     basename <- case (reverse file) of
                     'x':'.':r   -> return (reverse r)
                     _           -> error "File must end with suffix '.x'"
     prg <- alexReadFile file
-    let dfa = makeDFA $ parseScanner file prg
-        dfa' = dfaToDFA' dfa
-    return dfa'
+    return . makeDFA $ parseScanner file prg
+--        dfa' = dfaToDFA' dfa
+--    return dfa'
 
 -- Gets the scanner from the code in the alex file
 parseScanner :: FilePath -> String -> Scanner
@@ -72,10 +85,11 @@ parseScanner file prg =
 -- At the moment we are only interested in the scanner, the directives may be intersting later
 
 -- Does some work on the scanner and turns it into an minimized DFA
-makeDFA :: Scanner -> DFA SNum Code
+makeDFA :: Scanner -> (DFA SNum Code,ShowS)
 makeDFA scanner1 = 
     let (scanner2, scs, _) = encodeStartCodes scanner1
-    in minimizeDFA $ scanner2dfa UTF8 (fst $ extractActions scanner2) scs
+        (scanner_final,actions) = extractActions scanner2
+    in (minimizeDFA $ scanner2dfa UTF8 scanner_final scs,actions)
 
 initialParserEnv :: (Map String CharSet, Map String RExp)
 initialParserEnv = (initSetEnv, initREEnv)
