@@ -151,9 +151,10 @@ unescapeInitTail = unesc . tail where
 -- A divide and conquer wrapper.
 -------------------------------------------------------------------
 
-newtype Tokens  = Tokens {getSeq :: SNum -> (Seq PartToken,SNum)}
+type State = Int
+newtype Transition  = Trans {getSeq :: State -> (Seq PartToken,State)}
 data Size       = Size Int
-type LexTree    = FingerTree (Tokens,Size) Char
+type LexTree    = FingerTree (Transition,Size) Char
 data PartToken = Token { lexeme      :: String
                        , token_id    :: [AlexAcc (Posn -> String -> Tok) ()]}
 
@@ -161,32 +162,36 @@ instance Monoid Size where
   mempty = Size 0
   Size m `mappend` Size n = Size (m+n)
 
-instance Monoid Tokens where
-  mempty = Tokens $ \_ -> (mempty,-1)
+instance Monoid Transition where
+  mempty = Trans $ \_ -> (mempty,-1)
   mappend = combineTokens
 
-instance F.Measured (Tokens,Size) Char where
+instance F.Measured (Transition,Size) Char where
   measure c =
     let bytes = encode c
-    in (Tokens $ \is -> case foldl automata is bytes of
+    in (Trans $ \is -> case foldl automata is bytes of
       -1 -> (singleton (Token [c] [AlexAccNone]),-1)
       os -> (singleton (Token [c] (alex_accept ! os)),os),Size 1)
 
-combineTokens :: Tokens -> Tokens -> Tokens
-combineTokens toks1 toks2 = Tokens $ \in_state ->
+combineTokens :: Transition -> Transition -> Transition
+combineTokens toks1 toks2 = Trans $ \in_state ->
   let (seq1,mid_state) = getSeq toks1 $ in_state
+      append seq1 = let (seq2,out_state) = getSeq toks2 $ head startState
+                    in (appendTokens seq1 seq2,out_state)
   in case (mid_state,getSeq toks2 $ mid_state) of
-    (-1,_) -> if isSingle seq1 in_state
-              then append seq1
-              else (mempty,-1)
-    (_,(_,-1)) -> if isAccepting seq1
-                  then append seq1
-                  else (mempty,-1)
+    (-1,_) -> -- Illegal left hand-side
+      if isSingle seq1 in_state
+      then error $ "Illegal character: " ++ show lastToken 
+      else (mempty,-1) 
+    (_,(_,-1)) -> -- Uncombinable tokens
+      if isAccepting seq1
+      then append seq1
+      else if isSingle seq1 in_state
+           then error $ "Unfinnished token: " ++ show lastToken
+           else (mempty,-1) -- This is an illegal substring
     (_,(seq2,out_state)) -> if isAccepting seq2
                             then (mergeTokens seq1 seq2,out_state)
                             else (mempty,-1)
-  where append seq1 = let (seq2,out_state) = getSeq toks2 $ head startState
-                      in (appendTokens seq1 seq2,out_state)
 
 mergeTokens :: Seq PartToken -> Seq PartToken -> Seq PartToken
 mergeTokens toks1 toks2 = 
@@ -195,12 +200,12 @@ mergeTokens toks1 toks2 =
   in (toks1' |> Token (lexeme token1 ++ lexeme token2) (token_id token2)) >< toks2'
 
 appendTokens :: Seq PartToken -> Seq PartToken -> Seq PartToken
-appendTokens   = mappend
+appendTokens = mappend
 
 makeTree :: String -> LexTree
-makeTree  = F.fromList
+makeTree = F.fromList
 
-treeToTokens :: LexTree -> Tokens
+treeToTokens :: LexTree -> Transition
 treeToTokens  = fst . F.measure
 
 isAccepting :: Seq Token -> Bool
@@ -250,7 +255,7 @@ encode  = map fromIntegral . go . fromEnum
 
 -- Show instances for testing purposes
 
-instance Show Tokens where
+instance Show Transition where
   show = show . fst . (flip getSeq) 0
 
 instance Show PartToken where

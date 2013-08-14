@@ -13,6 +13,7 @@ import Control.DeepSeq
 import Data.FingerTree
 import Data.Map as M (foldrWithKey',insert,empty)
 import Data.Foldable (mapM_)
+import Data.Sequence as S hiding (zip)
 
 instance NFData J.LexTree where
   rnf = (flip seq) () . unsafeFmap rnf
@@ -30,14 +31,17 @@ main = do
   let tests = case tests' of
         [] -> allTest
         _  -> tests'
-  let trees = force $ map J.lexCode codes
+      trees' = map J.lexCode codes
+      trees = map (\tree -> insertAtIndex "i" 2 tree) trees'
+--      trees = trees'
+--                            else insertAtIndex "\n\"Inserted Text\"\n" 0 tree) trees'
       testFuns =
         [ map (benchStuff alexScanTokens) (zip codes files)
         , map (benchStuff (J.tokens . J.lexCode)) (zip codes files)
         , map (benchStuff J.tokens) (zip trees files)
         -- , map (benchStuff (JO.tokens . JO.lexCode)) (zip codes files)
         ]
-  trees `deepseq` withArgs (tests ++ arg) $
+  trees' `deepseq` withArgs (tests ++ arg) $
     defaultMain [ bgroup name tests | (name,tests) <- zip allTest testFuns ]
 
     

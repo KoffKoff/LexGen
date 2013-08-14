@@ -43,14 +43,17 @@ combineTokens :: LexedTokens -> LexedTokens -> LexedTokens
 combineTokens toks1 toks2 = L $ \in_state ->
   let (seq1,mid_state) = getMap toks1 $ in_state
   in case (mid_state,getMap toks2 $ mid_state) of
-    (-1,_) -> getMap mempty $ -1
+    (-1,_) -> if isSingle seq1 in_state
+              then append seq1
+              else getMap mempty $ -1
     (_,(_,-1)) -> if isAccepting seq1
-                  then let (seq2,out_state) = getMap toks2 $ start_state
-                       in (appendTokens seq1 seq2,out_state)
+                  then append seq1
                   else getMap mempty $ -1
     (_,(seq2,out_state)) -> if isAccepting seq2
                             then (mergeTokens seq1 seq2,out_state)
                             else getMap mempty $ -1
+  where append seq1 = let (seq2,out_state) = getMap toks2 $ start_state
+                      in (appendTokens seq1 seq2,out_state)
 
 -- Combines the right partial token with the left partial token and returns a
 -- sequence of tokens.
@@ -72,6 +75,11 @@ appendTokens (Toks tstart ts1 pre) (Toks suf ts2 tend) =
 isAccepting :: Tokens -> Bool
 isAccepting (Single (_,acc)) = acc /= []
 isAccepting (Toks _ _ (_,acc)) = acc /= []
+
+isSingle :: Tokens -> Int -> Bool
+isSingle (Single (lex,_)) 0 = P.length lex == 1
+isSingle (Toks _ _ (lex,_)) 0 = P.length lex == 1
+isSingle _ _ = False
 
 -- Constructs a token of a string and a list of accepting states
 makeTok :: (String,[Accept Code]) -> Token

@@ -178,15 +178,18 @@ combineTokens toks1 toks2 = Tokens $ \in_state ->
   let (seq1,mid_state) = getSeq toks1 $ in_state
       append = let (seq2,out_state) = getSeq toks2 startState
                in (appendTokens seq1 seq2,out_state)
+      _ :> lastToken = viewr seq1
   in case (mid_state,getSeq toks2 $ mid_state) of
     (-1,_) -> -- unacceptable left-hand-size
       if isSingle seq1 in_state
-              then append -- Why does it take one extra char?
-              else (mempty,-1) -- This is an illegal substring
+      then error $ "Illegal character: " ++ show lastToken
+      else (mempty,-1) -- This is an illegal substring
     (_,(_,-1)) -> -- tokens cannot be combined
       if isAccepting seq1
-                  then append
-                  else (mempty,-1) -- This is an illegal substring
+      then append
+      else if isSingle seq1 in_state
+           then error $ "Unfinnished token: " ++ show lastToken
+           else (mempty,-1) -- This is an illegal substring
     (_,(seq2,out_state)) -> if isAccepting seq2
                             then (mergeTokens seq1 seq2,out_state)
                             else (mempty,-1)
@@ -219,8 +222,9 @@ isAccepting toks = case token_id tok of
   where _ :> tok = viewr toks
 
 isSingle :: Seq PartToken -> Int -> Bool
-isSingle seq1 0 = let _ :> tok = viewr seq1
-                  in Prelude.length (lexeme tok) == 1
+isSingle seq1 0 = case viewr seq1 of
+  _ :> tok -> Prelude.length (lexeme tok) == 1
+  _        -> False
 isSingle _ _ = False
 
 insertAtIndex :: String -> Int -> LexTree -> LexTree
