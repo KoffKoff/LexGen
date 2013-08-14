@@ -1,16 +1,18 @@
 {-# LANGUAGE FlexibleInstances #-}
 module Main where
 
+import Prelude hiding (mapM_)
 import System.Environment
 import System.IO
 import Criterion.Main
 import Criterion.Config
 import Test.Java as J
-import Test.JavaOld as JO
+-- import Test.JavaOld as JO
 import Test.Lexjava
 import Control.DeepSeq
 import Data.FingerTree
 import Data.Map as M (foldrWithKey',insert,empty)
+import Data.Foldable (mapM_)
 
 instance NFData J.LexTree where
   rnf = (flip seq) () . unsafeFmap rnf
@@ -33,9 +35,9 @@ main = do
         [ map (benchStuff alexScanTokens) (zip codes files)
         , map (benchStuff (J.tokens . J.lexCode)) (zip codes files)
         , map (benchStuff J.tokens) (zip trees files)
-        , map (benchStuff (JO.tokens . JO.lexCode)) (zip codes files)
+        -- , map (benchStuff (JO.tokens . JO.lexCode)) (zip codes files)
         ]
-  withArgs (tests ++ arg) $
+  trees `deepseq` withArgs (tests ++ arg) $
     defaultMain [ bgroup name tests | (name,tests) <- zip allTest testFuns ]
 
     
@@ -58,3 +60,6 @@ core002 = "/*@ @@*/\n\n" ++
           "printString(\"foo\");\n" ++
           "return if true then else if 1 else null;\n" ++
           "}"
+          
+simpleTest = mapM_ putStrLn $ fmap (J.prToken) $ treeToTokens $ makeTree core002
+

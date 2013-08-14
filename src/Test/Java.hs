@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP, FlexibleInstances, MultiParamTypeClasses #-}
-{-# LINE 3 ".\Lexjava.x" #-}
 
 {-# OPTIONS -fno-warn-incomplete-patterns #-}
 module Test.Java where
@@ -41,8 +40,6 @@ alex_deflt :: Array Int Int
 alex_deflt = listArray (0,90) [-1,29,29,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,29,29,30,30,34,-1,34,5,5,-1,-1,29,42,42,-1,-1,-1,-1,-1,-1,-1,-1,43,43,43,43,-1,29,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
 
 alex_accept = listArray (0::Int,90) [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[(AlexAccSkip)],[(AlexAccSkip)],[(AlexAccSkip)],[(AlexAccSkip)],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_3))],[(AlexAcc (alex_action_4))],[(AlexAcc (alex_action_4))],[(AlexAcc (alex_action_5))],[(AlexAcc (alex_action_6))],[(AlexAcc (alex_action_7))],[(AlexAcc (alex_action_8))],[(AlexAcc (alex_action_8))],[(AlexAcc (alex_action_9))],[(AlexAcc (alex_action_10))],[(AlexAcc (alex_action_11))],[(AlexAcc (alex_action_11))],[(AlexAcc (alex_action_12))],[(AlexAcc (alex_action_12))],[(AlexAcc (alex_action_13))],[(AlexAcc (alex_action_14))],[(AlexAcc (alex_action_15))],[(AlexAcc (alex_action_15))],[(AlexAcc (alex_action_15))],[(AlexAcc (alex_action_16))],[(AlexAcc (alex_action_17))],[(AlexAcc (alex_action_18))],[(AlexAcc (alex_action_19))],[(AlexAcc (alex_action_20))],[(AlexAcc (alex_action_20))],[(AlexAcc (alex_action_20))],[(AlexAcc (alex_action_20))],[(AlexAcc (alex_action_20))],[(AlexAcc (alex_action_21))],[(AlexAcc (alex_action_22))],[(AlexAcc (alex_action_22))],[(AlexAcc (alex_action_23))],[(AlexAcc (alex_action_23))]]
-{-# LINE 56 ".\Lexjava.x" #-}
-
 
 tok f p s = f p s
 
@@ -96,6 +93,7 @@ prToken t = case t of
   PT _ (TV s) -> s
   PT _ (TD s) -> s
   PT _ (TC s) -> s
+  PT _ (TL s) -> show s
   PT _ (T_Unsigned s) -> s
   PT _ (T_Long s) -> s
   PT _ (T_UnsignedLong s) -> s
@@ -143,10 +141,11 @@ unescapeInitTail = unesc . tail where
 -- A divide and conquer wrapper.
 -------------------------------------------------------------------
 
-newtype Tokens  = Tokens {getSeq :: Int -> (Seq PartToken,Int)}
+type State = Int
+newtype Tokens  = Tokens {getSeq :: State -> (Seq PartToken,State)} -- Transition corresponding to a portion of the input.
 data Size       = Size Int
 type LexTree    = FingerTree (Tokens,Size) Char
-data PartToken = Token { lexeme      :: String
+data PartToken = Token { lexeme      :: String 
                        , token_id    :: [AlexAcc (Posn -> String -> Token) ()]}
 
 instance Show Tokens where
@@ -170,25 +169,27 @@ instance Monoid Tokens where
 instance F.Measured (Tokens,Size) Char where
   measure c =
     let bytes = encode c
-    in (Tokens $ \is -> case foldl automata is bytes of
+    in (Tokens $ \in_state -> case foldl automata in_state bytes of
       -1 -> (singleton (Token [c] []),-1)
       os -> (singleton (Token [c] (alex_accept ! os)),os),Size 1)
 
 combineTokens :: Tokens -> Tokens -> Tokens
 combineTokens toks1 toks2 = Tokens $ \in_state ->
   let (seq1,mid_state) = getSeq toks1 $ in_state
+      append = let (seq2,out_state) = getSeq toks2 startState
+               in (appendTokens seq1 seq2,out_state)
   in case (mid_state,getSeq toks2 $ mid_state) of
-    (-1,_) -> if isSingle seq1 in_state
-              then append seq1 -- Why does it take one extra char?
-              else (mempty,-1)
-    (_,(_,-1)) -> if isAccepting seq1
-                  then append seq1
-                  else (mempty,-1)
+    (-1,_) -> -- unacceptable left-hand-size
+      if isSingle seq1 in_state
+              then append -- Why does it take one extra char?
+              else (mempty,-1) -- This is an illegal substring
+    (_,(_,-1)) -> -- tokens cannot be combined
+      if isAccepting seq1
+                  then append
+                  else (mempty,-1) -- This is an illegal substring
     (_,(seq2,out_state)) -> if isAccepting seq2
                             then (mergeTokens seq1 seq2,out_state)
                             else (mempty,-1)
-  where append seq1 = let (seq2,out_state) = getSeq toks2 startState
-                      in (appendTokens seq1 seq2,out_state)
 
 mergeTokens :: Seq PartToken -> Seq PartToken -> Seq PartToken
 mergeTokens toks1 toks2 = 
@@ -279,11 +280,6 @@ alex_action_20 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
 alex_action_21 =  tok (\p s -> PT p (TL $ share $ unescapeInitTail s)) 
 alex_action_22 =  tok (\p s -> PT p (TI $ share s))    
 alex_action_23 =  tok (\p s -> PT p (TD $ share s)) 
-{-# LINE 1 "templates\GenericTemplate.hs" #-}
-{-# LINE 1 "templates\\GenericTemplate.hs" #-}
-{-# LINE 1 "<inbyggd>" #-}
-{-# LINE 1 "<kommandorad>" #-}
-{-# LINE 1 "templates\\GenericTemplate.hs" #-}
 -- -----------------------------------------------------------------------------
 -- ALEX TEMPLATE
 --
@@ -293,19 +289,12 @@ alex_action_23 =  tok (\p s -> PT p (TD $ share s))
 -- -----------------------------------------------------------------------------
 -- INTERNALS and main scanner engine
 
-{-# LINE 37 "templates\\GenericTemplate.hs" #-}
-
-{-# LINE 47 "templates\\GenericTemplate.hs" #-}
-
-{-# LINE 68 "templates\\GenericTemplate.hs" #-}
 alexIndexInt16OffAddr arr off = arr ! off
 
 
-{-# LINE 89 "templates\\GenericTemplate.hs" #-}
 alexIndexInt32OffAddr arr off = arr ! off
 
 
-{-# LINE 100 "templates\\GenericTemplate.hs" #-}
 quickIndex arr i = arr ! i
 
 

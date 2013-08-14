@@ -1,5 +1,12 @@
 THIS WE NEED TO DO!!!!!
 
+20130814:
+
+- Test some more with incremental updates
+- Experiment tabulating the top-level function
+- Cleanup/Productize (as an alex template)
+- Report.
+
 --LEXER STUFF--
 General:
 -Needs to ba able to handle special characters (UNASSIGNED)
