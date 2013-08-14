@@ -132,10 +132,10 @@ eitherResIdent tv s = treeFind resWords
   treeFind (B a t left right) | s < a  = treeFind left
                               | s > a  = treeFind right
                               | s == a = t
-{-
+
 resWords = b "int" (b "double" (b "catch" (b "break" (b "boolean" (b "abstract" N N) N) (b "case" (b "byte" N N) N)) (b "continue" (b "class" (b "char" N N) N) (b "do" (b "default" N N) N))) (b "float" (b "false" (b "extends" (b "else" N N) N) (b "finally" (b "final" N N) N)) (b "implements" (b "if" (b "for" N N) N) (b "instanceof" (b "import" N N) N)))) (b "static" (b "package" (b "native" (b "long" (b "interface" N N) N) (b "null" (b "new" N N) N)) (b "public" (b "protected" (b "private" N N) N) (b "short" (b "return" N N) N))) (b "throws" (b "synchronized" (b "switch" (b "super" N N) N) (b "throw" (b "this" N N) N)) (b "try" (b "true" (b "transient" N N) N) (b "while" (b "volatile" N N) N))))
    where b s = B s (TS s)
--}
+
 unescapeInitTail :: String -> String
 unescapeInitTail = unesc . tail where
   unesc s = case s of
@@ -155,7 +155,7 @@ newtype Tokens  = Tokens {getSeq :: SNum -> (Seq PartToken,SNum)}
 data Size       = Size Int
 type LexTree    = FingerTree (Tokens,Size) Char
 data PartToken = Token { lexeme      :: String
-                       , token_id    :: AlexAcc (Posn -> String -> Tok) ()}
+                       , token_id    :: [AlexAcc (Posn -> String -> Tok) ()]}
 
 instance Monoid Size where
   mempty = Size 0
@@ -176,7 +176,9 @@ combineTokens :: Tokens -> Tokens -> Tokens
 combineTokens toks1 toks2 = Tokens $ \in_state ->
   let (seq1,mid_state) = getSeq toks1 $ in_state
   in case (mid_state,getSeq toks2 $ mid_state) of
-    (-1,_) -> (mempty,-1)
+    (-1,_) -> if isSingle seq1 in_state
+              then append seq1
+              else (mempty,-1)
     (_,(_,-1)) -> if isAccepting seq1
                   then append seq1
                   else (mempty,-1)
@@ -206,6 +208,11 @@ isAccepting toks = case token_id tok of
   AlexAccNone -> False
   _           -> True
   where _ :> tok = viewr toks
+
+isSingle :: Seq PartToken -> Int -> Bool
+isSingle seq1 0 = let _ :> tok = viewr seq1
+                  in Prelude.length (lexeme tok) == 1
+isSingle _ _ = False
 
 insertAtIndex :: String -> Int -> LexTree -> LexTree
 insertAtIndex str i tree = 
@@ -240,4 +247,16 @@ encode  = map fromIntegral . go . fromEnum
                         , 0x80 + ((oc `shiftR` 6) .&. 0x3f)
                         , 0x80 + oc .&. 0x3f
                         ]
+
+-- Show instances for testing purposes
+
+instance Show Tokens where
+  show = show . fst . (flip getSeq) 0
+
+instance Show PartToken where
+  show (Token lex accs) = case map (\acc -> case acc of 
+    AlexAcc f -> show $ f (Pn 0 0 0) lex
+    AlexAccSkip -> "Skip:" ++ show lex) accs of
+                            [] -> "No Token:" ++ show lex ++ "\n"
+                            toks -> unlines toks
 }
