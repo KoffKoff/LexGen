@@ -13,6 +13,7 @@ General:
 -DFA needs to know accepting states. (Done, Maybe implement the priority structure?)
 -Implement good error messages (UNASSIGNED)
 -Implement test cases for our lexer (UNASSIGNED)
+-Stupid bug when certain stuff are inserted which result in no tokens being generated for example "/**/"
 
 HsBuilder.hs:
 -Datastructure for DFA (KoffKoff, Better datatstructure for the inner map?)
