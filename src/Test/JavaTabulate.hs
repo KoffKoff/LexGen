@@ -174,6 +174,20 @@ instance F.Measured (Tokens,Size) Char where
       os -> (singleton (Token [c] (alex_accept ! os)),os)) [0..numStates]
         ,Size 1)
 
+
+tabulate :: Int -> (Int -> b) -> Table Int b
+access :: Table Int b -> (Int -> b)
+
+{-
+type Table a b = Array Int b
+tabulate end f = listArray (0,end) [f i | i <- [0..end]]
+access a x = a ! x
+-}
+
+type Table a b = a -> b
+tabulate _ f = f
+access a x = a x
+
 combineTokens :: Tokens -> Tokens -> Tokens
 combineTokens toks1 toks2 = Tokens $ listArray (0,numStates) $ map (\in_state ->
   let (seq1,mid_state) = getSeq toks1 ! in_state
