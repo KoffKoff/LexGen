@@ -142,14 +142,14 @@ unescapeInitTail = unesc . tail where
 -------------------------------------------------------------------
 
 type State = Int
-newtype Tokens  = Tokens {getSeq :: State -> (Seq PartToken,State)} -- Transition corresponding to a portion of the input.
+newtype Tokens  = Tokens {getSeq :: Array State (Seq PartToken,State)} -- Transition corresponding to a portion of the input.
 data Size       = Size Int
 type LexTree    = FingerTree (Tokens,Size) Char
 data PartToken = Token { lexeme      :: String 
                        , token_id    :: [AlexAcc (Posn -> String -> Token) ()]}
 
 instance Show Tokens where
-  show = show . fst . (flip getSeq) 0
+  show = show . fst . flip (!) 0 . getSeq
 
 instance Show PartToken where
   show (Token lex accs) = case map (\acc -> case acc of 
@@ -163,23 +163,24 @@ instance Monoid Size where
   Size m `mappend` Size n = Size (m+n)
 
 instance Monoid Tokens where
-  mempty = Tokens $ \_ -> (mempty,-1)
+  mempty = Tokens $ listArray (0,numStates) $ repeat (mempty,-1)
   mappend = combineTokens
 
 instance F.Measured (Tokens,Size) Char where
   measure c =
     let bytes = encode c
-    in (Tokens $ \in_state -> case foldl automata in_state bytes of
+    in (Tokens $ listArray (0,numStates) $ map (\in_state -> case foldl automata in_state bytes of
       -1 -> (singleton (Token [c] []),-1)
-      os -> (singleton (Token [c] (alex_accept ! os)),os),Size 1)
+      os -> (singleton (Token [c] (alex_accept ! os)),os)) [0..numStates]
+        ,Size 1)
 
 combineTokens :: Tokens -> Tokens -> Tokens
-combineTokens toks1 toks2 = Tokens $ \in_state ->
-  let (seq1,mid_state) = getSeq toks1 $ in_state
-      append = let (seq2,out_state) = getSeq toks2 startState
+combineTokens toks1 toks2 = Tokens $ listArray (0,numStates) $ map (\in_state ->
+  let (seq1,mid_state) = getSeq toks1 ! in_state
+      append = let (seq2,out_state) = getSeq toks2 ! startState
                in (appendTokens seq1 seq2,out_state)
       _ :> lastToken = viewr seq1
-  in case (mid_state,getSeq toks2 $ mid_state) of
+  in case (mid_state,getSeq toks2 ! mid_state) of
     (-1,_) -> -- unacceptable left-hand-size
       if isSingle seq1 in_state
       then error $ "Illegal character: " ++ show lastToken
@@ -194,7 +195,7 @@ combineTokens toks1 toks2 = Tokens $ \in_state ->
                             then (mergeTokens seq1 seq2,out_state)
                             else if isAccepting seq1
                                  then append
-                                 else (mempty,-1)
+                                 else (mempty,-1)) [0..numStates]
 
 mergeTokens :: Seq PartToken -> Seq PartToken -> Seq PartToken
 mergeTokens toks1 toks2 = 
@@ -210,7 +211,7 @@ makeTree  = F.fromList
 
 treeToTokens :: LexTree -> Seq Token
 treeToTokens tree = let seq = fst $ F.measure tree
-                        partToks = fst . getSeq seq $ startState
+                        partToks = fst (getSeq seq ! startState)
                     in foldlWithIndex showToken empty partToks
   where showToken toks i (Token lex accs) = case accs of
           [] -> toks
@@ -237,6 +238,7 @@ insertAtIndex str i tree =
      where (l,r) = F.split (\(_,Size n) -> n>i) tree
 
 startState = 0
+numStates = 90
 
 automata :: Int -> Word8 -> Int
 automata s c = let base   = alex_base ! s
