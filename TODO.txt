@@ -1,5 +1,26 @@
 THIS WE NEED TO DO!!!!!
 
+20130821:
+
+Current solution:
+
+Transition = State -> (Prefix,Seq Tokens,Suffix)
+Suffix = Either State -- This is an accepting states
+                ((PartialToken,State),(Sequence of 'unsure,small' tokens,PartialToken,State))
+
+- Test for full correctness:
+  * take a valid input
+  * split it in all intermediate positions; and for each of those:
+    * parse parts separately
+    * combine
+- Design proper incrementality test
+  - Experiment tabulating the top-level function
+- Cleanup/Productize (as an alex template)
+- Report:
+  - Explain "most general" solution, without longest-matching rule
+  - Compare the pros and cons. of various approaches. (including why some do not work at all)
+
+
 20130814:
 
 - Test some more with incremental updates
