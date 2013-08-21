@@ -142,14 +142,29 @@ unescapeInitTail = unesc . tail where
 -------------------------------------------------------------------
 
 type State = Int
-newtype Tokens  = Tokens {getSeq :: State -> (Seq PartToken,State)} -- Transition corresponding to a portion of the input.
-data Size       = Size Int
-type LexTree    = FingerTree (Tokens,Size) Char
+newtype Transition = Trans {getTrans :: State -> Tokens} -- Transition corresponding to a portion of the input.
+data Tokens    = Tokens {currentSeq :: Seq PartToken
+                        ,outState   :: State
+                        ,suffix     :: Suffix}
+                 deriving Show
+data Suffix    = None
+               | End Tokens
+                 deriving Show
+data Size      = Size Int
+type LexTree   = FingerTree (Transition,Size) Char
 data PartToken = Token { lexeme      :: String 
-                       , token_id    :: [AlexAcc (Posn -> String -> Token) ()]}
+                       , token_id    :: Accepts}
+type Accepts   = [AlexAcc (Posn -> String -> Token) ()]
 
-instance Show Tokens where
-  show = show . fst . (flip getSeq) 0
+tabulate :: Int -> (Int -> b) -> Table Int b
+access :: Table Int b -> (Int -> b)
+
+type Table a b = a -> b
+tabulate _ f = f
+access a x = a x
+
+--instance Show Tokens where
+--  show = show . fst . (flip getTrans) 0
 
 instance Show PartToken where
   show (Token lex accs) = case map (\acc -> case acc of 
@@ -162,69 +177,117 @@ instance Monoid Size where
   mempty = Size 0
   Size m `mappend` Size n = Size (m+n)
 
-instance Monoid Tokens where
-  mempty = Tokens $ \_ -> (mempty,-1)
+instance Monoid Transition where
+  mempty = Trans $ \_ -> emptyTokens
   mappend = combineTokens
 
-instance F.Measured (Tokens,Size) Char where
+instance F.Measured (Transition,Size) Char where
   measure c =
     let bytes = encode c
-    in (Tokens $ \in_state -> case foldl automata in_state bytes of
-      -1 -> (singleton (Token [c] []),-1)
-      os -> (singleton (Token [c] (alex_accept ! os)),os),Size 1)
+    in (Trans $ \in_state -> let os = foldl automata in_state bytes
+                                 acc = case os of
+                                   -1 -> []
+                                   os -> (alex_accept ! os)
+                             in Tokens (singleton (Token [c] acc)) os None
+       ,Size 1)
 
-combineTokens :: Tokens -> Tokens -> Tokens
-combineTokens toks1 toks2 = Tokens $ \in_state ->
-  let (seq1,mid_state) = getSeq toks1 $ in_state
-      append = let (seq2,out_state) = getSeq toks2 startState
-               in (appendTokens seq1 seq2,out_state)
-      _ :> lastToken = viewr seq1
-  in case (mid_state,getSeq toks2 $ mid_state) of
+emptyTokens :: Tokens
+emptyTokens = Tokens empty (-1) None
+
+combineTokens :: Transition -> Transition -> Transition
+combineTokens trans1 trans2 = Trans $ \in_state ->
+  let toks1 = getTrans trans1 $ in_state
+      mid_state = outState toks1
+      startToks2 = getTrans trans2 startState
+      append = appendTokens toks1 startToks2
+--      fixAppend = let (seq2,out_state) = getTrans trans2 startState
+--                  in (fixPreAppend seq1 seq2,out_state)
+      _ :> lastToken = viewr (currentSeq toks1)
+  in case (mid_state,getTrans trans2 $ mid_state) of
     (-1,_) -> -- unacceptable left-hand-size
-      if isSingle seq1 in_state
-      then error $ "Illegal character: " ++ show lastToken
-      else (mempty,-1) -- This is an illegal substring
-    (_,(_,-1)) -> -- tokens cannot be combined
-      if isAccepting seq1
+      if isSingle toks1 in_state
+      then error $ "Illegal character: " -- ++ show lastToken
+      else emptyTokens -- This is an illegal substring
+    (_,Tokens _ (-1) suff2) -> -- tokens cannot be combined
+      if isAccepting toks1
       then append
-      else if isSingle seq1 in_state
-           then error $ "Unfinnished token: " ++ show lastToken
-           else (mempty,-1) -- This is an illegal substring
-    (_,(seq2,out_state)) -> if isAccepting seq2
-                            then (mergeTokens seq1 seq2,out_state)
-                            else if isAccepting seq1
-                                 then append
-                                 else (mempty,-1)
+      else case suffix toks1 of
+        None -> emptyTokens
+        End toks -> fixAppend toks1 trans2
+    (_,toks2) -> mergeTokens toks1 toks2 startToks2
 
-mergeTokens :: Seq PartToken -> Seq PartToken -> Seq PartToken
-mergeTokens toks1 toks2 = 
-  let toks1' :> token1 = viewr toks1
-      token2 :< toks2' = viewl toks2
-  in (toks1' |> Token (lexeme token1 ++ lexeme token2) (token_id token2)) >< toks2'
+fixAppend :: Tokens -> Transition -> Tokens
+fixAppend toks1 trans2 =
+  let End toksSuff = suffix toks1
+      mid_state = outState toksSuff
+      startToks2 = getTrans trans2 startState
+      seq1 :> _ = viewr $ currentSeq toks1
+      toks1' = Tokens seq1 (-1) None
+  in case getTrans trans2 mid_state of
+    Tokens seq2 (-1) suff2 ->
+      appendTokens (appendTokens toks1' toksSuff) startToks2
+    toks2 -> appendTokens toks1' (mergeTokens toksSuff toks2 startToks2)
 
-appendTokens :: Seq PartToken -> Seq PartToken -> Seq PartToken
-appendTokens   = mappend
+mergeTokens :: Tokens -> Tokens -> Tokens -> Tokens
+mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) startToks2 =
+  let seq1' :> token1 = viewr seq1
+      token2 :< seq2' = viewl seq2
+      newToken = Token (lexeme token1 ++ lexeme token2) (token_id token2)
+      newSeq = (seq1' |> newToken) >< seq2'
+      newSuff = if isAccepting toks2
+                then None
+                else if S.null seq2'
+                     then suffAppend suff1 suff2 token1 startToks2
+                     else suff2
+  in Tokens newSeq out_state newSuff
 
+suffAppend :: Suffix -> Suffix -> PartToken -> Tokens -> Suffix
+suffAppend None None tok1 toks2 =
+  End $ appendTokens (Tokens (singleton tok1) (-1) None) toks2
+suffAppend (End toks1) None _ toks2 =
+  let seq1 :> tok1 = viewr (currentSeq toks1)
+      suff1 = suffix toks1
+      End newToks = suffAppend suff1 None tok1 toks2
+  in End $ appendTokens (Tokens seq1 (-1) None) newToks
+suffAppend None (End toks2) tok1 _ =
+  End $ appendTokens (Tokens (singleton tok1) (-1) None) toks2
+suffAppend (End toks1) (End toks2) _ _ =
+  End $ appendTokens toks1 toks2
+
+appendTokens :: Tokens -> Tokens -> Tokens
+appendTokens (Tokens seq1 _ _) (Tokens seq2 out_state suff2) = Tokens (seq1 >< seq2) out_state suff2
+{-
+fixPreAppend :: Tokens -> Tokens -> Tokens
+fixPreAppend toks1@(Tokens seq1 out_state suff1) toks2 =
+    if S.null endAcc1
+    then appendTokens toks1 toks2
+    else let seq1' :> _ = viewr seq1
+         in appendTokens (Tokens (seq1' >< endAcc1) empty) toks2
+-}
 makeTree :: String -> LexTree
 makeTree  = F.fromList
 
 treeToTokens :: LexTree -> Seq Token
-treeToTokens tree = let seq = fst $ F.measure tree
-                        partToks = fst . getSeq seq $ startState
-                    in foldlWithIndex showToken empty partToks
+treeToTokens tree = let Tokens seq out_state suff = (getTrans . fst $ F.measure tree) startState
+                        partToks seq suff = case suff of
+                          None -> seq
+                          End toks -> case viewr seq of
+                            EmptyR -> empty
+                            seq' :> _ -> seq' >< partToks (currentSeq toks) (suffix toks)
+                    in foldlWithIndex showToken empty $ partToks seq suff
   where showToken toks i (Token lex accs) = case accs of
           [] -> toks
           AlexAcc f:_ -> toks |> f (Pn 0 0 i) lex
           AlexAccSkip:_ -> toks
 
-isAccepting :: Seq PartToken -> Bool
-isAccepting toks = case token_id tok of 
+isAccepting :: Tokens -> Bool
+isAccepting (Tokens toks _ suff) = case token_id tok of 
   [] -> False
   _  -> True
   where _ :> tok = viewr toks
 
-isSingle :: Seq PartToken -> Int -> Bool
-isSingle seq1 0 = case viewr seq1 of
+isSingle :: Tokens -> Int -> Bool
+isSingle (Tokens seq1 _ suff) 0 = case viewr seq1 of
   _ :> tok -> Prelude.length (lexeme tok) == 1
   _        -> False
 isSingle _ _ = False
@@ -234,7 +297,10 @@ insertAtIndex str i tree =
   if i < 0
   then error "index must be >= 0"
   else l F.>< (makeTree str) F.>< r
-     where (l,r) = F.split (\(_,Size n) -> n>i) tree
+     where (l,r) = splitTreeAt i tree
+
+splitTreeAt :: Int -> LexTree -> (LexTree,LexTree)
+splitTreeAt i tree = F.split (\(_,Size n) -> n>i) tree
 
 startState = 0
 
