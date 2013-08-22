@@ -148,7 +148,7 @@ data Tokens    = Tokens {currentSeq :: Seq PartToken
                         ,suffix     :: Suffix}
                  deriving Show
 data Suffix    = None
-               | End Tokens
+               | End {getToks :: Tokens}
                  deriving Show
 data Size      = Size Int
 type LexTree   = FingerTree (Transition,Size) Char
@@ -198,72 +198,61 @@ combineTokens :: Transition -> Transition -> Transition
 combineTokens trans1 trans2 = Trans $ \in_state ->
   let toks1 = getTrans trans1 $ in_state
       mid_state = outState toks1
-      startToks2 = getTrans trans2 startState
-      append = appendTokens toks1 startToks2
---      fixAppend = let (seq2,out_state) = getTrans trans2 startState
---                  in (fixPreAppend seq1 seq2,out_state)
       _ :> lastToken = viewr (currentSeq toks1)
-  in case (mid_state,getTrans trans2 $ mid_state) of
-    (-1,_) -> -- unacceptable left-hand-size
+  in case mid_state of
+    -1 -> -- unacceptable left-hand-size
       if isSingle toks1 in_state
-      then error $ "Illegal character: " -- ++ show lastToken
+      then error $ "Illegal character: " ++ show lastToken
       else emptyTokens -- This is an illegal substring
-    (_,Tokens _ (-1) suff2) -> -- tokens cannot be combined
-      if isAccepting toks1
-      then append
-      else case suffix toks1 of
-        None -> emptyTokens
-        End toks -> fixAppend toks1 trans2
-    (_,toks2) -> mergeTokens toks1 toks2 startToks2
+    _ -> combineToks toks1 trans2
 
-fixAppend :: Tokens -> Transition -> Tokens
-fixAppend toks1 trans2 =
-  let End toksSuff = suffix toks1
-      mid_state = outState toksSuff
+combineToks :: Tokens -> Transition -> Tokens
+combineToks toks1 trans2 =
+  let mid_state = outState toks1
       startToks2 = getTrans trans2 startState
-      seq1 :> _ = viewr $ currentSeq toks1
-      toks1' = Tokens seq1 (-1) None
   in case getTrans trans2 mid_state of
-    Tokens seq2 (-1) suff2 ->
-      appendTokens (appendTokens toks1' toksSuff) startToks2
-    toks2 -> appendTokens toks1' (mergeTokens toksSuff toks2 startToks2)
+    Tokens _ (-1) _ -> -- Two tokens can't be combined
+      if isAccepting toks1
+      then appendTokens toks1 startToks2
+      else case suffix toks1 of
+        None  -> emptyTokens -- Left-hand-side is not accepting
+        End _ -> combineToks (suffixEnd toks1) trans2
+    toks2 -> let newSuff = createSuff toks1 toks2 startToks2
+             in mergeTokens toks1 toks2 newSuff
 
-mergeTokens :: Tokens -> Tokens -> Tokens -> Tokens
-mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) startToks2 =
+suffixEnd :: Tokens -> Tokens
+suffixEnd (Tokens seq out_state (End suffToks)) =
+  let seq' :> _ = viewr seq
+  in Tokens (seq' >< currentSeq suffToks) (outState suffToks) (suffix suffToks)
+
+createSuff :: Tokens -> Tokens -> Tokens -> Suffix
+createSuff toks1 toks2 startToks2 =
+  let seq1 :> token1 = viewr $ currentSeq toks1
+      token2 :< seq2 = viewl $ currentSeq toks2
+  in if isAccepting toks2
+     then None
+     else if not $ S.null seq2
+          then suffix toks2
+          else let seq = createSuff' (singleton token1) toks1
+               in End (startToks2 {currentSeq = seq >< currentSeq startToks2})
+  where createSuff' seq toks1=
+          if isAccepting toks1 && isNone (suffix toks1)
+          then seq
+          else let seq' :> _ = viewr seq
+                   toks1' = getToks $ suffix toks1
+               in createSuff' (seq' >< currentSeq toks1') toks1'
+
+mergeTokens :: Tokens -> Tokens -> Suffix -> Tokens
+mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) newSuff =
   let seq1' :> token1 = viewr seq1
       token2 :< seq2' = viewl seq2
       newToken = Token (lexeme token1 ++ lexeme token2) (token_id token2)
       newSeq = (seq1' |> newToken) >< seq2'
-      newSuff = if isAccepting toks2
-                then None
-                else if S.null seq2'
-                     then suffAppend suff1 suff2 token1 startToks2
-                     else suff2
   in Tokens newSeq out_state newSuff
-
-suffAppend :: Suffix -> Suffix -> PartToken -> Tokens -> Suffix
-suffAppend None None tok1 toks2 =
-  End $ appendTokens (Tokens (singleton tok1) (-1) None) toks2
-suffAppend (End toks1) None _ toks2 =
-  let seq1 :> tok1 = viewr (currentSeq toks1)
-      suff1 = suffix toks1
-      End newToks = suffAppend suff1 None tok1 toks2
-  in End $ appendTokens (Tokens seq1 (-1) None) newToks
-suffAppend None (End toks2) tok1 _ =
-  End $ appendTokens (Tokens (singleton tok1) (-1) None) toks2
-suffAppend (End toks1) (End toks2) _ _ =
-  End $ appendTokens toks1 toks2
 
 appendTokens :: Tokens -> Tokens -> Tokens
 appendTokens (Tokens seq1 _ _) (Tokens seq2 out_state suff2) = Tokens (seq1 >< seq2) out_state suff2
-{-
-fixPreAppend :: Tokens -> Tokens -> Tokens
-fixPreAppend toks1@(Tokens seq1 out_state suff1) toks2 =
-    if S.null endAcc1
-    then appendTokens toks1 toks2
-    else let seq1' :> _ = viewr seq1
-         in appendTokens (Tokens (seq1' >< endAcc1) empty) toks2
--}
+
 makeTree :: String -> LexTree
 makeTree  = F.fromList
 
@@ -285,6 +274,10 @@ isAccepting (Tokens toks _ suff) = case token_id tok of
   [] -> False
   _  -> True
   where _ :> tok = viewr toks
+
+isNone :: Suffix -> Bool
+isNone None = True
+isNone _    = False
 
 isSingle :: Tokens -> Int -> Bool
 isSingle (Tokens seq1 _ suff) 0 = case viewr seq1 of
