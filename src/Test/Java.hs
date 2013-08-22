@@ -220,7 +220,7 @@ combineWithRHS toks1 trans2 =
       else case suffix toks1 of
         None  -> emptyTokens -- Left-hand-side is not accepting
         End _ -> combineWithRHS (suffixEnd toks1) trans2
-    toks2 -> let newSuff = createSuff toks1 toks2 startToks2
+    toks2 -> let newSuff = createSuff toks1 trans2
              in mergeTokens toks1 toks2 newSuff
 
 suffixEnd :: Tokens -> Tokens
@@ -228,22 +228,20 @@ suffixEnd (Tokens seq out_state (End suffToks)) =
   let seq' :> _ = viewr seq
   in Tokens (seq' >< currentSeq suffToks) (outState suffToks) (suffix suffToks)
 
-createSuff :: Tokens -> Tokens -> Tokens -> Suffix
-createSuff toks1 toks2 startToks2 =
-  let seq1 :> token1 = viewr $ currentSeq toks1
+createSuff :: Tokens -> Transition -> Suffix
+createSuff toks1 trans2 =
+  let toks2 = trans2 (outState toks1)
+      startToks2 = trans2 startState
+      seq1 :> token1 = viewr $ currentSeq toks1
       token2 :< seq2 = viewl $ currentSeq toks2
   in if isAccepting toks2
      then None
      else if not $ S.null seq2
           then suffix toks2
-          else let seq = createSuff' (singleton token1) toks1
-               in End (startToks2 {currentSeq = seq >< currentSeq startToks2})
-  where createSuff' seq toks1=
-          if isAccepting toks1 && isNone (suffix toks1)
-          then seq
-          else let seq' :> _ = viewr seq
-                   toks1' = getToks $ suffix toks1
-               in createSuff' (seq' >< currentSeq toks1') toks1'
+          else if isAccepting toks1 || isNone (suffix toks1)
+               then End (startToks2 {currentSeq = token1 <| currentSeq startToks2})
+               else let toks = combineWithRHS (getToks $ suffix toks1) trans2
+                    in End toks
 
 mergeTokens :: Tokens -> Tokens -> Suffix -> Tokens
 mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) newSuff =
@@ -273,10 +271,12 @@ treeToTokens tree = let Tokens seq out_state suff = access (fst $ F.measure tree
           AlexAccSkip:_ -> toks
 
 isAccepting :: Tokens -> Bool
-isAccepting (Tokens toks _ suff) = case token_id tok of 
+isAccepting (Tokens toks _ suff) = case accs of 
   [] -> False
   _  -> True
-  where _ :> tok = viewr toks
+  where accs = case viewr toks of
+          _ :> tok -> token_id tok
+          _        -> []
 
 isNone :: Suffix -> Bool
 isNone None = True
