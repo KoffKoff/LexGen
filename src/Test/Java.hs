@@ -142,7 +142,7 @@ unescapeInitTail = unesc . tail where
 -------------------------------------------------------------------
 
 type State = Int
-newtype Transition = Trans {getTrans :: State -> Tokens} -- Transition corresponding to a portion of the input.
+type Transition = State -> Tokens -- Transition from in state to Tokens
 data Tokens    = Tokens {currentSeq :: Seq PartToken
                         ,outState   :: State
                         ,suffix     :: Suffix}
@@ -151,20 +151,22 @@ data Suffix    = None
                | End {getToks :: Tokens}
                  deriving Show
 data Size      = Size Int
-type LexTree   = FingerTree (Transition,Size) Char
+type LexTree   = FingerTree (Table State Tokens,Size) Char
 data PartToken = Token { lexeme      :: String 
                        , token_id    :: Accepts}
 type Accepts   = [AlexAcc (Posn -> String -> Token) ()]
 
-tabulate :: Int -> (Int -> b) -> Table Int b
-access :: Table Int b -> (Int -> b)
+tabulate :: (State,State) -> (State -> b) -> Table State b
+access :: Table State b -> (State -> b)
+{-
+newtype Table a b = Tab {getFun :: a -> b}
+tabulate _ f = Tab f
+access a x = (getFun a) x
+-}
 
-type Table a b = a -> b
-tabulate _ f = f
-access a x = a x
-
---instance Show Tokens where
---  show = show . fst . (flip getTrans) 0
+type Table a b = Array State b
+tabulate range f = listArray range [f i | i <- [fst range..snd range]]
+access a x = a ! x
 
 instance Show PartToken where
   show (Token lex accs) = case map (\acc -> case acc of 
@@ -177,26 +179,27 @@ instance Monoid Size where
   mempty = Size 0
   Size m `mappend` Size n = Size (m+n)
 
-instance Monoid Transition where
-  mempty = Trans $ \_ -> emptyTokens
-  mappend = combineTokens
+instance Monoid (Table State Tokens) where
+  mempty = tabulate stateRange (\_ -> emptyTokens)
+  f `mappend` g = tabulate stateRange $ combineTokens (access f) (access g)
 
-instance F.Measured (Transition,Size) Char where
+instance F.Measured (Table State Tokens,Size) Char where
   measure c =
     let bytes = encode c
-    in (Trans $ \in_state -> let os = foldl automata in_state bytes
-                                 acc = case os of
-                                   -1 -> []
-                                   os -> (alex_accept ! os)
-                             in Tokens (singleton (Token [c] acc)) os None
+        baseCase in_state = let os = foldl automata in_state bytes
+                                acc = case os of
+                                  -1 -> []
+                                  os -> (alex_accept ! os)
+                            in Tokens (singleton (Token [c] acc)) os None
+    in (tabulate stateRange $ baseCase
        ,Size 1)
 
 emptyTokens :: Tokens
 emptyTokens = Tokens empty (-1) None
 
 combineTokens :: Transition -> Transition -> Transition
-combineTokens trans1 trans2 = Trans $ \in_state ->
-  let toks1 = getTrans trans1 $ in_state
+combineTokens trans1 trans2 = \in_state ->
+  let toks1 = trans1 in_state
       mid_state = outState toks1
       _ :> lastToken = viewr (currentSeq toks1)
   in case mid_state of
@@ -209,8 +212,8 @@ combineTokens trans1 trans2 = Trans $ \in_state ->
 combineToks :: Tokens -> Transition -> Tokens
 combineToks toks1 trans2 =
   let mid_state = outState toks1
-      startToks2 = getTrans trans2 startState
-  in case getTrans trans2 mid_state of
+      startToks2 = trans2 startState
+  in case trans2 mid_state of
     Tokens _ (-1) _ -> -- Two tokens can't be combined
       if isAccepting toks1
       then appendTokens toks1 startToks2
@@ -257,7 +260,7 @@ makeTree :: String -> LexTree
 makeTree  = F.fromList
 
 treeToTokens :: LexTree -> Seq Token
-treeToTokens tree = let Tokens seq out_state suff = (getTrans . fst $ F.measure tree) startState
+treeToTokens tree = let Tokens seq out_state suff = access (fst $ F.measure tree) startState
                         partToks seq suff = case suff of
                           None -> seq
                           End toks -> case viewr seq of
@@ -296,6 +299,7 @@ splitTreeAt :: Int -> LexTree -> (LexTree,LexTree)
 splitTreeAt i tree = F.split (\(_,Size n) -> n>i) tree
 
 startState = 0
+stateRange = bounds alex_accept
 
 automata :: Int -> Word8 -> Int
 automata s c = let base   = alex_base ! s
