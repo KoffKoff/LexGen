@@ -7,10 +7,9 @@ import System.IO
 import Criterion.Main
 import Criterion.Config
 import Test.Java as J
--- import Test.JavaOld as JO
 import Test.Lexjava
 import Control.DeepSeq
-import Data.FingerTree
+import Data.FingerTree as F
 import Data.Map as M (foldrWithKey',insert,empty)
 import Data.Foldable (mapM_)
 import Data.Sequence as S hiding (zip)
@@ -19,7 +18,7 @@ instance NFData J.LexTree where
   rnf = (flip seq) () . unsafeFmap rnf
 
 allTest :: [String]
-allTest = ["Alex","IncLex","Update","JavaOld"]
+allTest = ["Alex","IncLex","Update"]
 
 main = do
   args <- getArgs
@@ -32,14 +31,11 @@ main = do
         [] -> allTest
         _  -> tests'
       trees' = map J.lexCode codes
-      trees = map (\tree -> insertAtIndex "i" 2 tree) trees'
---      trees = trees'
---                            else insertAtIndex "\n\"Inserted Text\"\n" 0 tree) trees'
+      trees = map (\tree -> tree F.>< tree) trees'
       testFuns =
         [ map (benchStuff alexScanTokens) (zip codes files)
         , map (benchStuff (J.tokens . J.lexCode)) (zip codes files)
         , map (benchStuff J.tokens) (zip trees files)
-        -- , map (benchStuff (JO.tokens . JO.lexCode)) (zip codes files)
         ]
   trees' `deepseq` withArgs (tests ++ arg) $
     defaultMain [ bgroup name tests | (name,tests) <- zip allTest testFuns ]

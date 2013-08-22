@@ -158,16 +158,16 @@ type Accepts   = [AlexAcc (Posn -> String -> Token) ()]
 
 tabulate :: (State,State) -> (State -> b) -> Table State b
 access :: Table State b -> (State -> b)
-{-
+
 newtype Table a b = Tab {getFun :: a -> b}
 tabulate _ f = Tab f
 access a x = (getFun a) x
--}
-
+--}
+{-
 type Table a b = Array State b
 tabulate range f = listArray range [f i | i <- [fst range..snd range]]
 access a x = a ! x
-
+--}
 instance Show PartToken where
   show (Token lex accs) = case map (\acc -> case acc of 
     AlexAcc f -> show $ f (Pn 0 0 0) lex
@@ -207,10 +207,10 @@ combineTokens trans1 trans2 = \in_state ->
       if isSingle toks1 in_state
       then error $ "Illegal character: " ++ show lastToken
       else emptyTokens -- This is an illegal substring
-    _ -> combineToks toks1 trans2
+    _ -> combineWithRHS toks1 trans2
 
-combineToks :: Tokens -> Transition -> Tokens
-combineToks toks1 trans2 =
+combineWithRHS :: Tokens -> Transition -> Tokens
+combineWithRHS toks1 trans2 =
   let mid_state = outState toks1
       startToks2 = trans2 startState
   in case trans2 mid_state of
@@ -219,7 +219,7 @@ combineToks toks1 trans2 =
       then appendTokens toks1 startToks2
       else case suffix toks1 of
         None  -> emptyTokens -- Left-hand-side is not accepting
-        End _ -> combineToks (suffixEnd toks1) trans2
+        End _ -> combineWithRHS (suffixEnd toks1) trans2
     toks2 -> let newSuff = createSuff toks1 toks2 startToks2
              in mergeTokens toks1 toks2 newSuff
 
