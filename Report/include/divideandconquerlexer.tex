@@ -337,3 +337,48 @@ update the result for the code affected by the changes.
 \subsection{Transistion Structures}
 \#How should our DFA or more exactly our transistions be represented to get 
 maximum awesomeness in our program.
+
+\section{Transition map}
+To be able to make a divide-and-conquer lexer work you can use a transition map
+for the subexpression that has currently been lexed. That is you store for each
+subexpression a list of tuples which are built up of an in state, a list of
+tokens and an out state. This could in haskell look something like this.
+\begin{verbatim}
+type transition = [(State,Tokens,State)]
+\end{verbatim}
+The $tokens$ type helps to think of as being a sufix, that is the first part of
+the substring, this has to end in an accepting state; a list of tokens which all
+are complete tokens, they start in the starting state and end in an accepting
+state; and a prefix, the last part of the lexed substring, this part has
+to begin in the starting state; or just a single partial token that can be
+anywhere in a token.
+\begin{verbatim}
+data Tokens = Single String
+            | Multiple String [Token] String
+\end{verbatim}
+Now lets see how these data types work in order to create list of tokens for a
+String.
+\subsection{The Base Case}
+When the lexer tries to lex one character it will create the above transition
+table using the DFA for the language. It will for each state in the DFA lookup
+what out state the character would yield and create a Tokens type of Single.
+For the character '/' part of a transition map might look like the following.
+\left[\begin{array}{ccc}
+$10$&Single '/'&$10$\\
+$11$&Single '/'&NoState\\
+$12$&Single '/'&$10$\\
+\end{array}\right]
+The reason we keep track of $NoState$ will be evident ones we show how the
+conquer step work.
+\subsection{Conquer Step}
+When two list of tokens are combined there are two cases that can emerge. The
+first being that a transition from the first list has an out state that
+corresponds to an in state with a valid out state, i.e. not $NoState$, in the
+second list of transitions. In this case the sufix of the first transition will
+be paired with the prefix of the second and seen as a complete token.
+\left[\begin{table}{ccc}
+$0$&Single '//'&$1$\\
+$1$&Multiple '/' [] '/' &$2$\\
+\end{array}\right] $+$ EN ANNAN JÄVLA TOKENSEKVENS\\
+The second case is when the out state for the right token list is $NoState$.
+This means that 
