@@ -6,6 +6,21 @@ then to combine the smaller tokens into as large tokens as possible. The end
 result should be a sequence of token that represent the code. How this is done
 will be described below. \#Some ref to divide and conquer?
 
+
+\section{The Structure} %Better title
+For the lexer to be able to represent every possible substring of the code in the same datastructure. There need to be a generic representation for tokens and subtokens. A subtoken is a representing of a lexeme for that subtoken and a list of accepting tokens for that lexeme. The final tokens is a sequence of subtokens the output state for this sequence and an suffix, this suffix can be empty or conssist of an alternetiv ending for the sequence of tokens. What this is and how it works will be described more in detail in \cref{section:Suffix}.
+In \cref{fig:DataStruct} is a code representation of the datastructure
+
+\begin{figure}[h!]
+  \centering
+  \lstinputlisting[language=c]{examples/Datastruct.hs}
+  \caption{Datastructure for tokens and lexems. 
+  \label{fig:DataStruct}}
+\end{figure} 
+
+\section{The Power of Suffix
+\label{section:Suffix}}
+
 \section{Lexing in the middle attack} %better title
 When the code is divided the lexer doesn't know if the string (or character) it
 lexes is the first, last or is somewhere in the middle of a token. Instead of
@@ -363,11 +378,11 @@ When the lexer tries to lex one character it will create the above transition
 table using the DFA for the language. It will for each state in the DFA lookup
 what out state the character would yield and create a Tokens type of Single.
 For the character '/' part of a transition map might look like the following.
-\left[\begin{array}{ccc}
+$\left[\begin{array}{ccc}
 $10$&Single '/'&$10$\\
 $11$&Single '/'&NoState\\
 $12$&Single '/'&$10$\\
-\end{array}\right]
+\end{array}\right]$
 The reason we keep track of $NoState$ will be evident ones we show how the
 conquer step work.
 \subsection{Conquer Step}
@@ -376,9 +391,9 @@ first being that a transition from the first list has an out state that
 corresponds to an in state with a valid out state, i.e. not $NoState$, in the
 second list of transitions. In this case the sufix of the first transition will
 be paired with the prefix of the second and seen as a complete token.
-\left[\begin{table}{ccc}
+$\left[\begin{array}{ccc}
 $0$&Single '//'&$1$\\
 $1$&Multiple '/' [] '/' &$2$\\
-\end{array}\right] $+$ EN ANNAN JÄVLA TOKENSEKVENS\\
+\end{array}\right]$ $+$ EN ANNAN JÄVLA TOKENSEKVENS\\
 The second case is when the out state for the right token list is $NoState$.
 This means that 
