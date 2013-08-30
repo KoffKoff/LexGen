@@ -359,7 +359,8 @@ for the subexpression that has currently been lexed. That is you store for each
 subexpression a list of tuples which are built up of an in state, a list of
 tokens and an out state. This could in haskell look something like this.
 \begin{verbatim}
-type transition = [(State,Tokens,State)]
+type Transition = (State,Tokens,State)
+type Transitions = [Transition]
 \end{verbatim}
 The $tokens$ type helps to think of as being a sufix, that is the first part of
 the substring, this has to end in an accepting state; a list of tokens which all
@@ -378,22 +379,70 @@ When the lexer tries to lex one character it will create the above transition
 table using the DFA for the language. It will for each state in the DFA lookup
 what out state the character would yield and create a Tokens type of Single.
 For the character '/' part of a transition map might look like the following.
+\begin{center}
 $\left[\begin{array}{ccc}
-$10$&Single '/'&$10$\\
-$11$&Single '/'&NoState\\
-$12$&Single '/'&$10$\\
+10&Single '/'&10\\
+11&Single '/'&NoState\\
+12&Single '/'&10\\
 \end{array}\right]$
-The reason we keep track of $NoState$ will be evident ones we show how the
+\end{center}
+The reason we keep track of $NoState$ will be evident once we show how the
 conquer step work.
 \subsection{Conquer Step}
-When two list of tokens are combined there are two cases that can emerge. The
-first being that a transition from the first list has an out state that
-corresponds to an in state with a valid out state, i.e. not $NoState$, in the
-second list of transitions. In this case the sufix of the first transition will
-be paired with the prefix of the second and seen as a complete token.
+The most general case is a naive lexer that takes the first accepting state it
+can find. When two lists of tokens are combined it will create two tokens if the
+out state of the first list is accepting then the second list will be appended
+to the first list. The other case us when the first list of tokens does not end
+in an accepting state. In this case the lexer will try to find an in state in
+the second list that is the same as the out state of the first transition.
+\begin{center}
 $\left[\begin{array}{ccc}
-$0$&Single '//'&$1$\\
-$1$&Multiple '/' [] '/' &$2$\\
-\end{array}\right]$ $+$ EN ANNAN JÄVLA TOKENSEKVENS\\
+0&Single '/'&1\\
+1&Single '/'&Accepting 5\\
+\end{array}\right] `combineTokens`
+\left[\begin{array}{ccc}
+0&Single '/'&1\\
+1&Single '/'&Accepting 5\\
+\end{array}\right] =
+\left[\begin{array}{ccc}
+0&Single '//'&Accepting 5\\
+1&Multiple '/' [] '/'&Accepting 1\\
+\end{array}\right]$
+\end{center}
+This won't work as a lexer for most languages since it will lex a variable to
+variables where the length is a single character, for example ``os'' will be
+lexed as two tokens, ``o'' and ``s''. To solve this some more work is needed to
+be done.
+\subsection{Longest Match}
+Instead of taking the naive aproach where a token is created if you find an
+accepting state, the rule for creating a new token will instead be when the
+combination of two transitions yields $NoState$ the lists will be appended. That
+is, when there is an out state from the first transition that corresponds to an
+in state of the second transition and the out state of the second transition
+isn't $NoState$, the last token of the first transition and the first token of
+the second transition will become one token, otherwise append the second list to
+the first list.
+%When two list of tokens are combined there are two cases that can emerge. The
+%first being that a transition from the first list has an out state that
+%corresponds to an in state with a valid out state, i.e. not $NoState$, in the
+%second list of transitions. In this case the sufix of the first transition will
+%be paired with the prefix of the second and seen as a complete token.
+\begin{center}
+$\left[\begin{array}{ccc}
+0&Single '//'& Accepting 5\\
+1&Multiple '/' [] '/' &1\\
+\end{array}\right] `combineTokens` 
+\left[\begin{array}{ccc}
+0&Single '\textbackslash n'&Accepting 6\\
+1&Single '\textbackslash n'&1\\
+5&Single '\textbackslash n'&NoState\\
+\end{array}\right] =
+\left[\begin{array}{ccc}
+0&Multiple '//' [] '\textbackslash n'&Accepting 6\\
+1&Multiple '/' [] '/\textbackslash n'&1\\
+\end{array}\right]$
+\end{center}
 The second case is when the out state for the right token list is $NoState$.
-This means that 
+This means that the two lists of tokens can't be combined. In this case the
+first token in the second list will be viewed as the start of a token and the
+last token in the first list will be viewed as the end of a token.
