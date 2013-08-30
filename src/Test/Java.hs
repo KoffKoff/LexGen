@@ -146,6 +146,8 @@ type Transition = State -> Tokens -- Transition from in state to Tokens
 data Tokens    = Tokens {currentSeq :: Seq PartToken
                         ,outState   :: State
                         ,suffix     :: Suffix}
+-- The suffix is the the sequence of as long as possible accepting tokens.
+-- It can itself contain a suffix for the last token.
                  deriving Show
 data Suffix    = None
                | End {getToks :: Tokens}
@@ -183,6 +185,7 @@ instance Monoid (Table State Tokens) where
   mempty = tabulate stateRange (\_ -> emptyTokens)
   f `mappend` g = tabulate stateRange $ combineTokens (access f) (access g)
 
+-- The base case for when one character is lexed.
 instance F.Measured (Table State Tokens,Size) Char where
   measure c =
     let bytes = encode c
@@ -197,6 +200,9 @@ instance F.Measured (Table State Tokens,Size) Char where
 emptyTokens :: Tokens
 emptyTokens = Tokens empty (-1) None
 
+--------- Combination functions, the conquer step
+
+-- Combines two transition maps
 combineTokens :: Transition -> Transition -> Transition
 combineTokens trans1 trans2 = \in_state ->
   let toks1 = trans1 in_state
@@ -209,6 +215,7 @@ combineTokens trans1 trans2 = \in_state ->
       else emptyTokens -- This is an illegal substring
     _ -> combineWithRHS toks1 trans2
 
+-- Combines the left hand side with the transition map of the right hand side
 combineWithRHS :: Tokens -> Transition -> Tokens
 combineWithRHS toks1 trans2 =
   let mid_state = outState toks1
@@ -223,11 +230,13 @@ combineWithRHS toks1 trans2 =
     toks2 -> let newSuff = createSuff toks1 trans2
              in mergeTokens toks1 toks2 newSuff
 
+-- Replaces the last token with the suffix for it
 suffixEnd :: Tokens -> Tokens
 suffixEnd (Tokens seq out_state (End suffToks)) =
   let seq' :> _ = viewr seq
   in Tokens (seq' >< currentSeq suffToks) (outState suffToks) (suffix suffToks)
 
+-- Creates a suffix for the last token
 createSuff :: Tokens -> Transition -> Suffix
 createSuff toks1 trans2 =
   let toks2 = trans2 (outState toks1)
@@ -243,6 +252,9 @@ createSuff toks1 trans2 =
                else let toks = combineWithRHS (getToks $ suffix toks1) trans2
                     in End toks
 
+-- Creates one token from the last token of the first sequence and and the first
+-- token of the second sequence and inserts it between the init of the first
+-- sequence and the tail of the second sequence
 mergeTokens :: Tokens -> Tokens -> Suffix -> Tokens
 mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) newSuff =
   let seq1' :> token1 = viewr seq1
@@ -251,8 +263,11 @@ mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) newS
       newSeq = (seq1' |> newToken) >< seq2'
   in Tokens newSeq out_state newSuff
 
+-- Apends the second sequence to the first sequence
 appendTokens :: Tokens -> Tokens -> Tokens
 appendTokens (Tokens seq1 _ _) (Tokens seq2 out_state suff2) = Tokens (seq1 >< seq2) out_state suff2
+
+---------- Constructors
 
 makeTree :: String -> LexTree
 makeTree  = F.fromList
@@ -270,6 +285,9 @@ treeToTokens tree = let Tokens seq out_state suff = access (fst $ F.measure tree
           AlexAcc f:_ -> toks |> f (Pn 0 0 i) lex
           AlexAccSkip:_ -> toks
 
+------------- Util funs
+
+-- Returns true if the last token is accepting
 isAccepting :: Tokens -> Bool
 isAccepting (Tokens toks _ suff) = case accs of 
   [] -> False
@@ -278,10 +296,12 @@ isAccepting (Tokens toks _ suff) = case accs of
           _ :> tok -> token_id tok
           _        -> []
 
+-- Returns true if there is no suffix
 isNone :: Suffix -> Bool
 isNone None = True
 isNone _    = False
 
+-- Returns true if the last token in a sequence is a single character.
 isSingle :: Tokens -> Int -> Bool
 isSingle (Tokens seq1 _ suff) 0 = case viewr seq1 of
   _ :> tok -> Prelude.length (lexeme tok) == 1
@@ -298,9 +318,12 @@ insertAtIndex str i tree =
 splitTreeAt :: Int -> LexTree -> (LexTree,LexTree)
 splitTreeAt i tree = F.split (\(_,Size n) -> n>i) tree
 
+-- Starting state
 startState = 0
+-- A tuple that says how many states there are
 stateRange = bounds alex_accept
 
+-- Takes an in state and a byte and returns the corresponding out state using the DFA
 automata :: Int -> Word8 -> Int
 automata s c = let base   = alex_base ! s
                    ord_c  = fromEnum c
@@ -310,6 +333,7 @@ automata s c = let base   = alex_base ! s
                   then alex_table ! offset
                   else alex_deflt ! s
 
+-- Converts an UTF8 character to a list of bytes
 encode :: Char -> [Word8]
 encode  = map fromIntegral . go . fromEnum
  where
