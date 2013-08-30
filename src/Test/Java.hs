@@ -245,12 +245,30 @@ createSuff toks1 trans2 =
       token2 :< seq2 = viewl $ currentSeq toks2
   in if isAccepting toks2
      then None
-     else if not $ S.null seq2
-          then suffix toks2
-          else if isAccepting toks1 || isNone (suffix toks1)
-               then End (startToks2 {currentSeq = token1 <| currentSeq startToks2})
-               else let toks = combineWithRHS (getToks $ suffix toks1) trans2
-                    in End toks
+     else
+       if not $ S.null seq2
+       then suffix toks2
+       else
+         let toks =
+               if not $ isNone (suffix toks1)
+               then combineWithRHS (getToks $ suffix toks1) trans2
+               else
+                 let suffToks =
+                       if isNone (suffix toks2)
+                       then toks2
+                       else getToks (suffix toks2)
+                     tempToks = Tokens (singleton token1) (-1) None
+                     toks' = mergeTokens tempToks suffToks (suffix suffToks)
+                     token :< _ = viewl $ currentSeq toks'
+                 in case token_id token of
+                   [] -> (startToks2 {currentSeq = token1 <| currentSeq startToks2})
+                   _  -> toks'
+         in End toks --
+
+combineSpecial :: Tokens -> Transition -> Tokens
+combineSpecial toks1 trans2 =
+  let mid_state = outState toks1
+  in undefined
 
 -- Creates one token from the last token of the first sequence and and the first
 -- token of the second sequence and inserts it between the init of the first
