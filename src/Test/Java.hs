@@ -143,7 +143,8 @@ unescapeInitTail = unesc . tail where
 
 type State = Int
 type Transition = State -> Tokens -- Transition from in state to Tokens
-data Tokens    = Tokens {currentSeq :: Seq PartToken
+data Tokens    = NoTokens
+               | Tokens {currentSeq :: Seq PartToken
                         ,outState   :: State
                         ,suffix     :: Suffix}
 -- The suffix is the the sequence of as long as possible accepting tokens.
@@ -194,11 +195,13 @@ instance Monoid (Table State Tokens) where
 instance F.Measured (Table State Tokens,Size) Char where
   measure c =
     let bytes = encode c
-        baseCase in_state = let os = foldl automata in_state bytes
-                                acc = case os of
-                                  -1 -> []
-                                  os -> (alex_accept ! os)
-                            in Tokens (singleton (Token [c] acc)) os None
+        baseCase 0 | foldl automata 0 bytes == -1 = error $ "Illegal character: " ++ [c]
+        baseCase in_state =
+          let os = foldl automata in_state bytes
+          in case os of
+            -1 -> NoTokens
+            os -> let acc = alex_accept ! os
+                  in Tokens (singleton (Token [c] acc)) os None
     in (tabulate stateRange $ baseCase
        ,Size 1)
 
@@ -209,16 +212,9 @@ emptyTokens = Tokens empty (0) None
 
 -- Combines two transition maps
 combineTokens :: Transition -> Transition -> Transition
-combineTokens trans1 trans2 = \in_state ->
-  let toks1 = trans1 in_state
-      mid_state = outState toks1
-      _ :> lastToken = viewr (currentSeq toks1)
-  in case mid_state of
-    -1 -> -- unacceptable left-hand-size
-      if isSingle toks1 in_state
-      then error $ "Illegal character: " ++ show lastToken
-      else emptyTokens {outState = -1} -- This is an illegal substring
-    _ -> combineWithRHS toks1 trans2
+combineTokens trans1 trans2 = \in_state -> case trans1 in_state of
+  NoTokens -> NoTokens --Illegal LHS
+  toks1 -> combineWithRHS toks1 trans2
 
 -- Combines the left hand side with the transition map of the right hand side
 combineWithRHS :: Tokens -> Transition -> Tokens
@@ -226,11 +222,11 @@ combineWithRHS toks1 trans2 =
   let mid_state = outState toks1
       startToks2 = trans2 startState
   in case trans2 mid_state of
-    Tokens _ (-1) _ -> -- Two tokens can't be combined
+    NoTokens -> -- Two tokens can't be combined
       if isAccepting toks1
       then appendTokens toks1 startToks2
       else case suffix toks1 of
-        None  -> emptyTokens {outState = -1} -- Left-hand-side is not accepting
+        None  -> NoTokens -- Left-hand-side is not accepting
         End _ -> combineWithRHS (suffixEnd toks1) trans2
     toks2 -> let newSuff = createSuff toks1 trans2
              in mergeTokens toks1 toks2 newSuff
@@ -271,11 +267,6 @@ createSuff toks1 trans2  | S.null (currentSeq toks1) = suffix (trans2 startState
                    _  -> toks'
          in End toks --
 
-combineSpecial :: Tokens -> Transition -> Tokens
-combineSpecial toks1 trans2 =
-  let mid_state = outState toks1
-  in undefined
-
 -- Creates one token from the last token of the first sequence and and the first
 -- token of the second sequence and inserts it between the init of the first
 -- sequence and the tail of the second sequence
@@ -292,7 +283,8 @@ mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) newS
 
 -- Apends the second sequence to the first sequence
 appendTokens :: Tokens -> Tokens -> Tokens
-appendTokens (Tokens seq1 _ _) (Tokens seq2 out_state suff2) = Tokens (seq1 >< seq2) out_state suff2
+appendTokens (Tokens seq1 _ _) (Tokens seq2 out_state suff2) =
+  Tokens (seq1 >< seq2) out_state suff2
 
 ---------- Constructors
 

@@ -12,10 +12,11 @@ import Data.List (inits,tails)
 splits xs = zip (inits xs) (tails xs)
 
 test_string x = unlines $ map show $ 
-  [ (xs,ys, measureToTokens $ measure (makeTree xs) <> measure(makeTree ys)) | 
+  [ (xs,ys,y', measureToTokens $ measure (makeTree xs) <> measure(makeTree ys)
+               <> measure (makeTree y')) | 
     (_,x') <- splits x,
-    (zs,_) <- splits x',
-    (xs,ys) <- splits zs]
+    (y,y') <- splits x',
+    (xs,ys) <- splits y]
 
 splitToTree :: String -> [(LexTree,LexTree)]
 splitToTree s = map (splitToTree' s) [0..length s]

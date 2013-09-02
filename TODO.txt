@@ -1,5 +1,8 @@
 THIS WE NEED TO DO!!!!!
 
+20130902
+Fix the bug (measure (makeTree ".") <> measure (makeTree "th") <> measure (makeTree "u"))
+
 20130821:
 
 Current solution:
