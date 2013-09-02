@@ -11,17 +11,14 @@ import Data.List (inits,tails)
 
 splits xs = zip (inits xs) (tails xs)
 
-
 test_string x = unlines $ map show $ 
   [ (xs,ys, measureToTokens $ measure (makeTree xs) <> measure(makeTree ys)) | 
-    
     (_,x') <- splits x,
     (zs,_) <- splits x',
     (xs,ys) <- splits zs]
 
-
 splitToTree :: String -> [(LexTree,LexTree)]
-splitToTree s = map (splitToTree' s) [0..length s - 1]
+splitToTree s = map (splitToTree' s) [0..length s]
   where splitToTree' str i = let (pre,suf) = splitAt i str
                              in (makeTree pre,makeTree suf)
 
@@ -42,7 +39,7 @@ treeSplitter tree = map (flip splitTreeAt tree) [0..n]
   where Size n = snd (measure tree)
 
 checkSplit :: String -> [(Bool,Bool)]
-checkSplit str = let strSplits = map (flip splitAt str) [0..length str - 1]
+checkSplit str = let strSplits = map (flip splitAt str) [0..length str]
                      treeSplits = treeSplitter $ makeTree str
                  in map (uncurry bla) $ zip treeSplits strSplits
   where bla (tree1,tree2) (str1,str2) = (checkListToken (treeToList tree1) (alexScanTokens str1)

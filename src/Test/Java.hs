@@ -203,7 +203,7 @@ instance F.Measured (Table State Tokens,Size) Char where
        ,Size 1)
 
 emptyTokens :: Tokens
-emptyTokens = Tokens empty (-1) None
+emptyTokens = Tokens empty (0) None
 
 --------- Combination functions, the conquer step
 
@@ -217,7 +217,7 @@ combineTokens trans1 trans2 = \in_state ->
     -1 -> -- unacceptable left-hand-size
       if isSingle toks1 in_state
       then error $ "Illegal character: " ++ show lastToken
-      else emptyTokens -- This is an illegal substring
+      else emptyTokens {outState = -1} -- This is an illegal substring
     _ -> combineWithRHS toks1 trans2
 
 -- Combines the left hand side with the transition map of the right hand side
@@ -230,7 +230,7 @@ combineWithRHS toks1 trans2 =
       if isAccepting toks1
       then appendTokens toks1 startToks2
       else case suffix toks1 of
-        None  -> emptyTokens -- Left-hand-side is not accepting
+        None  -> emptyTokens {outState = -1} -- Left-hand-side is not accepting
         End _ -> combineWithRHS (suffixEnd toks1) trans2
     toks2 -> let newSuff = createSuff toks1 trans2
              in mergeTokens toks1 toks2 newSuff
@@ -243,7 +243,8 @@ suffixEnd (Tokens seq out_state (End suffToks)) =
 
 -- Creates a suffix for the last token
 createSuff :: Tokens -> Transition -> Suffix
-createSuff toks1 trans2 =
+createSuff toks1 trans2  | S.null (currentSeq toks1) = suffix (trans2 startState)
+                         | otherwise    =
   let toks2 = trans2 (outState toks1)
       startToks2 = trans2 startState
       seq1 :> token1 = viewr $ currentSeq toks1
@@ -280,11 +281,14 @@ combineSpecial toks1 trans2 =
 -- sequence and the tail of the second sequence
 mergeTokens :: Tokens -> Tokens -> Suffix -> Tokens
 mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) newSuff =
-  let seq1' :> token1 = viewr seq1
-      token2 :< seq2' = viewl seq2
-      newToken = Token (lexeme token1 ++ lexeme token2) (token_id token2)
-      newSeq = (seq1' |> newToken) >< seq2'
-  in Tokens newSeq out_state newSuff
+  case viewr seq1 of
+    seq1' :> token1 -> case viewl seq2 of
+      token2 :< seq2' ->
+        let newToken = Token (lexeme token1 ++ lexeme token2) (token_id token2)
+            newSeq = (seq1' |> newToken) >< seq2'
+        in Tokens newSeq out_state newSuff
+      EmptyL -> toks1
+    EmptyR -> toks2
 
 -- Apends the second sequence to the first sequence
 appendTokens :: Tokens -> Tokens -> Tokens
@@ -295,8 +299,8 @@ appendTokens (Tokens seq1 _ _) (Tokens seq2 out_state suff2) = Tokens (seq1 >< s
 makeTree :: String -> LexTree
 makeTree  = F.fromList
 
-treeToTokens :: LexTree -> Seq Token
-treeToTokens tree = let Tokens seq out_state suff = access (fst $ F.measure tree) startState
+measureToTokens :: (Table State Tokens,Size) -> Seq Token
+measureToTokens m = let Tokens seq out_state suff = access (fst $ m) startState
                         partToks seq suff = case suff of
                           None -> seq
                           End toks -> case viewr seq of
@@ -307,6 +311,9 @@ treeToTokens tree = let Tokens seq out_state suff = access (fst $ F.measure tree
           [] -> toks
           AlexAcc f:_ -> toks |> f (Pn 0 0 i) lex
           AlexAccSkip:_ -> toks
+
+treeToTokens :: LexTree -> Seq Token
+treeToTokens = measureToTokens . F.measure
 
 ------------- Util funs
 
