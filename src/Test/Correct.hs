@@ -6,6 +6,7 @@ import Test.Lexjava as A
 --import Data.Sequence as S
 import Data.FingerTree as F
 import Data.Foldable (toList)
+import Data.Monoid
 
 splitToTree :: String -> [(LexTree,LexTree)]
 splitToTree s = map (splitToTree' s) [0..length s - 1]

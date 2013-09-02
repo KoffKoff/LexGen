@@ -153,6 +153,7 @@ data Suffix    = None
                | End {getToks :: Tokens}
                  deriving Show
 data Size      = Size Int
+                 deriving Show
 type LexTree   = FingerTree (Table State Tokens,Size) Char
 data PartToken = Token { lexeme      :: String 
                        , token_id    :: Accepts}
@@ -162,6 +163,10 @@ tabulate :: (State,State) -> (State -> b) -> Table State b
 access :: Table State b -> (State -> b)
 
 newtype Table a b = Tab {getFun :: a -> b}
+
+instance Show b => Show (Table Int b) where
+  show f = unlines $ [show i ++ " ↦ " ++ show (access f i) | i <- [0,83]]
+
 tabulate _ f = Tab f
 access a x = (getFun a) x
 --}
