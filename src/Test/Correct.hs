@@ -7,6 +7,18 @@ import Test.Lexjava as A
 import Data.FingerTree as F
 import Data.Foldable (toList)
 import Data.Monoid
+import Data.List (inits,tails)
+
+splits xs = zip (inits xs) (tails xs)
+
+
+test_string x = unlines $ map show $ 
+  [ (xs,ys, measureToTokens $ measure (makeTree xs) <> measure(makeTree ys)) | 
+    
+    (_,x') <- splits x,
+    (zs,_) <- splits x',
+    (xs,ys) <- splits zs]
+
 
 splitToTree :: String -> [(LexTree,LexTree)]
 splitToTree s = map (splitToTree' s) [0..length s - 1]
