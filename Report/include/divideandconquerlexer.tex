@@ -491,3 +491,10 @@ The second case is when the out state for the right token list is $NoState$.
 This means that the two lists of tokens can't be combined. In this case the
 first token in the second list will be viewed as the start of a token and the
 last token in the first list will be viewed as the end of a token.
+
+\section{Associative function}
+\# Maybe, maybe not. Could be good to state why and maybe how. When we figured out why it's not.
+
+The associative property stated for when an expression containing two or more of the same operator, or function, in a row. The order of which of the operations that are executed first has no impact on the result. 
+
+In this incremental lexer this is essential. There is no way of knowing which part that will be lexed first, so the result of lexing any part with another part must give the same result as doing it in any other way.
