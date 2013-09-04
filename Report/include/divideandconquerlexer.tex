@@ -20,6 +20,48 @@ In \cref{fig:DataStruct} is a code representation of the datastructure
 
 \section{The Power of Suffix
 \label{section:Suffix}}
+The suffix is a strukture for saving an alternetiv acceptable lexing. It is build up by smaller parts of what the lexer is trying to lex. That is the subtokens for a bigger token. 
+
+This could be shown by \cref{ex.suffix}.
+\begin{example}
+\label{ex.suffix}
+Two tokens is trying to be lexed together. A token $a$ which has the lexeme \"else \", and else with a whitespace following it. A token $b$ which has the lexeme \"return\". The strukture for theses tokens and there suffixes is shown in \cref{fig.TokenSuffix}
+
+\begin{figure}[!h]
+  \centering
+  \begin{tabular}{r c l}
+    $\text{Token}_a$ & : & $\textsuperscript{start\_state} \downarrow
+      \underbrace{ \text{else \_ }} \downarrow ^{\text{out\_state} \, \notin 
+      \, \text{accepting\_states} }$\\
+    $\text{Suffix}_a$ & : & $\left[ \textsuperscript{start\_state} \downarrow
+      \underbrace{ \text{else}} \downarrow ^{\text{accepting\_state} } , \, 
+      \textsuperscript{start\_state} \downarrow \underbrace{ \text{\_}}
+      \downarrow ^{\text{accepting\_state} } \right]$\\
+    $\text{Token}_b$ & : & $\textsuperscript{start\_state} \downarrow
+      \underbrace{ \text{return}} \downarrow ^{\text{accepting\_state}}$\\
+    $\text{Suffix}_b$ & : & $\left[\right]$
+  \end{tabular}
+  where accepting\_states is a list of all accepting states.
+  \caption{The tokens and there suffixes.
+    \label{fig.TokenSuffix}}
+\end{figure}
+Now when $\text{Token}_a$ and $\text{Token}_b$ are combined it will result in an illegal token, that is the out\_state will not be a valid state. So something has to be done, becouse $\text{Token}_a$ does not end in an accepting state. And since the lexer always want the longest possible tokens, the lexer will try to combine this in an other way. The lexer then replaces $\text{Token}_a$ into it's suffixes, saves all the suffixes as finished tokens exept for the last suffix. In this case the $\underbrace{ \text{\_}}$ suffix. It now tries to combine this suffix with $\text{Token}_b$, which will also return a no valid state. And recursevly does the same thing again. But this time the $\underbrace{ \text{\_}}$ suffix is a single character token and has no suffixes. So the lexer can't do anything further with this, therefor the final result will be three separate tokens. shown in \cref{fig.SepToken}
+
+\begin{figure}[!h]
+  \centering
+  \begin{tabular}{r c l}
+    $\text{Token}_{a1}$ & : & $\textsuperscript{start\_state} \downarrow
+      \underbrace{ \text{else}} \downarrow ^{\text{accepting\_state} }$\\
+    $\text{Token}_{a2}$ & : & $\textsuperscript{start\_state} \downarrow
+      \underbrace{ \text{\_}} \downarrow ^{\text{accepting\_state} }$\\
+    $\text{Token}_b$ & : & $\textsuperscript{start\_state} \downarrow
+      \underbrace{ \text{return}} \downarrow ^{\text{accepting\_state}}$
+  \end{tabular}
+  \caption{The resulting tokens.
+    \label{fig.SepToken}}
+\end{figure}
+
+\end{example}
 
 \section{Lexing in the middle attack} %better title
 When the code is divided the lexer doesn't know if the string (or character) it
