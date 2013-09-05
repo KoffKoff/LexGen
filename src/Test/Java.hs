@@ -3,7 +3,7 @@
 {-# OPTIONS -fno-warn-incomplete-patterns #-}
 module Test.Java where
 
-import Data.FingerTree (FingerTree)
+import Data.FingerTree (FingerTree,measure)
 import qualified Data.FingerTree as F
 import Data.Sequence as S
 import Data.Monoid
@@ -166,7 +166,7 @@ access :: Table State b -> (State -> b)
 newtype Table a b = Tab {getFun :: a -> b}
 
 instance Show b => Show (Table Int b) where
-  show f = unlines $ [show i ++ " ↦ " ++ show (access f i) | i <- [0,83]]
+  show f = unlines $ [show i ++ " -> " ++ show (access f i) | i <- [0,57]]
 
 tabulate _ f = Tab f
 access a x = (getFun a) x
@@ -263,7 +263,7 @@ createSuff toks1 trans2  | S.null (currentSeq toks1) = suffix (trans2 startState
                      toks' = mergeTokens tempToks suffToks (suffix suffToks)
                      token :< _ = viewl $ currentSeq toks'
                  in case token_id token of
-                   [] -> (startToks2 {currentSeq = token1 <| currentSeq startToks2})
+                   [] -> (startToks2 {currentSeq = token1 <| currentSeq startToks2}) -- Här är felet, måste kollas upp.
                    _  -> toks'
          in End toks --
 
@@ -285,6 +285,7 @@ mergeTokens toks1@(Tokens seq1 _ suff1) toks2@(Tokens seq2 out_state suff2) newS
 appendTokens :: Tokens -> Tokens -> Tokens
 appendTokens (Tokens seq1 _ _) (Tokens seq2 out_state suff2) =
   Tokens (seq1 >< seq2) out_state suff2
+--appendTokens _ _ = NoTokens
 
 ---------- Constructors
 
