@@ -1,5 +1,9 @@
 THIS WE NEED TO DO!!!!!
 
+2013-09-09:
+Only solution I can think of is to have a table in the suffix.
+/Koff
+
 20130902
 Fix the bug (measure (makeTree ".") <> measure (makeTree "th") <> measure (makeTree "u"))
 ---
