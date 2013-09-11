@@ -1,7 +1,32 @@
 THIS WE NEED TO DO!!!!!
 
+2013-09-09:
+Only solution I can think of is to have a table in the suffix.
+/Koff
+
 20130902
 Fix the bug (measure (makeTree ".") <> measure (makeTree "th") <> measure (makeTree "u"))
+---
+measure ('.' F.<| (makeTree "th" F.|> 'u'))
+(0 -> Tokens {currentSeq = fromList [No Token:".t"
+,PT (Pn 0 0 0) (TV "hu")
+---
+measure ('.' F.<| (makeTree "thu"))
+(0 -> Tokens {currentSeq = fromList [PT (Pn 0 0 0) (TS ".")
+,PT (Pn 0 0 0) (TV "thu")
+---
+measure (makeTree "." F.|> 't' F.|> 'h' F.|> 'u')
+(0 -> Tokens {currentSeq = fromList [PT (Pn 0 0 0) (TS ".")
+,PT (Pn 0 0 0) (TV "thu")
+---
+measure ('.' F.<| (makeTree "t" F.|> 'h' F.|> 'u'))
+(0 -> Tokens {currentSeq = fromList [No Token:".t"
+,PT (Pn 0 0 0) (TV "hu")
+---
+measure ('.' F.<| 't' F.<| (makeTree "h" F.|> 'u'))
+(0 -> Tokens {currentSeq = fromList [PT (Pn 0 0 0) (TS ".")
+,PT (Pn 0 0 0) (TV "thu")
+---
 
 20130821:
 
