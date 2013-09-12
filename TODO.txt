@@ -1,6 +1,13 @@
 THIS WE NEED TO DO!!!!!
 
 2013-09-09:
+--                                The Suffix
+Trokens = Single Token State (Maybe Transition)
+        | Multiple [Token] State (Maybe Tokens)
+
+when there are more tokens the suffix will always start in the starting state, but when there is only one
+token the suffix can start in any state.
+
 Only solution I can think of is to have a table in the suffix.
 /Koff
 
