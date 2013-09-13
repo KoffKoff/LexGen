@@ -167,7 +167,7 @@ access :: Table State b -> (State -> b)
 newtype Table a b = Tab {getFun :: a -> b}
 
 instance Show b => Show (Table Int b) where
-  show f = unlines $ [show i ++ " -> " ++ show (access f i) | i <- [0,17]]
+  show f = unlines $ [show i ++ " -> " ++ show (access f i) | i <- [0,7]]
 
 tabulate _ f = Tab f
 access a x = (getFun a) x
@@ -226,15 +226,32 @@ emptyTokens = Tokens empty (Suffix empty "" 0) 0
 combineTokens :: Transition -> Transition -> Transition
 combineTokens trans1 trans2 = \in_state -> case trans1 in_state of
   NoTokens -> NoTokens --Illegal LHS
-  toks1 -> 
+  toks1 -> combineWithRHS toks1 trans2
+
+combineWithRHS :: Tokens -> Transition -> Tokens
+combineWithRHS toks1 trans2 =
     let mid_state = outState toks1
+        toks1' = checkAcc toks1
         startToks2 = trans2 startState
     in case trans2 mid_state of
-      NoTokens -> case lastToken toks1 of
-        Suffix suffToks "" suffOs -> appendTokens (currentSeq toks1 >< suffToks) startToks2
-        _ -> NoTokens
---      _ -> combineWithRHS (suffixEnd toks1) trans2
-      toks2 -> mergeTokens toks1 toks2 trans2
+      NoTokens -> case lastToken toks1' of
+        Suffix suffToks str suffOs ->
+          if S.length suffToks <= 1 && str == ""
+          then appendTokens (currentSeq toks1' >< suffToks) (checkAcc startToks2)
+          else case trans2 suffOs of
+            NoTokens ->
+              if str == ""
+              then appendTokens (currentSeq toks1' >< suffToks) (checkAcc startToks2)
+              else NoTokens
+            toks2 -> mergeTokens toks1' (checkAcc toks2) trans2
+      toks2 -> mergeTokens toks1' (checkAcc toks2) trans2
+
+checkAcc :: Tokens -> Tokens
+checkAcc (Tokens seq (Suffix suffSeq str _) os) | not . P.null $ acc =
+  Tokens seq (Suffix (singleton $ Token (concatLexemes suffSeq ++ str) acc) "" os) os
+  where acc = alex_accept ! os
+checkAcc toks = toks
+
 {-
 -- Replaces the last token with the suffix for it
 suffixEnd :: Tokens -> Tokens
@@ -250,19 +267,48 @@ suffixEnd toks = toks
 mergeTokens :: Tokens -> Tokens -> Transition -> Tokens
 mergeTokens (Tokens seq1 suff1 _) (Tokens seq2 suff2 out_state) trans2=
   let (seq',suff') = case viewl seq2 of
-        EmptyL -> let suff = case alex_accept ! out_state of
-                        (a:as) -> mergeSuff suff1 suff2 (a:as) out_state
-                        [] -> createSuff suff1 suff2
+        EmptyL -> let suff = case mergeSuff suff1 trans2 of
+                        Just suffix -> suffix
+                        Nothing -> createSuff suff1 suff2
                   in (seq1,suff)
         token :< seq2' -> let seq = seq1 >< createSeq suff1 seq2
                           in (seq,suff2)
   in Tokens seq' suff' out_state
 
+mergeSuff :: Suffix -> Transition -> Maybe Suffix
+mergeSuff (Suffix seq1 "" ms) trans2 =
+  case viewr seq1 of
+    EmptyR -> Nothing
+    seq1' :> token1 ->
+      let Token str1 _ = token1
+      in case trans2 ms of
+        NoTokens -> Nothing
+        toks2 -> Just $
+          let Tokens seq2 (Suffix suffSeq suffStr suffOs) os = checkAcc toks2
+          in if S.null seq2 && S.length suffSeq <= 1
+             then case alex_accept ! os of
+               [] -> Suffix (seq1 >< suffSeq) suffStr suffOs
+               acc ->
+                 Suffix (seq1' |> (Token (str1 ++ concatLexemes suffSeq ++ suffStr) acc)) "" os
+             else let Token str2 acc :< seq2' = viewl $ seq2 >< suffSeq
+                      newTok = Token (str1 ++ str2) acc
+                  in Suffix ((seq1' |> newTok) >< seq2') suffStr suffOs
+{-
+mergeSuff (Suffix seq1 str1 ms) trans2 = case trans2 ms of
+  NoTokens -> Nothing
+  Tokens seq2 (Suffix suffSeq str2 os) _ -> Just $ case (viewl seq2,viewl suffSeq) of
+    ((Token lex2 acc) :< toks2,_) ->
+      Suffix ((seq1 |> Token (str1 ++ lex2) acc) >< toks2 >< suffSeq) str2 os
+    (_,(Token lex2 acc) :< toks2) ->
+      Suffix ((seq1 |> Token (str1 ++ lex2) acc) >< toks2) str2 os
+    (_,_) -> Suffix seq1 (str1 ++ str2) os-}
+
+{-
 mergeSuff :: Suffix -> Suffix -> Accepts -> State -> Suffix
 mergeSuff (Suffix seq1 str1 _) (Suffix seq2 str2 _) acc out_state =
   let newLex = concatLexemes seq1 ++ str1 ++ concatLexemes seq2 ++ str2
   in Suffix (singleton (Token newLex acc)) "" out_state
-
+-}
 --createSuff = undefined
 
 createSuff :: Suffix -> Suffix -> Suffix
