@@ -2,6 +2,13 @@ THIS WE NEED TO DO!!!!!
 
 20130916:
 
+report:
+- add a section on divide and conquer in general (see Master theorem)
+- section on divide and conquer lexing in general (composition of DFA)
+- our problem: longest match
+- references: Introduction to automata theory ...  from Hopcroft, Motwani and Ullman
+              MapReduce
+
 write a quickcheck property which:
 - starts with a given known correct input string
 - selects a random substring; splits it in two parts (l,r)
