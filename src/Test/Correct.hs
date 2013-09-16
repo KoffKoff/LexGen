@@ -22,6 +22,13 @@ splitToTree s = map (splitToTree' s) [0..length s]
   where splitToTree' str i = let (pre,suf) = splitAt i str
                              in (makeTree pre,makeTree suf)
 
+checkSplitMerge :: String -> [Bool]
+checkSplitMerge str = let tree = makeTree str
+                          incToks = map (treeToList . uncurry mergeTrees) (treeSplitter tree)
+                          seqToks = alexScanTokens str
+                          checkToks incT = checkListToken incT seqToks
+                      in map checkToks incToks
+
 mergeTrees :: LexTree -> LexTree -> LexTree
 mergeTrees t1 t2 = t1 F.>< t2
 
@@ -75,7 +82,8 @@ checker (J.PT _ tok1) (A.PT _ tok2) = checker' tok1 tok2
         checker' _ _ = False
 
 core002 :: String
-core002 = "/* a comment */\n\n" ++
+core002 = "import datastructures.*;\n" ++
+          "/* a comment */\n\n" ++
           "// hej\n" ++
           "int foo.thur() {\n" ++
           "printString(foo);\n" ++

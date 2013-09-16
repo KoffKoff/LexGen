@@ -176,14 +176,14 @@ access :: Table State b -> (State -> b)
 
 --debug stuff
 instance Show b => Show (Table Int b) where
-  show f = unlines $ [show i ++ " -> " ++ show (access f i) | i <- [0,7]]
+  show f = unlines $ ["\n\n\n\n" ++ show i ++ " -> " ++ show (access f i) | i <- [0,83]]
 
-{-- Generic template?
+-- Generic template?
 newtype Table a b = Tab {getFun :: a -> b}
 tabulate _ f = Tab f
 access a x = (getFun a) x
 --}
-
+{-
 type Table a b = Array State b
 tabulate range f = listArray range [f i | i <- [fst range..snd range]]
 access a x = a ! x
@@ -213,7 +213,8 @@ instance Monoid (Table State Tokens) where
 instance Measured (Table State Tokens,Size) Char where
   measure c =
     let bytes = encode c
-        baseCase in_state = case foldl automata in_state bytes of
+        baseCase in_state | in_state == -1 = InvalidTokens [c]
+                          | otherwise = case foldl automata in_state bytes of
           -1 -> InvalidTokens [c]
           os -> case alex_accept ! os of
             []  -> Tokens empty (Str [c]) os
@@ -238,21 +239,6 @@ combineTokens trans1 trans2 in_state | isInvalid toks1 = toks1
                                      | otherwise = combineWithRHS toks1 trans2
   where toks1 = trans1 in_state
 
--- Wrapper template
-isValid :: Tokens -> Bool
-isValid (Tokens _ _ _) = True
-isValid _ = False
-
--- Wrapper template
-isEmpty :: Tokens -> Bool
-isEmpty NoTokens = True
-isEmpty _        = False
-
--- Wrapper template
-isInvalid :: Tokens -> Bool
-isInvalid (InvalidTokens _) = True
-isInvalid _ = False
-
 -- Generic template
 -- Tries to merge tokens first, if it can't it either appends the token or calls
 -- itself if the suffix contains Tokens instaed of a single token.
@@ -271,25 +257,20 @@ combineWithRHS toks1 trans2 | isEmpty toks2 = toks1
         seq1 = currentSeq toks1
 
 -- Generic template
-suffToStr :: Suffix -> String
-suffToStr (Str s) = s
-suffToStr (One token) = lexeme token
-suffToStr (Multi toks) =
-  concatLexemes (currentSeq toks) ++ suffToStr (lastToken toks)
-
--- Generic template
 -- Creates one token from the last token of the first sequence and and the first
 -- token of the second sequence and inserts it between the init of the first
 -- sequence and the tail of the second sequence
 mergeTokens :: Suffix -> Tokens -> Transition -> Tokens
-mergeTokens suff1 toks2 trans2 = case viewl (currentSeq toks2) of
+mergeTokens suff1 toks2 trans2 | out_state == -1 = InvalidTokens ""
+                               | otherwise = case viewl (currentSeq toks2) of
   token2 :< seq2' -> let newToken = mergeToken suff1 token2
                      in toks2 {currentSeq = newToken <| seq2'}
-  EmptyL -> case alex_accept ! outState toks2 of
+  EmptyL -> case alex_accept ! out_state of
     [] -> toks2 {lastToken = mergeSuff suff1 (lastToken toks2) trans2}
     acc -> let lex = suffToStr suff1 ++ suffToStr (lastToken toks2)
                newTok = (Token lex acc)
            in toks2 {lastToken = One newTok}
+  where out_state = outState toks2
 
 -- Generic template
 -- Creates on token from a suffix and a token
@@ -343,6 +324,28 @@ treeToTokens = measureToTokens . measure
 
 ------------- Util funs
 
+-- Wrapper template
+isValid :: Tokens -> Bool
+isValid (Tokens _ _ _) = True
+isValid _ = False
+
+-- Wrapper template
+isEmpty :: Tokens -> Bool
+isEmpty NoTokens = True
+isEmpty _        = False
+
+-- Wrapper template
+isInvalid :: Tokens -> Bool
+isInvalid (InvalidTokens _) = True
+isInvalid _ = False
+
+-- Generic template
+suffToStr :: Suffix -> String
+suffToStr (Str s) = s
+suffToStr (One token) = lexeme token
+suffToStr (Multi toks) =
+  concatLexemes (currentSeq toks) ++ suffToStr (lastToken toks)
+
 -- Genereic template
 concatLexemes :: Seq IntToken -> String
 concatLexemes = foldr ((++) . lexeme) ""
@@ -356,6 +359,10 @@ insertAtIndex str i tree =
 
 splitTreeAt :: Int -> LexTree -> (LexTree,LexTree)
 splitTreeAt i tree = split (\(_,Size n) -> n>i) tree
+
+size :: LexTree -> Int
+size tree = let Size n = snd $ measure tree
+            in n
 
 -- wrapper template
 alexMove :: Posn -> Char -> Posn
@@ -428,7 +435,7 @@ alex_action_23 =  tok (\p s -> PT p (TD $ share s))
 
 -- -----------------------------------------------------------------------------
 -- INTERNALS and main scanner engine
-
+{-
 alexIndexInt16OffAddr arr off = arr ! off
 
 
@@ -436,7 +443,7 @@ alexIndexInt32OffAddr arr off = arr ! off
 
 
 quickIndex arr i = arr ! i
-
+-}
 
 -- -----------------------------------------------------------------------------
 -- Main lexing routines
