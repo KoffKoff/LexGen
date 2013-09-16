@@ -280,11 +280,13 @@ measureToTokens :: (Table State Tokens,Size) -> Seq Token
 measureToTokens m = case access (fst $ m) startState of
   InvalidTokens s -> error $ "Unacceptable token: " ++ s
   NoTokens -> empty
-  Tokens seq suff out_state -> foldlWithIndex showToken empty $ intToks seq suff
-  where showToken toks i (Token lex accs) = case accs of
-          [] -> toks
-          AlexAcc f:_ -> toks |> f (Pn 0 0 i) lex
-          AlexAccSkip:_ -> toks
+  Tokens seq suff out_state -> snd $ foldlWithIndex showToken (Pn 0 1 1,empty) $ intToks seq suff
+  where showToken (pos,toks) _ (Token lex accs) =
+          let pos' = foldl alexMove pos lex
+          in case accs of
+            [] -> (pos',toks)
+            AlexAcc f:_ -> (pos',toks |> f pos lex)
+            AlexAccSkip:_ -> (pos',toks)
         intToks seq (Str str) = error $ "Unacceptable token: " ++ str
         intToks seq (One token) = seq |> token
         intToks seq (Multi (Tokens seq' suff' _)) = intToks (seq >< seq') suff'
@@ -297,27 +299,6 @@ treeToTokens = measureToTokens . F.measure
 concatLexemes :: Seq IntToken -> String
 concatLexemes = foldr ((++) . lexeme) ""
 
--- Returns true if the last token is accepting
-isAccepting :: Tokens -> Bool
-isAccepting (Tokens toks _ suff) = case accs of 
-  [] -> False
-  _  -> True
-  where accs = case viewr toks of
-          _ :> tok -> token_id tok
-          _        -> []
-{-
--- Returns true if there is no suffix
-isNone :: Suffix -> Bool
-isNone None = True
-isNone _    = False
--}
--- Returns true if the last token in a sequence is a single character.
-isSingle :: Tokens -> Int -> Bool
-isSingle (Tokens seq1 _ suff) 0 = case viewr seq1 of
-  _ :> tok -> P.length (lexeme tok) == 1
-  _        -> False
-isSingle _ _ = False
-
 insertAtIndex :: String -> Int -> LexTree -> LexTree
 insertAtIndex str i tree = 
   if i < 0
@@ -327,6 +308,11 @@ insertAtIndex str i tree =
 
 splitTreeAt :: Int -> LexTree -> (LexTree,LexTree)
 splitTreeAt i tree = F.split (\(_,Size n) -> n>i) tree
+
+alexMove :: Posn -> Char -> Posn
+alexMove (Pn a l c) '\t' = Pn (a+1)  l     (((c+7) `div` 8)*8+1)
+alexMove (Pn a l c) '\n' = Pn (a+1) (l+1)   1
+alexMove (Pn a l c) _    = Pn (a+1)  l     (c+1)
 
 -- Starting state
 startState = 0

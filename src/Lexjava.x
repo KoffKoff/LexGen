@@ -152,79 +152,175 @@ unescapeInitTail = unesc . tail where
 -------------------------------------------------------------------
 
 type State = Int
-newtype Transition  = Trans {getSeq :: State -> (Seq PartToken,State)}
-data Size       = Size Int
-type LexTree    = FingerTree (Transition,Size) Char
-data PartToken = Token { lexeme      :: String
-                       , token_id    :: [AlexAcc (Posn -> String -> Tok) ()]}
+type Transition = State -> Tokens -- Transition from in state to Tokens
+data Tokens    = NoTokens
+               | InvalidTokens String
+               | Tokens {currentSeq :: Seq InternalToken
+                        ,lastToken  :: Suffix
+                        ,outState   :: State}
+                 deriving Show
+-- This is either a Sequence of tokens with another suffix, one token if the it
+-- is in an accepting state or a string if it's not in an accepting state.
+data Suffix = Str String 
+            | One InternalToken
+            | Multi Tokens 
+                 deriving Show
+-- Describes the size of the fingertree
+data Size      = Size Int
+                 deriving Show
+type LexTree   = FingerTree (Table State Tokens,Size) Char
+data InternalToken = Token { lexeme      :: String 
+                           , token_id    :: Accepts}
+type Accepts   = [AlexAcc (Posn -> String -> Token) ()]
+
+
+tabulate :: (State,State) -> (State -> b) -> Table State b
+access :: Table State b -> (State -> b)
+
+instance Show b => Show (Table Int b) where
+  show f = unlines $ [show i ++ " -> " ++ show (access f i) | i <- [0,7]]
+
+{-- Tabulation using functional composition
+newtype Table a b = Tab {getFun :: a -> b}
+tabulate _ f = Tab f
+access a x = (getFun a) x
+-}
+-- Array tabulation
+type Table a b = Array State b
+tabulate range f = listArray range [f i | i <- [fst range..snd range]]
+access a x = a ! x
+
+instance Show InternalToken where
+  show (Token lex accs) = case map (\acc -> case acc of 
+    AlexAcc f -> show $ f (Pn 0 0 0) lex
+    AlexAccSkip -> "Skip:" ++ show lex) accs of
+                            [] -> "No Token:" ++ show lex ++ "\n"
+                            toks -> unlines toks
 
 instance Monoid Size where
   mempty = Size 0
   Size m `mappend` Size n = Size (m+n)
 
-instance Monoid Transition where
-  mempty = Trans $ \_ -> (mempty,-1)
-  mappend = combineTokens
+instance Monoid (Table State Tokens) where
+  mempty = tabulate stateRange (\_ -> NoTokens)
+  f `mappend` g = tabulate stateRange $ combineTokens (access f) (access g)
 
-instance F.Measured (Transition,Size) Char where
+-- The base case for when one character is lexed.
+instance F.Measured (Table State Tokens,Size) Char where
   measure c =
     let bytes = encode c
-    in (Trans $ \is -> case foldl automata is bytes of
-      -1 -> (singleton (Token [c] [AlexAccNone]),-1)
-      os -> (singleton (Token [c] (alex_accept ! os)),os),Size 1)
+        baseCase in_state = case foldl automata in_state bytes of
+          -1 -> InvalidTokens [c]
+          os -> case alex_accept ! os of
+            []  -> Tokens empty (Str [c]) os
+            acc -> Tokens empty (One (Token [c] acc)) os
+    in (tabulate stateRange $ baseCase, Size 1)
 
+--------- Combination functions, the conquer step
+
+-- Combines two transition maps
 combineTokens :: Transition -> Transition -> Transition
-combineTokens toks1 toks2 = Trans $ \in_state ->
-  let (seq1,mid_state) = getSeq toks1 $ in_state
-      append seq1 = let (seq2,out_state) = getSeq toks2 $ head startState
-                    in (appendTokens seq1 seq2,out_state)
-  in case (mid_state,getSeq toks2 $ mid_state) of
-    (-1,_) -> -- Illegal left hand-side
-      if isSingle seq1 in_state
-      then error $ "Illegal character: " ++ show lastToken 
-      else (mempty,-1) 
-    (_,(_,-1)) -> -- Uncombinable tokens
-      if isAccepting seq1
-      then append seq1
-      else if isSingle seq1 in_state
-           then error $ "Unfinnished token: " ++ show lastToken
-           else (mempty,-1) -- This is an illegal substring
-    (_,(seq2,out_state)) -> if isAccepting seq2
-                            then (mergeTokens seq1 seq2,out_state)
-                            else (mempty,-1)
+combineTokens trans1 trans2 = \in_state -> case trans1 in_state of
+  InvalidTokens s -> InvalidTokens s
+  NoTokens -> trans2 in_state
+  toks1 -> combineWithRHS toks1 trans2
 
-mergeTokens :: Seq PartToken -> Seq PartToken -> Seq PartToken
-mergeTokens toks1 toks2 = 
-  let toks1' :> token1 = viewr toks1
-      token2 :< toks2' = viewl toks2
-  in (toks1' |> Token (lexeme token1 ++ lexeme token2) (token_id token2)) >< toks2'
+-- Tries to merge tokens first, if it can't it either appends the token or calls
+-- itself if the suffix contains Tokens instaed of a single token.
+combineWithRHS :: Tokens -> Transition -> Tokens
+combineWithRHS toks1 trans2 =
+    let mid_state = outState toks1
+        seq1 = currentSeq toks1
+        startToks2 = trans2 startState
+    in case trans2 mid_state of
+      NoTokens -> toks1
+      -- Not possible to merge tokens
+      InvalidTokens _ -> case lastToken toks1 of
+        Multi suffToks ->
+          let toks2' = combineWithRHS suffToks trans2 -- try to merge suffix
+          in appendTokens seq1 toks2'
+        One tok -> appendTokens (seq1 |> tok) startToks2
+        Str s -> InvalidTokens s -- Last token in toks1 is not accepting
+      toks2 -> let toks2' = mergeTokens (lastToken toks1) toks2 trans2
+               in appendTokens seq1 toks2'
 
-appendTokens :: Seq PartToken -> Seq PartToken -> Seq PartToken
-appendTokens = mappend
+suffToStr :: Suffix -> String
+suffToStr (Str s) = s
+suffToStr (One (Token s _)) = s
+suffToStr (Multi (Tokens seq suff _)) = concatLexemes seq ++ suffToStr suff
+
+-- Creates one token from the last token of the first sequence and and the first
+-- token of the second sequence and inserts it between the init of the first
+-- sequence and the tail of the second sequence
+mergeTokens :: Suffix -> Tokens -> Transition -> Tokens
+mergeTokens suff1 (Tokens seq2 suff2 out_state) trans2 = case viewl seq2 of
+  token2 :< seq2' -> let newToken = mergeToken suff1 token2
+                     in Tokens (newToken <| seq2') suff2 out_state
+  EmptyL -> case alex_accept ! out_state of
+    [] -> Tokens empty (mergeSuff suff1 suff2 trans2) out_state
+    acc -> let newToken = (Token (suffToStr suff1 ++ suffToStr suff2) acc)
+           in Tokens empty (One newToken) out_state
+
+-- Creates on token from a suffix and a token
+mergeToken :: Suffix -> InternalToken -> InternalToken
+mergeToken suff1 (Token lex2 acc) = Token (suffToStr suff1 ++ lex2) acc
+
+-- Creates the apropiet new suffix from two suffixes
+mergeSuff :: Suffix -> Suffix -> Transition -> Suffix
+mergeSuff (Multi toks1) _ trans2 = Multi $ combineWithRHS toks1 trans2
+mergeSuff (Str s1) suff2 _ = Str $ s1 ++ suffToStr suff2
+mergeSuff (One token1) (Str _) trans2 =
+  let Tokens seq2 suff2 out_state = trans2 startState
+  in Multi $ Tokens (token1 <| seq2) suff2 out_state
+mergeSuff suff1 (One token2) _ = One $ mergeToken suff1 token2
+mergeSuff suff1 (Multi toks2) trans2 = Multi $ mergeTokens suff1 toks2 trans2
+
+-- Prepends a sequence of tokens on the sequence in Tokens
+appendTokens :: Seq InternalToken -> Tokens -> Tokens
+appendTokens seq1 (Tokens seq2 suff2 out_state) =
+  Tokens (seq1 >< seq2) suff2 out_state
+appendTokens _ _ = NoTokens
+
+---------- Constructors
 
 makeTree :: String -> LexTree
-makeTree = F.fromList
+makeTree  = F.fromList
 
-treeToTokens :: LexTree -> Transition
-treeToTokens  = fst . F.measure
+measureToTokens :: (Table State Tokens,Size) -> Seq Token
+measureToTokens m = case access (fst $ m) startState of
+  InvalidTokens s -> error $ "Unacceptable token: " ++ s
+  NoTokens -> empty
+  Tokens seq suff out_state -> foldlWithIndex showToken empty $ intToks seq suff
+  where showToken toks i (Token lex accs) = case accs of
+          [] -> toks
+          AlexAcc f:_ -> toks |> f (Pn 0 0 i) lex
+          AlexAccSkip:_ -> toks
+        intToks seq (Str str) = error $ "Unacceptable token: " ++ str
+        intToks seq (One token) = seq |> token
+        intToks seq (Multi (Tokens seq' suff' _)) = intToks (seq >< seq') suff'
 
-isAccepting :: Seq Token -> Bool
-isAccepting toks = case token_id tok of 
-  AlexAccNone -> False
-  _           -> True
-  where _ :> tok = viewr toks
+treeToTokens :: LexTree -> Seq Token
+treeToTokens = measureToTokens . F.measure
 
-isSingle :: Seq PartToken -> Int -> Bool
-isSingle seq1 0 = let _ :> tok = viewr seq1
-                  in Prelude.length (lexeme tok) == 1
-isSingle _ _ = False
+------------- Util funs
+
+concatLexemes :: Seq InternalToken -> String
+concatLexemes = foldr ((++) . lexeme) ""
 
 insertAtIndex :: String -> Int -> LexTree -> LexTree
 insertAtIndex str i tree = 
   if i < 0
   then error "index must be >= 0"
-  else l F.>< (lexCode str) F.>< r
-     where (l,r) = F.split (\(_,Size n) -> n>i) tree
+  else l F.>< (makeTree str) F.>< r
+     where (l,r) = splitTreeAt i tree
+
+splitTreeAt :: Int -> LexTree -> (LexTree,LexTree)
+splitTreeAt i tree = F.split (\(_,Size n) -> n>i) tree
+
+-- Starting state
+startState = 0
+-- A tuple that says how many states there are
+stateRange = bounds alex_accept
 
 automata :: Int -> Byte -> Int
 automata s c = let base   = alex_base ! s
@@ -252,16 +348,4 @@ encode  = map fromIntegral . go . fromEnum
                         , 0x80 + ((oc `shiftR` 6) .&. 0x3f)
                         , 0x80 + oc .&. 0x3f
                         ]
-
--- Show instances for testing purposes
-
-instance Show Transition where
-  show = show . fst . (flip getSeq) 0
-
-instance Show PartToken where
-  show (Token lex accs) = case map (\acc -> case acc of 
-    AlexAcc f -> show $ f (Pn 0 0 0) lex
-    AlexAccSkip -> "Skip:" ++ show lex) accs of
-                            [] -> "No Token:" ++ show lex ++ "\n"
-                            toks -> unlines toks
 }
