@@ -146,13 +146,17 @@ unescapeInitTail = unesc . tail where
 type State = Int
 type Transition = State -> Tokens -- Transition from in state to Tokens
 data Tokens    = NoTokens
+               | InvalidTokens String
                | Tokens {currentSeq :: Seq IntToken
                         ,lastToken  :: Suffix
                         ,outState   :: State}
 -- The suffix is the the sequence of as long as possible accepting tokens.
 -- It can itself contain a suffix for the last token.
                  deriving Show
-data Suffix = Suffix (Seq IntToken) String State --This is either a Sequence of tokens or one token if the it hits an accepting state with later characters
+--This is either a Sequence of tokens or one token if the it hits an accepting state with later characters
+data Suffix = Str String 
+            | One IntToken
+            | Multi Tokens 
                  deriving Show
 data Size      = Size Int
                  deriving Show
@@ -189,148 +193,83 @@ instance Monoid Size where
   Size m `mappend` Size n = Size (m+n)
 
 instance Monoid (Table State Tokens) where
-  mempty = tabulate stateRange (\_ -> emptyTokens)
+  mempty = tabulate stateRange (\_ -> NoTokens)
   f `mappend` g = tabulate stateRange $ combineTokens (access f) (access g)
 
 -- The base case for when one character is lexed.
 instance F.Measured (Table State Tokens,Size) Char where
   measure c =
     let bytes = encode c
-        baseCase 0 = case foldl automata 0 bytes of
-          -1 -> error ""
+        baseCase in_state = case foldl automata in_state bytes of
+          -1 -> InvalidTokens [c]
           os -> case alex_accept ! os of
-            []  -> Tokens empty (Suffix empty [c] os) os
-            acc -> Tokens empty (Suffix (singleton (Token [c] acc)) "" os) os
-        baseCase in_state =
-          let os = foldl automata in_state bytes
-          in case os of
-            -1 -> NoTokens
-            os -> let Tokens _ suffix@(Suffix seq str suffOs) _ = baseCase 0
-                  in case alex_accept ! os of
-                    [] -> Tokens empty suffix os
-                    acc ->
-                      let str' = case viewl seq of
-                            EmptyL -> str
-                            token :< _ -> lexeme token
-                          token' = Token str' acc
-                      in Tokens empty (Suffix (singleton token') "" suffOs) os
-    in (tabulate stateRange $ baseCase
-       ,Size 1)
-
-emptyTokens :: Tokens
-emptyTokens = Tokens empty (Suffix empty "" 0) 0
+            []  -> Tokens empty (Str [c]) os
+            acc -> Tokens empty (One (Token [c] acc)) os
+    in (tabulate stateRange $ baseCase, Size 1)
 
 --------- Combination functions, the conquer step
 
 -- Combines two transition maps
 combineTokens :: Transition -> Transition -> Transition
 combineTokens trans1 trans2 = \in_state -> case trans1 in_state of
-  NoTokens -> NoTokens --Illegal LHS
+  InvalidTokens s -> InvalidTokens s
+  NoTokens -> trans2 in_state
   toks1 -> combineWithRHS toks1 trans2
 
+-- Tries to merge tokens first, if it can't it either appends the token or calls
+-- itself if the suffix contains Tokens instaed of a single token.
 combineWithRHS :: Tokens -> Transition -> Tokens
 combineWithRHS toks1 trans2 =
     let mid_state = outState toks1
-        toks1' = checkAcc toks1
+        seq1 = currentSeq toks1
         startToks2 = trans2 startState
     in case trans2 mid_state of
-      NoTokens -> case lastToken toks1' of
-        Suffix suffToks str suffOs ->
-          if S.length suffToks <= 1 && str == ""
-          then appendTokens (currentSeq toks1' >< suffToks) (checkAcc startToks2)
-          else case trans2 suffOs of
-            NoTokens ->
-              if str == ""
-              then appendTokens (currentSeq toks1' >< suffToks) (checkAcc startToks2)
-              else NoTokens
-            toks2 -> mergeTokens toks1' (checkAcc toks2) trans2
-      toks2 -> mergeTokens toks1' (checkAcc toks2) trans2
+      NoTokens -> toks1
+      -- Not possible to merge tokens
+      InvalidTokens _ -> case lastToken toks1 of
+        Multi suffToks ->
+          let toks2' = combineWithRHS suffToks trans2 -- try to merge suffix
+          in appendTokens seq1 toks2'
+        One tok -> appendTokens (seq1 |> tok) startToks2
+        Str s -> InvalidTokens s -- Last token in toks1 is not accepting
+      toks2 -> let toks2' = mergeTokens (lastToken toks1) toks2 trans2
+               in appendTokens seq1 toks2'
 
-checkAcc :: Tokens -> Tokens
-checkAcc (Tokens seq (Suffix suffSeq str _) os) | not . P.null $ acc =
-  Tokens seq (Suffix (singleton $ Token (concatLexemes suffSeq ++ str) acc) "" os) os
-  where acc = alex_accept ! os
-checkAcc toks = toks
+suffToStr :: Suffix -> String
+suffToStr (Str s) = s
+suffToStr (One (Token s _)) = s
+suffToStr (Multi (Tokens seq suff _)) = concatLexemes seq ++ suffToStr suff
 
-{-
--- Replaces the last token with the suffix for it
-suffixEnd :: Tokens -> Tokens
-suffixEnd (Tokens seq (Multi suffSeq "" out_state) _) =
-  let suffInit :> tok = viewr suffSeq
-  in Tokens (seq >< suffInit) (One tok) out_state
-suffixEnd (Tokens _ (Multi _ _ _) _) = NoTokens -- An unacceptable token
-suffixEnd toks = toks
--}
 -- Creates one token from the last token of the first sequence and and the first
 -- token of the second sequence and inserts it between the init of the first
 -- sequence and the tail of the second sequence
-mergeTokens :: Tokens -> Tokens -> Transition -> Tokens
-mergeTokens (Tokens seq1 suff1 _) (Tokens seq2 suff2 out_state) trans2=
-  let (seq',suff') = case viewl seq2 of
-        EmptyL -> let suff = case mergeSuff suff1 trans2 of
-                        Just suffix -> suffix
-                        Nothing -> createSuff suff1 suff2
-                  in (seq1,suff)
-        token :< seq2' -> let seq = seq1 >< createSeq suff1 seq2
-                          in (seq,suff2)
-  in Tokens seq' suff' out_state
-
-mergeSuff :: Suffix -> Transition -> Maybe Suffix
-mergeSuff (Suffix seq1 "" ms) trans2 =
-  case viewr seq1 of
-    EmptyR -> Nothing
-    seq1' :> token1 ->
-      let Token str1 _ = token1
-      in case trans2 ms of
-        NoTokens -> Nothing
-        toks2 -> Just $
-          let Tokens seq2 (Suffix suffSeq suffStr suffOs) os = checkAcc toks2
-          in if S.null seq2 && S.length suffSeq <= 1
-             then case alex_accept ! os of
-               [] -> Suffix (seq1 >< suffSeq) suffStr suffOs
-               acc ->
-                 Suffix (seq1' |> (Token (str1 ++ concatLexemes suffSeq ++ suffStr) acc)) "" os
-             else let Token str2 acc :< seq2' = viewl $ seq2 >< suffSeq
-                      newTok = Token (str1 ++ str2) acc
-                  in Suffix ((seq1' |> newTok) >< seq2') suffStr suffOs
-{-
-mergeSuff (Suffix seq1 str1 ms) trans2 = case trans2 ms of
-  NoTokens -> Nothing
-  Tokens seq2 (Suffix suffSeq str2 os) _ -> Just $ case (viewl seq2,viewl suffSeq) of
-    ((Token lex2 acc) :< toks2,_) ->
-      Suffix ((seq1 |> Token (str1 ++ lex2) acc) >< toks2 >< suffSeq) str2 os
-    (_,(Token lex2 acc) :< toks2) ->
-      Suffix ((seq1 |> Token (str1 ++ lex2) acc) >< toks2) str2 os
-    (_,_) -> Suffix seq1 (str1 ++ str2) os-}
-
-{-
-mergeSuff :: Suffix -> Suffix -> Accepts -> State -> Suffix
-mergeSuff (Suffix seq1 str1 _) (Suffix seq2 str2 _) acc out_state =
-  let newLex = concatLexemes seq1 ++ str1 ++ concatLexemes seq2 ++ str2
-  in Suffix (singleton (Token newLex acc)) "" out_state
--}
---createSuff = undefined
-
-createSuff :: Suffix -> Suffix -> Suffix
-createSuff (Suffix seq1 "" _) (Suffix seq2 str out_state) =
-  Suffix (seq1 >< seq2) str out_state
-createSuff (Suffix seq1 str1 _) (Suffix seq2 str2 out_state) =
-  Suffix seq1 (str1 ++ concatLexemes seq2 ++ str2) out_state
-
-createSeq :: Suffix -> Seq IntToken -> Seq IntToken
-createSeq suff1 seq2 = case viewl seq2 of
+mergeTokens :: Suffix -> Tokens -> Transition -> Tokens
+mergeTokens suff1 (Tokens seq2 suff2 out_state) trans2 = case viewl seq2 of
   token2 :< seq2' -> let newToken = mergeToken suff1 token2
-                     in newToken <| seq2'
+                     in Tokens (newToken <| seq2') suff2 out_state
+  EmptyL -> case alex_accept ! out_state of
+    [] -> Tokens empty (mergeSuff suff1 suff2 trans2) out_state
+    acc -> Tokens empty (One (Token (suffToStr suff1 ++ suffToStr suff2) acc)) out_state
 
+-- Creates on token from a suffix and a token
 mergeToken :: Suffix -> IntToken -> IntToken
-mergeToken (Suffix seq str _) (Token lex acc) =
-  Token (concatLexemes seq ++ str ++ lex) acc
+mergeToken suff1 (Token lex2 acc) = Token (suffToStr suff1 ++ lex2) acc
 
--- Apends the second sequence to the first sequence
+-- Creates the apropiet new suffix from two suffixes
+mergeSuff :: Suffix -> Suffix -> Transition -> Suffix
+mergeSuff (Multi toks1) _ trans2 = Multi $ combineWithRHS toks1 trans2
+mergeSuff (Str s1) suff2 _ = Str $ s1 ++ suffToStr suff2
+mergeSuff (One token1) (Str _) trans2 =
+  let Tokens seq2 suff2 out_state = trans2 startState
+  in Multi $ Tokens (token1 <| seq2) suff2 out_state
+mergeSuff suff1 (One token2) _ = One $ mergeToken suff1 token2
+mergeSuff suff1 (Multi toks2) trans2 = Multi $ mergeTokens suff1 toks2 trans2
+
+-- Prepends a sequence of tokens on the sequence in Tokens
 appendTokens :: Seq IntToken -> Tokens -> Tokens
 appendTokens seq1 (Tokens seq2 suff2 out_state) =
   Tokens (seq1 >< seq2) suff2 out_state
---appendTokens _ _ = NoTokens
+appendTokens _ _ = NoTokens
 
 ---------- Constructors
 
@@ -338,16 +277,17 @@ makeTree :: String -> LexTree
 makeTree  = F.fromList
 
 measureToTokens :: (Table State Tokens,Size) -> Seq Token
-measureToTokens m = let Tokens seq suff out_state = access (fst $ m) startState
-                        intToks seq suff = case suff of
---                          One token -> seq |> token
-                          Suffix suffSeq "" _ -> seq >< suffSeq
-                          Suffix _ str _      -> error $ "Illegal token: " ++ str
-                    in foldlWithIndex showToken empty $ intToks seq suff
+measureToTokens m = case access (fst $ m) startState of
+  InvalidTokens s -> error $ "Unacceptable token: " ++ s
+  NoTokens -> empty
+  Tokens seq suff out_state -> foldlWithIndex showToken empty $ intToks seq suff
   where showToken toks i (Token lex accs) = case accs of
           [] -> toks
           AlexAcc f:_ -> toks |> f (Pn 0 0 i) lex
           AlexAccSkip:_ -> toks
+        intToks seq (Str str) = error $ "Unacceptable token: " ++ str
+        intToks seq (One token) = seq |> token
+        intToks seq (Multi (Tokens seq' suff' _)) = intToks (seq >< seq') suff'
 
 treeToTokens :: LexTree -> Seq Token
 treeToTokens = measureToTokens . F.measure
