@@ -1,40 +1,5 @@
 THIS WE NEED TO DO!!!!!
 
-2013-09-09:
---                                The Suffix
-Trokens = Single Token State (Maybe Transition)
-        | Multiple [Token] State (Maybe Tokens)
-
-when there are more tokens the suffix will always start in the starting state, but when there is only one
-token the suffix can start in any state.
-
-Only solution I can think of is to have a table in the suffix.
-/Koff
-
-20130902
-Fix the bug (measure (makeTree ".") <> measure (makeTree "th") <> measure (makeTree "u"))
----
-measure ('.' F.<| (makeTree "th" F.|> 'u'))
-(0 -> Tokens {currentSeq = fromList [No Token:".t"
-,PT (Pn 0 0 0) (TV "hu")
----
-measure ('.' F.<| (makeTree "thu"))
-(0 -> Tokens {currentSeq = fromList [PT (Pn 0 0 0) (TS ".")
-,PT (Pn 0 0 0) (TV "thu")
----
-measure (makeTree "." F.|> 't' F.|> 'h' F.|> 'u')
-(0 -> Tokens {currentSeq = fromList [PT (Pn 0 0 0) (TS ".")
-,PT (Pn 0 0 0) (TV "thu")
----
-measure ('.' F.<| (makeTree "t" F.|> 'h' F.|> 'u'))
-(0 -> Tokens {currentSeq = fromList [No Token:".t"
-,PT (Pn 0 0 0) (TV "hu")
----
-measure ('.' F.<| 't' F.<| (makeTree "h" F.|> 'u'))
-(0 -> Tokens {currentSeq = fromList [PT (Pn 0 0 0) (TS ".")
-,PT (Pn 0 0 0) (TV "thu")
----
-
 20130821:
 
 Current solution:
@@ -45,11 +10,11 @@ Suffix = Either State -- This is an accepting states
 
 - Test for full correctness:
   * take a valid input
-  * split it in all intermediate positions; and for each of those:
+  * split it in all intermediate positions; and for each of those: --- Done and works
     * parse parts separately
     * combine
 - Design proper incrementality test
-  - Experiment tabulating the top-level function
+  - Experiment tabulating the top-level function --- Done, updates faster for array, tree construction faster for functional composition
 - Cleanup/Productize (as an alex template)
 - Report:
   - Explain "most general" solution, without longest-matching rule
