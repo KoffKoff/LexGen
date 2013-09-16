@@ -3,15 +3,7 @@
 {-# OPTIONS -fno-warn-incomplete-patterns #-}
 module Test.Java where
 
-import Prelude as P hiding (foldr)
-import Data.FingerTree (FingerTree,measure)
-import qualified Data.FingerTree as F
-import Data.Sequence as S
-import Data.Monoid
-import Data.Word
-import Data.Bits
-import Data.Foldable (foldr)
-
+--Genereic template
 #if __GLASGOW_HASKELL__ >= 603
 #include "ghcconfig.h"
 #elif defined(__GLASGOW_HASKELL__)
@@ -25,6 +17,15 @@ import Data.Array.Base (unsafeAt)
 import Array
 import Char (ord)
 #endif
+import Prelude as P hiding (foldr)
+import Data.FingerTree (FingerTree,Measured,measure,split,fromList)
+import Data.Sequence as S hiding (fromList)
+import Data.Foldable (foldr)
+import Data.Monoid
+
+-- Wrapper template
+import Data.Word
+import Data.Bits
 
 lexCode = makeTree
 tokens = treeToTokens
@@ -142,62 +143,74 @@ unescapeInitTail = unesc . tail where
 -- Alex wrapper code.
 -- A divide and conquer wrapper.
 -------------------------------------------------------------------
-
+-- Generic template
 type State = Int
 type Transition = State -> Tokens -- Transition from in state to Tokens
+-- Wrapper template?
 data Tokens    = NoTokens
-               | InvalidTokens String
-               | Tokens {currentSeq :: Seq IntToken
-                        ,lastToken  :: Suffix
-                        ,outState   :: State}
+               | InvalidTokens !String
+               | Tokens { currentSeq :: !(Seq IntToken)
+                        , lastToken  :: !Suffix
+--                        , lastChar   :: !Char
+                        , outState   :: !State}
 -- The suffix is the the sequence of as long as possible accepting tokens.
 -- It can itself contain a suffix for the last token.
                  deriving Show
 --This is either a Sequence of tokens or one token if the it hits an accepting state with later characters
-data Suffix = Str String 
-            | One IntToken
-            | Multi Tokens 
+-- Generic template
+data Suffix = Str !String
+            | One !IntToken
+            | Multi !Tokens
                  deriving Show
 data Size      = Size Int
                  deriving Show
 type LexTree   = FingerTree (Table State Tokens,Size) Char
-data IntToken = Token { lexeme      :: String 
-                      , token_id    :: Accepts}
+data IntToken = Token { lexeme   :: !String
+--                      , prev     :: Char
+                      , token_id :: Accepts}
+--Wrapper template
 type Accepts   = [AlexAcc (Posn -> String -> Token) ()]
 
 tabulate :: (State,State) -> (State -> b) -> Table State b
 access :: Table State b -> (State -> b)
 
-newtype Table a b = Tab {getFun :: a -> b}
-
+--debug stuff
 instance Show b => Show (Table Int b) where
   show f = unlines $ [show i ++ " -> " ++ show (access f i) | i <- [0,7]]
 
+{-- Generic template?
+newtype Table a b = Tab {getFun :: a -> b}
 tabulate _ f = Tab f
 access a x = (getFun a) x
 --}
-{-
+
 type Table a b = Array State b
 tabulate range f = listArray range [f i | i <- [fst range..snd range]]
 access a x = a ! x
 --}
-instance Show IntToken where
-  show (Token lex accs) = case map (\acc -> case acc of 
-    AlexAcc f -> show $ f (Pn 0 0 0) lex
-    AlexAccSkip -> "Skip:" ++ show lex) accs of
-                            [] -> "No Token:" ++ show lex ++ "\n"
-                            toks -> unlines toks
 
+-- debug stuffs
+instance Show IntToken where
+  show token = case map showAcc (token_id token) of
+      [] -> "No Token:" ++ show (lexeme token) ++ "\n"
+      toks -> unlines toks
+    where showAcc acc = case acc of 
+            AlexAcc f -> show $ f (Pn 0 0 0) (lexeme token)
+            AlexAccSkip -> "Skip:" ++ show (lexeme token)
+
+-- Generic template
 instance Monoid Size where
   mempty = Size 0
   Size m `mappend` Size n = Size (m+n)
 
+-- Generic template
 instance Monoid (Table State Tokens) where
   mempty = tabulate stateRange (\_ -> NoTokens)
   f `mappend` g = tabulate stateRange $ combineTokens (access f) (access g)
 
+-- Wrapper template
 -- The base case for when one character is lexed.
-instance F.Measured (Table State Tokens,Size) Char where
+instance Measured (Table State Tokens,Size) Char where
   measure c =
     let bytes = encode c
         baseCase in_state = case foldl automata in_state bytes of
@@ -207,80 +220,113 @@ instance F.Measured (Table State Tokens,Size) Char where
             acc -> Tokens empty (One (Token [c] acc)) os
     in (tabulate stateRange $ baseCase, Size 1)
 
+-- Wrapper template
+invalidTokens :: String -> Tokens
+invalidTokens s = InvalidTokens s
+
+-- Wrapper template
+emptyTokens :: Tokens
+emptyTokens = NoTokens
+
 --------- Combination functions, the conquer step
 
+-- Generic template
 -- Combines two transition maps
 combineTokens :: Transition -> Transition -> Transition
-combineTokens trans1 trans2 = \in_state -> case trans1 in_state of
-  InvalidTokens s -> InvalidTokens s
-  NoTokens -> trans2 in_state
-  toks1 -> combineWithRHS toks1 trans2
+combineTokens trans1 trans2 in_state | isInvalid toks1 = toks1
+                                     | isEmpty toks1   = trans2 in_state
+                                     | otherwise = combineWithRHS toks1 trans2
+  where toks1 = trans1 in_state
 
+-- Wrapper template
+isValid :: Tokens -> Bool
+isValid (Tokens _ _ _) = True
+isValid _ = False
+
+-- Wrapper template
+isEmpty :: Tokens -> Bool
+isEmpty NoTokens = True
+isEmpty _        = False
+
+-- Wrapper template
+isInvalid :: Tokens -> Bool
+isInvalid (InvalidTokens _) = True
+isInvalid _ = False
+
+-- Generic template
 -- Tries to merge tokens first, if it can't it either appends the token or calls
 -- itself if the suffix contains Tokens instaed of a single token.
 combineWithRHS :: Tokens -> Transition -> Tokens
-combineWithRHS toks1 trans2 =
-    let mid_state = outState toks1
+combineWithRHS toks1 trans2 | isEmpty toks2 = toks1
+                            | isValid toks2 =
+    let toks2' = mergeTokens (lastToken toks1) toks2 trans2
+    in appendTokens seq1 toks2'                           
+                            | otherwise     = case lastToken toks1 of
+    Multi suffToks ->
+      let toks2' = combineWithRHS suffToks trans2 -- try to merge suffix
+      in appendTokens seq1 toks2'
+    One tok -> appendTokens (seq1 |> tok) (trans2 startState)
+    Str s -> invalidTokens s
+  where toks2 = trans2 $ outState toks1
         seq1 = currentSeq toks1
-        startToks2 = trans2 startState
-    in case trans2 mid_state of
-      NoTokens -> toks1
-      -- Not possible to merge tokens
-      InvalidTokens _ -> case lastToken toks1 of
-        Multi suffToks ->
-          let toks2' = combineWithRHS suffToks trans2 -- try to merge suffix
-          in appendTokens seq1 toks2'
-        One tok -> appendTokens (seq1 |> tok) startToks2
-        Str s -> InvalidTokens s -- Last token in toks1 is not accepting
-      toks2 -> let toks2' = mergeTokens (lastToken toks1) toks2 trans2
-               in appendTokens seq1 toks2'
 
+-- Generic template
 suffToStr :: Suffix -> String
 suffToStr (Str s) = s
-suffToStr (One (Token s _)) = s
-suffToStr (Multi (Tokens seq suff _)) = concatLexemes seq ++ suffToStr suff
+suffToStr (One token) = lexeme token
+suffToStr (Multi toks) =
+  concatLexemes (currentSeq toks) ++ suffToStr (lastToken toks)
 
+-- Generic template
 -- Creates one token from the last token of the first sequence and and the first
 -- token of the second sequence and inserts it between the init of the first
 -- sequence and the tail of the second sequence
 mergeTokens :: Suffix -> Tokens -> Transition -> Tokens
-mergeTokens suff1 (Tokens seq2 suff2 out_state) trans2 = case viewl seq2 of
+mergeTokens suff1 toks2 trans2 = case viewl (currentSeq toks2) of
   token2 :< seq2' -> let newToken = mergeToken suff1 token2
-                     in Tokens (newToken <| seq2') suff2 out_state
-  EmptyL -> case alex_accept ! out_state of
-    [] -> Tokens empty (mergeSuff suff1 suff2 trans2) out_state
-    acc -> Tokens empty (One (Token (suffToStr suff1 ++ suffToStr suff2) acc)) out_state
+                     in toks2 {currentSeq = newToken <| seq2'}
+  EmptyL -> case alex_accept ! outState toks2 of
+    [] -> toks2 {lastToken = mergeSuff suff1 (lastToken toks2) trans2}
+    acc -> let lex = suffToStr suff1 ++ suffToStr (lastToken toks2)
+               newTok = (Token lex acc)
+           in toks2 {lastToken = One newTok}
 
+-- Generic template
 -- Creates on token from a suffix and a token
 mergeToken :: Suffix -> IntToken -> IntToken
-mergeToken suff1 (Token lex2 acc) = Token (suffToStr suff1 ++ lex2) acc
+mergeToken suff1 token2 = token2 {lexeme = suffToStr suff1 ++ lexeme token2}
 
+-- Generic template?
 -- Creates the apropiet new suffix from two suffixes
 mergeSuff :: Suffix -> Suffix -> Transition -> Suffix
 mergeSuff (Multi toks1) _ trans2 = Multi $ combineWithRHS toks1 trans2
 mergeSuff (Str s1) suff2 _ = Str $ s1 ++ suffToStr suff2
 mergeSuff (One token1) (Str _) trans2 =
-  let Tokens seq2 suff2 out_state = trans2 startState
-  in Multi $ Tokens (token1 <| seq2) suff2 out_state
+  let toks2 = trans2 startState
+  in Multi $ toks2 {currentSeq = token1 <| currentSeq toks2}
 mergeSuff suff1 (One token2) _ = One $ mergeToken suff1 token2
 mergeSuff suff1 (Multi toks2) trans2 = Multi $ mergeTokens suff1 toks2 trans2
 
+-- Generic template
 -- Prepends a sequence of tokens on the sequence in Tokens
 appendTokens :: Seq IntToken -> Tokens -> Tokens
-appendTokens seq1 (Tokens seq2 suff2 out_state) =
-  Tokens (seq1 >< seq2) suff2 out_state
-appendTokens _ _ = NoTokens
+appendTokens seq1 toks2 | isValid toks2 =
+  toks2 {currentSeq = seq1 <> currentSeq toks2}
+                        | otherwise = emptyTokens
 
 ---------- Constructors
 
+-- Generic template
 makeTree :: String -> LexTree
-makeTree  = F.fromList
+makeTree  = fromList
 
+-- Wrapper template
 measureToTokens :: (Table State Tokens,Size) -> Seq Token
 measureToTokens m = case access (fst $ m) startState of
   InvalidTokens s -> error $ "Unacceptable token: " ++ s
   NoTokens -> empty
-  Tokens seq suff out_state -> snd $ foldlWithIndex showToken (Pn 0 1 1,empty) $ intToks seq suff
+  Tokens seq suff out_state ->
+    snd $ foldlWithIndex showToken (Pn 0 1 1,empty) $ intToks seq suff
   where showToken (pos,toks) _ (Token lex accs) =
           let pos' = foldl alexMove pos lex
           in case accs of
@@ -289,13 +335,15 @@ measureToTokens m = case access (fst $ m) startState of
             AlexAccSkip:_ -> (pos',toks)
         intToks seq (Str str) = error $ "Unacceptable token: " ++ str
         intToks seq (One token) = seq |> token
-        intToks seq (Multi (Tokens seq' suff' _)) = intToks (seq >< seq') suff'
+        intToks seq (Multi (Tokens seq' suff' _)) = intToks (seq <> seq') suff'
 
+-- Generic template
 treeToTokens :: LexTree -> Seq Token
-treeToTokens = measureToTokens . F.measure
+treeToTokens = measureToTokens . measure
 
 ------------- Util funs
 
+-- Genereic template
 concatLexemes :: Seq IntToken -> String
 concatLexemes = foldr ((++) . lexeme) ""
 
@@ -303,12 +351,13 @@ insertAtIndex :: String -> Int -> LexTree -> LexTree
 insertAtIndex str i tree = 
   if i < 0
   then error "index must be >= 0"
-  else l F.>< (makeTree str) F.>< r
+  else l <> (makeTree str) <> r
      where (l,r) = splitTreeAt i tree
 
 splitTreeAt :: Int -> LexTree -> (LexTree,LexTree)
-splitTreeAt i tree = F.split (\(_,Size n) -> n>i) tree
+splitTreeAt i tree = split (\(_,Size n) -> n>i) tree
 
+-- wrapper template
 alexMove :: Posn -> Char -> Posn
 alexMove (Pn a l c) '\t' = Pn (a+1)  l     (((c+7) `div` 8)*8+1)
 alexMove (Pn a l c) '\n' = Pn (a+1) (l+1)   1
@@ -319,6 +368,7 @@ startState = 0
 -- A tuple that says how many states there are
 stateRange = bounds alex_accept
 
+-- Generic
 -- Takes an in state and a byte and returns the corresponding out state using the DFA
 automata :: Int -> Word8 -> Int
 automata s c = let base   = alex_base ! s
@@ -329,6 +379,7 @@ automata s c = let base   = alex_base ! s
                   then alex_table ! offset
                   else alex_deflt ! s
 
+-- wrapper (Not byteString but others)
 -- Converts an UTF8 character to a list of bytes
 encode :: Char -> [Word8]
 encode  = map fromIntegral . go . fromEnum

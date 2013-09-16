@@ -3,7 +3,6 @@ module Test.Correct where
 import Prelude as P
 import Test.Java as J
 import Test.Lexjava as A
---import Data.Sequence as S
 import Data.FingerTree as F
 import Data.Foldable (toList)
 import Data.Monoid
