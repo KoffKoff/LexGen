@@ -1,5 +1,20 @@
 THIS WE NEED TO DO!!!!!
 
+20130916:
+
+write a quickcheck property which:
+- starts with a given known correct input string
+- selects a random substring; splits it in two parts (l,r)
+- run the lexer on l and r separately
+- merges the resuts
+- tests that there is at least one possible result in the final output
+
+BONUS: 
+ - write a shrinker to find smallest cases automatically
+
+
+"plot" the (incremental) lexing time against the size of the file
+
 20130821:
 
 Current solution:
