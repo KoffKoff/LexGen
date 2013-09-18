@@ -11,7 +11,7 @@
 %% DON'T FORGET: Change PDF metadata in settings.tex !!
 %%
 %%%%%
-\documentclass[11pt,a4paper]{report}
+\documentclass[11pt,a4paper,twoside]{report}
 
 % Packages and commands file
 \input{include/packagescommands}
@@ -34,7 +34,10 @@
 
 % Main area
 \newpage
-\setdefaulthdr
+%\setdefaulthdr
+\fancyhead{}
+\fancyhead[LE]{\leftmark}
+\fancyhead[RO]{\rightmark}
 \pagenumbering{arabic}	
 \setcounter{page}{1}
 
