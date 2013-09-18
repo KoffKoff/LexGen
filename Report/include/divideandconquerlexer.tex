@@ -6,6 +6,125 @@ then to combine the smaller tokens into as large tokens as possible. The end
 result should be a sequence of token that represent the code. How this is done
 will be described below. \#Some ref to divide and conquer?
 
+\section{Divide and Conquer in General}
+This capter will try to give a idea of how the Divide and Conquer algorithm works in a general case. So when talking about the incremental lexer you as a reader will have a basic idea of the structure of the algorithm.
+
+A Divide and Conquer algorithm always consist of a pattern with three steps. \cite{Goodrich}
+\begin{description}
+\item[Divide:] That is if the input size is bigger than the basecase divide the input to sub problems. Otherwise solve the problem using a straightforward method.
+\item[Recur:] Recursively solve the subproblems associated with the subset.
+\item[Conquer:] Given the solutions to the subproblem, merge them into to the original problem.
+\end{description}
+Now follows how this can be used for a basic problem. This if for putting this pattern into some form of context. A genral problem is sorting or more precies sorting a list of integers. 
+
+The input to the algorithm is a sequence of integers $S$ containing $n$ integers. 
+\begin{enumerate}
+\item The algorthim starts by the divide step. Givien the input $S$ the algorithm will check if $S$ consist of a number of elements less or equal to 1.
+\begin{itemize}
+\item If this is true, return the sequence. A sequence of one or zero elements is always sorted.  
+\item If this is false, split the sequence into two (as close as possible) equaly big sequences. $S_1$ and $S_2$, $S_1$ is equal $S$.getRange($1$, $n/2$).
+$S_2$ is equal $S$.getRange($(n/2)+1$, $n$). The indexing of the sequence starts at $1$.
+\end{itemize}
+\item The next step is to sort the subsequences $S_1$ and $S_2$. This is done by recursively call it self with the subsequences as input. There will be 2 calls, one with $S_1$ as input and one with with $S_2$ as input.
+\item The to sequences $S_1$ and $S_2$ is has now be recursively sorted and can be merged. Assign $S$ to the result of the merging.
+\end{enumerate}
+
+\section{Divide and Conquer Lexing in General}
+
+\section{Transition map}
+To be able to make a divide-and-conquer lexer work you can use a transition map
+for the subexpression that has currently been lexed. That is you store for each
+subexpression a list of tuples which are built up of an in state, a list of
+tokens and an out state. This could in haskell look something like this.
+\begin{verbatim}
+type Transition = (State,Tokens,State)
+type Transitions = [Transition]
+\end{verbatim}
+The $tokens$ type helps to think of as being a sufix, that is the first part of
+the substring, this has to end in an accepting state; a list of tokens which all
+are complete tokens, they start in the starting state and end in an accepting
+state; and a prefix, the last part of the lexed substring, this part has
+to begin in the starting state; or just a single partial token that can be
+anywhere in a token.
+\begin{verbatim}
+data Tokens = Single String
+            | Multiple String [Token] String
+\end{verbatim}
+Now lets see how these data types work in order to create list of tokens for a
+String.
+\subsection{The Base Case}
+When the lexer tries to lex one character it will create the above transition
+table using the DFA for the language. It will for each state in the DFA lookup
+what out state the character would yield and create a Tokens type of Single.
+For the character '/' part of a transition map might look like the following.
+\begin{center}
+$\left[\begin{array}{ccc}
+10&Single '/'&10\\
+11&Single '/'&NoState\\
+12&Single '/'&10\\
+\end{array}\right]$
+\end{center}
+The reason we keep track of $NoState$ will be evident once we show how the
+conquer step work.
+\subsection{Conquer Step}
+The most general case is a naive lexer that takes the first accepting state it
+can find. When two lists of tokens are combined it will create two tokens if the
+out state of the first list is accepting then the second list will be appended
+to the first list. The other case us when the first list of tokens does not end
+in an accepting state. In this case the lexer will try to find an in state in
+the second list that is the same as the out state of the first transition.
+\begin{center}
+$\left[\begin{array}{ccc}
+0&Single '/'&1\\
+1&Single '/'&Accepting 5\\
+\end{array}\right] `combineTokens`
+\left[\begin{array}{ccc}
+0&Single '/'&1\\
+1&Single '/'&Accepting 5\\
+\end{array}\right] =
+\left[\begin{array}{ccc}
+0&Single '//'&Accepting 5\\
+1&Multiple '/' [] '/'&Accepting 1\\
+\end{array}\right]$
+\end{center}
+This won't work as a lexer for most languages since it will lex a variable to
+variables where the length is a single character, for example ``os'' will be
+lexed as two tokens, ``o'' and ``s''. To solve this some more work is needed to
+be done.
+\subsection{Longest Match}
+Instead of taking the naive aproach where a token is created if you find an
+accepting state, the rule for creating a new token will instead be when the
+combination of two transitions yields $NoState$ the lists will be appended. That
+is, when there is an out state from the first transition that corresponds to an
+in state of the second transition and the out state of the second transition
+isn't $NoState$, the last token of the first transition and the first token of
+the second transition will become one token, otherwise append the second list to
+the first list.
+%When two list of tokens are combined there are two cases that can emerge. The
+%first being that a transition from the first list has an out state that
+%corresponds to an in state with a valid out state, i.e. not $NoState$, in the
+%second list of transitions. In this case the sufix of the first transition will
+%be paired with the prefix of the second and seen as a complete token.
+\begin{center}
+$\left[\begin{array}{ccc}
+0&Single '//'& Accepting 5\\
+1&Multiple '/' [] '/' &1\\
+\end{array}\right] `combineTokens` 
+\left[\begin{array}{ccc}
+0&Single '\textbackslash n'&Accepting 6\\
+1&Single '\textbackslash n'&1\\
+5&Single '\textbackslash n'&NoState\\
+\end{array}\right] =
+\left[\begin{array}{ccc}
+0&Multiple '//' [] '\textbackslash n'&Accepting 6\\
+1&Multiple '/' [] '/\textbackslash n'&1\\
+\end{array}\right]$
+\end{center}
+The second case is when the out state for the right token list is $NoState$.
+This means that the two lists of tokens can't be combined. In this case the
+first token in the second list will be viewed as the start of a token and the
+last token in the first list will be viewed as the end of a token.
+
 
 \section{The Structure} %Better title
 For the lexer to be able to represent every possible substring of the code in the same datastructure. There need to be a generic representation for tokens and subtokens. A subtoken is a representing of a lexeme for that subtoken and a list of accepting tokens for that lexeme. The final tokens is a sequence of subtokens the output state for this sequence and an suffix, this suffix can be empty or conssist of an alternetiv ending for the sequence of tokens. What this is and how it works will be described more in detail in \cref{section:Suffix}.
@@ -66,7 +185,18 @@ Now when $\text{Token}_a$ and $\text{Token}_b$ are combined it will result in an
 
 \end{example}
 
+
+\section{Associative function}
+\# Maybe, maybe not. Could be good to state why and maybe how. When we figured out why it's not.
+
+The associative property stated for when an expression containing two or more of the same operator, or function, in a row. The order of which of the operations that are executed first has no impact on the result. 
+
+In this incremental lexer this is essential. There is no way of knowing which part that will be lexed first, so the result of lexing any part with another part must give the same result as doing it in any other way.
+
 \section{Lexing in the middle attack} %better title
+\# some text of what this is, how it work, conclusion why its not that great" \#\\
+The first naive solution whas to \"bruteforce\" to find the lex. This was showned to be to resorceeating. But it describes the general idea of how the problem could be solved. Why it was a bad solution will be described futher on in the text. 
+
 When the code is divided the lexer doesn't know if the string (or character) it
 lexes is the first, last or is somewhere in the middle of a token. Instead of
 checking what type of token the string will be (if it were to begin from the
@@ -387,114 +517,4 @@ day & $Word$\\
 \end{center}
 \end{example}
 % Make some sort of conclusion
-\section{Considered Data-Structures}
-\# We should here also talk about some datastructers that is needed for a
-incremental lexer to work.
-\subsection{Code Sturcture}
-\# We should talk about how to represent the code and result as a tree 
-structure to easy know where changes has been added in the code. and only 
-update the result for the code affected by the changes. 
-\subsection{Transistion Structures}
-\#How should our DFA or more exactly our transistions be represented to get 
-maximum awesomeness in our program.
 
-\section{Transition map}
-To be able to make a divide-and-conquer lexer work you can use a transition map
-for the subexpression that has currently been lexed. That is you store for each
-subexpression a list of tuples which are built up of an in state, a list of
-tokens and an out state. This could in haskell look something like this.
-\begin{verbatim}
-type Transition = (State,Tokens,State)
-type Transitions = [Transition]
-\end{verbatim}
-The $tokens$ type helps to think of as being a sufix, that is the first part of
-the substring, this has to end in an accepting state; a list of tokens which all
-are complete tokens, they start in the starting state and end in an accepting
-state; and a prefix, the last part of the lexed substring, this part has
-to begin in the starting state; or just a single partial token that can be
-anywhere in a token.
-\begin{verbatim}
-data Tokens = Single String
-            | Multiple String [Token] String
-\end{verbatim}
-Now lets see how these data types work in order to create list of tokens for a
-String.
-\subsection{The Base Case}
-When the lexer tries to lex one character it will create the above transition
-table using the DFA for the language. It will for each state in the DFA lookup
-what out state the character would yield and create a Tokens type of Single.
-For the character '/' part of a transition map might look like the following.
-\begin{center}
-$\left[\begin{array}{ccc}
-10&Single '/'&10\\
-11&Single '/'&NoState\\
-12&Single '/'&10\\
-\end{array}\right]$
-\end{center}
-The reason we keep track of $NoState$ will be evident once we show how the
-conquer step work.
-\subsection{Conquer Step}
-The most general case is a naive lexer that takes the first accepting state it
-can find. When two lists of tokens are combined it will create two tokens if the
-out state of the first list is accepting then the second list will be appended
-to the first list. The other case us when the first list of tokens does not end
-in an accepting state. In this case the lexer will try to find an in state in
-the second list that is the same as the out state of the first transition.
-\begin{center}
-$\left[\begin{array}{ccc}
-0&Single '/'&1\\
-1&Single '/'&Accepting 5\\
-\end{array}\right] `combineTokens`
-\left[\begin{array}{ccc}
-0&Single '/'&1\\
-1&Single '/'&Accepting 5\\
-\end{array}\right] =
-\left[\begin{array}{ccc}
-0&Single '//'&Accepting 5\\
-1&Multiple '/' [] '/'&Accepting 1\\
-\end{array}\right]$
-\end{center}
-This won't work as a lexer for most languages since it will lex a variable to
-variables where the length is a single character, for example ``os'' will be
-lexed as two tokens, ``o'' and ``s''. To solve this some more work is needed to
-be done.
-\subsection{Longest Match}
-Instead of taking the naive aproach where a token is created if you find an
-accepting state, the rule for creating a new token will instead be when the
-combination of two transitions yields $NoState$ the lists will be appended. That
-is, when there is an out state from the first transition that corresponds to an
-in state of the second transition and the out state of the second transition
-isn't $NoState$, the last token of the first transition and the first token of
-the second transition will become one token, otherwise append the second list to
-the first list.
-%When two list of tokens are combined there are two cases that can emerge. The
-%first being that a transition from the first list has an out state that
-%corresponds to an in state with a valid out state, i.e. not $NoState$, in the
-%second list of transitions. In this case the sufix of the first transition will
-%be paired with the prefix of the second and seen as a complete token.
-\begin{center}
-$\left[\begin{array}{ccc}
-0&Single '//'& Accepting 5\\
-1&Multiple '/' [] '/' &1\\
-\end{array}\right] `combineTokens` 
-\left[\begin{array}{ccc}
-0&Single '\textbackslash n'&Accepting 6\\
-1&Single '\textbackslash n'&1\\
-5&Single '\textbackslash n'&NoState\\
-\end{array}\right] =
-\left[\begin{array}{ccc}
-0&Multiple '//' [] '\textbackslash n'&Accepting 6\\
-1&Multiple '/' [] '/\textbackslash n'&1\\
-\end{array}\right]$
-\end{center}
-The second case is when the out state for the right token list is $NoState$.
-This means that the two lists of tokens can't be combined. In this case the
-first token in the second list will be viewed as the start of a token and the
-last token in the first list will be viewed as the end of a token.
-
-\section{Associative function}
-\# Maybe, maybe not. Could be good to state why and maybe how. When we figured out why it's not.
-
-The associative property stated for when an expression containing two or more of the same operator, or function, in a row. The order of which of the operations that are executed first has no impact on the result. 
-
-In this incremental lexer this is essential. There is no way of knowing which part that will be lexed first, so the result of lexing any part with another part must give the same result as doing it in any other way.
