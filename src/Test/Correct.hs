@@ -7,6 +7,43 @@ import Data.FingerTree as F
 import Data.Foldable (toList)
 import Data.Monoid
 import Data.List (inits,tails)
+import Test.QuickCheck
+import Data.Tuple (swap)
+
+-- Checks wether if 2 strings lexes to the same if they are merged before or
+-- after the lexing
+propMerge :: String -> String -> Bool
+propMerge s1 s2 = treeToTokens merge == treeToTokens preMerged
+  where merge = makeTree s1 <> makeTree s2
+        preMerged = makeTree (s1 <> s2)
+        tokens = access (fst $ measure preMerged) 0
+
+-- Checks so that a string lexes to something accepting (can be no tokens)
+propResult :: String -> Bool
+propResult s = isAccepting $ access (fst . measure $ makeTree s) 0
+
+subStrings :: String -> Gen (String,String)
+subStrings s = do
+  m <- choose (0,length s)
+  l <- choose (0,m)
+  r <- choose (m,length s)
+  return (drop l $ take m s, drop m $ take r s)
+
+subShrinker :: Eq a => ([a],[a]) -> [([a],[a])]
+subShrinker ([],[]) = [([],[])]
+subShrinker ([],bs) = zip (repeat []) (listShrinker bs)
+subShrinker (as,[]) = zip (listShrinker as) (repeat [])
+subShrinker (as,bs) = [(a,b) | a <- [as,tail as], b <- [bs,init bs]
+                             , (a,b) /= (as,bs)]
+
+listShrinker :: [a] -> [[a]]
+listShrinker [] = []
+listShrinker [a] = []
+listShrinker as = [init as,tail as]
+
+propMergeResult :: String -> Property
+propMergeResult s = forAllShrink (subStrings s) subShrinker $ \(s1,s2) ->
+  propResult (s1 ++ s2) .&&. propMerge s1 s2
 
 splits xs = zip (inits xs) (tails xs)
 
@@ -24,19 +61,16 @@ splitToTree s = map (splitToTree' s) [0..length s]
 
 checkSplitMerge :: String -> [Bool]
 checkSplitMerge str = let tree = makeTree str
-                          incToks = map (treeToList . uncurry mergeTrees) (treeSplitter tree)
+                          incToks = map (treeToList . uncurry (<>)) (treeSplitter tree)
                           seqToks = alexScanTokens str
                           checkToks incT = checkListToken incT seqToks
                       in map checkToks incToks
-
-mergeTrees :: LexTree -> LexTree -> LexTree
-mergeTrees t1 t2 = t1 F.>< t2
 
 treeToList :: LexTree -> [J.Token]
 treeToList tree = toList $ treeToTokens tree
 
 checkMerge :: String -> [Bool]
-checkMerge str = let incToks = map (treeToList . uncurry mergeTrees) (splitToTree str)
+checkMerge str = let incToks = map (treeToList . uncurry (<>)) (splitToTree str)
                      seqToks = alexScanTokens str
                      checkToks incT = checkListToken incT seqToks
                  in map checkToks incToks
