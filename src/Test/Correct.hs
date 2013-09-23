@@ -74,8 +74,7 @@ checkMerge str = let incToks = map (treeToList . uncurry (<>)) (splitToTree str)
                  in map checkToks incToks
 
 treeSplitter :: LexTree -> [(LexTree,LexTree)]
-treeSplitter tree = map (flip splitTreeAt tree) [0..n]
-  where Size n = snd (measure tree)
+treeSplitter tree = map (flip splitTreeAt tree) [0..size tree]
 
 checkSplit :: String -> [(Bool,Bool)]
 checkSplit str = let strSplits = map (flip splitAt str) [0..length str]
@@ -115,7 +114,7 @@ checker (J.PT _ tok1) (A.PT _ tok2) = checker' tok1 tok2
 
 core002 :: String
 core002 = "import datastructures.*;\n" ++
-          "/* a @ comment */\n\n" ++
+          "/* a comment */\n\n" ++
           "// hej\n" ++
           "int foo.thur() {\n" ++
           "printString(foo);\n" ++

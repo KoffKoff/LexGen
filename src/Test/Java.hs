@@ -158,13 +158,13 @@ data Tokens    = NoTokens
                  deriving Show
 --This is either a Sequence of tokens or one token if the it hits an accepting state with later characters
 -- Generic template
-data Suffix = Str !String
-            | One !IntToken
-            | Multi !Tokens
+data Suffix   = Str !String
+              | One !IntToken
+              | Multi !Tokens
                  deriving Show
-type Size      = Sum Int
+type Size     = Sum Int
 --Wrapper
-type LexTree   = FingerTree (Table State Tokens,Size) Char
+type LexTree  = FingerTree (Table State Tokens,Size) Char
 data IntToken = Token { lexeme   :: !String
 --                      , prev     :: Char
                       , token_id :: Accepts}
@@ -178,12 +178,12 @@ access :: Table State b -> (State -> b)
 instance Show b => Show (Table Int b) where
   show f = unlines $ ["\n\n\n\n" ++ show i ++ " -> " ++ show (access f i) | i <- [0,29]]
 
--- Generic template?
+{-- Generic template?
 newtype Table a b = Tab {getFun :: a -> b}
 tabulate _ f = Tab f
 access a x = (getFun a) x
 --}
-{-
+
 type Table a b = Array State b
 tabulate range f = listArray range [f i | i <- [fst range..snd range]]
 access a x = a ! x
@@ -387,7 +387,8 @@ alexMove (Pn a l c) _    = Pn (a+1)  l     (c+1)
 -- Starting state
 startState = 0
 -- A tuple that says how many states there are
-stateRange = bounds alex_accept
+stateRange = let (start,end) = bounds alex_accept
+             in (start-1,end)
 
 -- Generic
 -- Takes an in state and a byte and returns the corresponding out state using the DFA
