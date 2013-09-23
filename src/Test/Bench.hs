@@ -18,8 +18,9 @@ import Data.Monoid
 
 newtype Forced a = Forced a
 
-instance Monoid a => Monoid (Forced a) where
-   mempty = Forced mempty
+--instance Monoid a => Monoid (Forced a) where
+--   mempty = Forced mempty
+--   f `mappend` g = Forced (f `mappend` g)
 
    
 -- instance NFData J.LexTree where
@@ -83,7 +84,7 @@ benchStuff f (x,name) = bench name $ nf (show . f) x
 
 sortArgs :: [String] -> ([String],[String],[String])
 sortArgs args = foldl sortArg ([],[],[]) args
-  where sortArg (files,tests,args) arg@('-':_) = (files,tests,arg:args)
+  where sortArg (files,tests,args) arg@('-':_) = (files,tests,(arg):args)
         sortArg (files,tests,args) ('+':test)  = (files,if test `elem` "Sizes":"AllUp":allTest
                                                         then test:tests
                                                         else tests

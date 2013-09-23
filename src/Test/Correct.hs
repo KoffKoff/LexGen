@@ -88,29 +88,33 @@ checkListToken tok1 tok2 = and $ map (uncurry checker) $ zip tok1 tok2
 
 checker :: J.Token -> A.Token -> Bool
 checker (J.PT _ tok1) (A.PT _ tok2) = checker' tok1 tok2
-  where checker' (J.TS s1) (A.TS s2) = s1 == s2
-        checker' (J.TL s1) (A.TL s2) = s1 == s2
-        checker' (J.TI s1) (A.TI s2) = s1 == s2
-        checker' (J.TV s1) (A.TV s2) = s1 == s2
-        checker' (J.TD s1) (A.TD s2) = s1 == s2
-        checker' (J.TC s1) (A.TC s2) = s1 == s2
-        checker' (J.T_Unsigned s1) (A.T_Unsigned s2) = s1 == s2
-        checker' (J.T_Long s1) (A.T_Long s2) = s1 == s2
-        checker' (J.T_UnsignedLong s1) (A.T_UnsignedLong s2) = s1 == s2
-        checker' (J.T_Hexadecimal s1) (A.T_Hexadecimal s2) = s1 == s2
-        checker' (J.T_HexUnsigned s1) (A.T_HexUnsigned s2) = s1 == s2
-        checker' (J.T_HexLong s1) (A.T_HexLong s2) = s1 == s2
-        checker' (J.T_HexUnsLong s1) (A.T_HexUnsLong s2) = s1 == s2
-        checker' (J.T_Octal s1) (A.T_Octal s2) = s1 == s2
-        checker' (J.T_OctalUnsigned s1) (A.T_OctalUnsigned s2) = s1 == s2
-        checker' (J.T_OctalLong s1) (A.T_OctalLong s2) = s1 == s2
-        checker' (J.T_OctalUnsLong s1) (A.T_OctalUnsLong s2) = s1 == s2
-        checker' (J.T_JDouble s1) (A.T_JDouble s2)= s1 == s2
-        checker' (J.T_JFloat s1) (A.T_JFloat s2) = s1 == s2
-        checker' (J.T_JLongDouble s1) (A.T_JLongDouble s2) = s1 == s2
-        checker' (J.T_UnicodeChar s1) (A.T_UnicodeChar s2) = s1 == s2
-        checker' (J.T_JChar s1) (A.T_JChar s2) = s1 == s2
+  where checker' (J.TS s1) (A.TS s2) = toList s1 == s2
+        checker' (J.TL s1) (A.TL s2) = toList s1 == s2
+        checker' (J.TI s1) (A.TI s2) = toList s1 == s2
+        checker' (J.TV s1) (A.TV s2) = toList s1 == s2
+        checker' (J.TD s1) (A.TD s2) = toList s1 == s2
+        checker' (J.TC s1) (A.TC s2) = toList s1 == s2
+        checker' (J.T_Unsigned s1) (A.T_Unsigned s2) = toList s1 == s2
+        checker' (J.T_Long s1) (A.T_Long s2) = toList s1 == s2
+        checker' (J.T_UnsignedLong s1) (A.T_UnsignedLong s2) = toList s1 == s2
+        checker' (J.T_Hexadecimal s1) (A.T_Hexadecimal s2) = toList s1 == s2
+        checker' (J.T_HexUnsigned s1) (A.T_HexUnsigned s2) = toList s1 == s2
+        checker' (J.T_HexLong s1) (A.T_HexLong s2) = toList s1 == s2
+        checker' (J.T_HexUnsLong s1) (A.T_HexUnsLong s2) = toList s1 == s2
+        checker' (J.T_Octal s1) (A.T_Octal s2) = toList s1 == s2
+        checker' (J.T_OctalUnsigned s1) (A.T_OctalUnsigned s2) = toList s1 == s2
+        checker' (J.T_OctalLong s1) (A.T_OctalLong s2) = toList s1 == s2
+        checker' (J.T_OctalUnsLong s1) (A.T_OctalUnsLong s2) = toList s1 == s2
+        checker' (J.T_JDouble s1) (A.T_JDouble s2)= toList s1 == s2
+        checker' (J.T_JFloat s1) (A.T_JFloat s2) = toList s1 == s2
+        checker' (J.T_JLongDouble s1) (A.T_JLongDouble s2) = toList s1 == s2
+        checker' (J.T_UnicodeChar s1) (A.T_UnicodeChar s2) = toList s1 == s2
+        checker' (J.T_JChar s1) (A.T_JChar s2) = toList s1 == s2
         checker' _ _ = False
+
+hurp :: Tokens -> Suffix
+hurp (Tokens _ suff _) = suff
+hurp _ = Str mempty
 
 core002 :: String
 core002 = "import datastructures.*;\n" ++

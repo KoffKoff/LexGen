@@ -19,8 +19,9 @@ import Char (ord)
 #endif
 import Prelude hiding (foldl,foldr,null)
 import Data.FingerTree (FingerTree,Measured,measure,split,fromList)
-import Data.Sequence hiding (fromList)
-import Data.Foldable (foldl,foldr)
+import Data.Sequence as SS hiding (fromList)
+import qualified Data.Sequence as S (fromList)
+import Data.Foldable (foldl,foldr,toList)
 import Data.Monoid
 
 -- Wrapper template
@@ -46,33 +47,32 @@ alex_accept = listArray (0::Int,90) [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[
 
 tok f p s = f p s
 
-share :: String -> String
+--share :: Seq Char -> Seq Char
 share = id
 
 data Tok =
-   TS !String     -- reserved words and symbols
- | TL !String     -- string literals
- | TI !String     -- integer literals
- | TV !String     -- identifiers
- | TD !String     -- double precision float literals
- | TC !String     -- character literals
- | T_Unsigned !String
- | T_Long !String
- | T_UnsignedLong !String
- | T_Hexadecimal !String
- | T_HexUnsigned !String
- | T_HexLong !String
- | T_HexUnsLong !String
- | T_Octal !String
- | T_OctalUnsigned !String
- | T_OctalLong !String
- | T_OctalUnsLong !String
- | T_JDouble !String
- | T_JFloat !String
- | T_JLongDouble !String
- | T_UnicodeChar !String
- | T_JChar !String
-
+   TS !(Seq Char)     -- reserved words and symbols
+ | TL !(Seq Char)     -- string literals
+ | TI !(Seq Char)     -- integer literals
+ | TV !(Seq Char)     -- identifiers
+ | TD !(Seq Char)     -- double precision float literals
+ | TC !(Seq Char)     -- character literals
+ | T_Unsigned !(Seq Char)
+ | T_Long !(Seq Char)
+ | T_UnsignedLong !(Seq Char)
+ | T_Hexadecimal !(Seq Char)
+ | T_HexUnsigned !(Seq Char)
+ | T_HexLong !(Seq Char)
+ | T_HexUnsLong !(Seq Char)
+ | T_Octal !(Seq Char)
+ | T_OctalUnsigned !(Seq Char)
+ | T_OctalLong !(Seq Char)
+ | T_OctalUnsLong !(Seq Char)
+ | T_JDouble !(Seq Char)
+ | T_JFloat !(Seq Char)
+ | T_JLongDouble !(Seq Char)
+ | T_UnicodeChar !(Seq Char)
+ | T_JChar !(Seq Char)
  deriving (Eq,Show,Ord)
 
 data Token = 
@@ -91,34 +91,34 @@ posLineCol (Pn _ l c) = (l,c)
 mkPosToken t@(PT p _) = (posLineCol p, prToken t)
 
 prToken t = case t of
-  PT _ (TS s) -> s
-  PT _ (TI s) -> s
-  PT _ (TV s) -> s
-  PT _ (TD s) -> s
-  PT _ (TC s) -> s
-  PT _ (TL s) -> show s
-  PT _ (T_Unsigned s) -> s
-  PT _ (T_Long s) -> s
-  PT _ (T_UnsignedLong s) -> s
-  PT _ (T_Hexadecimal s) -> s
-  PT _ (T_HexUnsigned s) -> s
-  PT _ (T_HexLong s) -> s
-  PT _ (T_HexUnsLong s) -> s
-  PT _ (T_Octal s) -> s
-  PT _ (T_OctalUnsigned s) -> s
-  PT _ (T_OctalLong s) -> s
-  PT _ (T_OctalUnsLong s) -> s
-  PT _ (T_JDouble s) -> s
-  PT _ (T_JFloat s) -> s
-  PT _ (T_JLongDouble s) -> s
-  PT _ (T_UnicodeChar s) -> s
-  PT _ (T_JChar s) -> s
+  PT _ (TS s) -> toList s
+  PT _ (TI s) -> toList s
+  PT _ (TV s) -> toList s
+  PT _ (TD s) -> toList s
+  PT _ (TC s) -> toList s
+  PT _ (TL s) -> toList s
+  PT _ (T_Unsigned s) -> toList s
+  PT _ (T_Long s) -> toList s
+  PT _ (T_UnsignedLong s) -> toList s
+  PT _ (T_Hexadecimal s) -> toList s
+  PT _ (T_HexUnsigned s) -> toList s
+  PT _ (T_HexLong s) -> toList s
+  PT _ (T_HexUnsLong s) -> toList s
+  PT _ (T_Octal s) -> toList s
+  PT _ (T_OctalUnsigned s) -> toList s
+  PT _ (T_OctalLong s) -> toList s
+  PT _ (T_OctalUnsLong s) -> toList s
+  PT _ (T_JDouble s) -> toList s
+  PT _ (T_JFloat s) -> toList s
+  PT _ (T_JLongDouble s) -> toList s
+  PT _ (T_UnicodeChar s) -> toList s
+  PT _ (T_JChar s) -> toList s
 
-  _ -> show t
+--  _ -> S.fromList $ show t
 
-data BTree = N | B String Tok BTree BTree deriving (Show)
+data BTree = N | B (Seq Char) Tok BTree BTree deriving (Show)
 
-eitherResIdent :: (String -> Tok) -> String -> Tok
+eitherResIdent :: (Seq Char -> Tok) -> Seq Char -> Tok
 eitherResIdent tv s = treeFind resWords
   where
   treeFind N = tv s
@@ -127,17 +127,17 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords = b "int" (b "double" (b "catch" (b "break" (b "boolean" (b "abstract" N N) N) (b "case" (b "byte" N N) N)) (b "continue" (b "class" (b "char" N N) N) (b "do" (b "default" N N) N))) (b "float" (b "false" (b "extends" (b "else" N N) N) (b "finally" (b "final" N N) N)) (b "implements" (b "if" (b "for" N N) N) (b "instanceof" (b "import" N N) N)))) (b "static" (b "package" (b "native" (b "long" (b "interface" N N) N) (b "null" (b "new" N N) N)) (b "public" (b "protected" (b "private" N N) N) (b "short" (b "return" N N) N))) (b "throws" (b "synchronized" (b "switch" (b "super" N N) N) (b "throw" (b "this" N N) N)) (b "try" (b "true" (b "transient" N N) N) (b "while" (b "volatile" N N) N))))
-   where b s = B s (TS s)
+   where b s = B (S.fromList s) (TS (S.fromList s))
 
-unescapeInitTail :: String -> String
-unescapeInitTail = unesc . tail where
+unescapeInitTail :: Seq Char -> Seq Char
+unescapeInitTail = unesc . tail . toList where
   unesc s = case s of
-    '\\':c:cs | elem c ['\"', '\\', '\''] -> c : unesc cs
-    '\\':'n':cs  -> '\n' : unesc cs
-    '\\':'t':cs  -> '\t' : unesc cs
-    '"':[]    -> []
-    c:cs      -> c : unesc cs
-    _         -> []
+    '\\':c:cs | elem c ['\"', '\\', '\''] -> singleton c <> unesc cs
+    '\\':'n':cs  -> singleton '\n' <> unesc cs
+    '\\':'t':cs  -> singleton '\t' <> unesc cs
+    '"':[]    -> mempty
+    c:cs      -> singleton c <> unesc cs
+    _         -> mempty
 
 -------------------------------------------------------------------
 -- Alex wrapper code.
@@ -148,7 +148,7 @@ type State = Int
 type Transition = State -> Tokens -- Transition from in state to Tokens
 -- Wrapper template?
 data Tokens    = NoTokens
-               | InvalidTokens !String
+               | InvalidTokens !(Seq Char)
                | Tokens { currentSeq :: !(Seq IntToken)
                         , lastToken  :: !Suffix
 --                        , lastChar   :: !Char
@@ -158,18 +158,18 @@ data Tokens    = NoTokens
                  deriving Show
 --This is either a Sequence of tokens or one token if the it hits an accepting state with later characters
 -- Generic template
-data Suffix   = Str !String
+data Suffix   = Str !(Seq Char)
               | One !IntToken
               | Multi !Tokens
                  deriving Show
 type Size     = Sum Int
 --Wrapper
 type LexTree  = FingerTree (Table State Tokens,Size) Char
-data IntToken = Token { lexeme   :: !String
+data IntToken = Token { lexeme   :: !(Seq Char)
 --                      , prev     :: Char
                       , token_id :: Accepts}
 --Wrapper template
-type Accepts   = [AlexAcc (Posn -> String -> Token) ()]
+type Accepts   = [AlexAcc (Posn -> Seq Char -> Token) ()]
 
 tabulate :: (State,State) -> (State -> b) -> Table State b
 access :: Table State b -> (State -> b)
@@ -208,15 +208,16 @@ instance Monoid (Table State Tokens) where
 instance Measured (Table State Tokens,Size) Char where
   measure c =
     let bytes = encode c
-        baseCase in_state | in_state == -1 = InvalidTokens [c]
+        cSeq = singleton c
+        baseCase in_state | in_state == -1 = InvalidTokens cSeq
                           | otherwise = case foldl automata in_state bytes of
-          -1 -> InvalidTokens [c]
+          -1 -> InvalidTokens cSeq
           os -> case alex_accept ! os of
-            []  -> Tokens empty (Str [c]) os
-            acc -> Tokens empty (One (createToken [c] acc)) os
+            []  -> Tokens empty (Str cSeq) os
+            acc -> Tokens empty (One (createToken cSeq acc)) os
     in (tabulate stateRange $ baseCase, Sum 1)
 
-createToken :: String -> Accepts -> IntToken
+createToken :: (Seq Char) -> Accepts -> IntToken
 createToken lex acc = Token lex acc
 
 createTokens :: Seq IntToken -> Suffix -> State -> Tokens
@@ -225,7 +226,7 @@ createTokens seq suf state = if null seq
                              else Tokens seq suf state
 
 -- Wrapper template
-invalidTokens :: String -> Tokens
+invalidTokens :: (Seq Char) -> Tokens
 invalidTokens s = InvalidTokens s
 
 -- Wrapper template
@@ -269,31 +270,31 @@ mergeTokens suff1 toks2 trans2 = case viewl (currentSeq toks2) of
                      in toks2 {currentSeq = newToken <| seq2'}
   EmptyL -> case alex_accept ! out_state of
     [] -> toks2 {lastToken = mergeSuff suff1 (lastToken toks2) trans2}
-    acc -> let lex = suffToStr suff1 ++ suffToStr (lastToken toks2)
+    acc -> let lex = suffToStr suff1 <> suffToStr (lastToken toks2)
            in toks2 {lastToken = One $ createToken lex acc}
   where out_state = outState toks2
 
 -- Generic template
 -- Creates on token from a suffix and a token
 mergeToken :: Suffix -> IntToken -> IntToken
-mergeToken suff1 token2 = token2 {lexeme = suffToStr suff1 ++ lexeme token2}
+mergeToken suff1 token2 = token2 {lexeme = suffToStr suff1 <> lexeme token2}
 
 -- Generic template
 -- Creates the apropiet new suffix from two suffixes
 mergeSuff :: Suffix -> Suffix -> Transition -> Suffix
-mergeSuff (Multi toks1) suff2 trans2 = Multi $
+mergeSuff (Multi toks1) suff2 trans2 = Multi $ -- O(n^2)
   let newToks = combineWithRHS toks1 trans2
   in if isValid $ newToks
      then newToks
      else toks1 {lastToken = mergeSuff (lastToken toks1) suff2 trans2}
-mergeSuff (Str s1) suff2 _ = Str $ s1 ++ suffToStr suff2
+mergeSuff (Str s1) suff2 _ = Str $ s1 <> suffToStr suff2
 mergeSuff (One token1) (Str s) trans2 =
   let toks2 = trans2 startState
   in if isValid toks2
      then Multi $ toks2 {currentSeq = token1 <| currentSeq toks2}
      else Multi $ createTokens (singleton token1) (Str s) (-1)
-mergeSuff suff1 (One token2) _ = One $ mergeToken suff1 token2
-mergeSuff suff1 (Multi toks2) trans2 = Multi $ mergeTokens suff1 toks2 trans2
+mergeSuff suff1 (One token2) _ = One $ mergeToken suff1 token2 -- O(n)
+mergeSuff suff1 (Multi toks2) trans2 = Multi $ mergeTokens suff1 toks2 trans2 -- O(n^2)
 
 -- Generic template
 -- Prepends a sequence of tokens on the sequence in Tokens
@@ -311,7 +312,7 @@ makeTree  = fromList
 -- Wrapper template
 measureToTokens :: (Table State Tokens,Size) -> Seq Token
 measureToTokens m = case access (fst $ m) startState of
-  InvalidTokens s -> error $ "Unacceptable token: " ++ s
+  InvalidTokens s -> error $ "Unacceptable token: " ++ toList s
   NoTokens -> empty
   Tokens seq suff out_state ->
     snd $ foldlWithIndex showToken (Pn 0 1 1,empty) $ intToks seq suff
@@ -321,7 +322,7 @@ measureToTokens m = case access (fst $ m) startState of
             [] -> (pos',toks)
             AlexAcc f:_ -> (pos',toks |> f pos lex)
             AlexAccSkip:_ -> (pos',toks)
-        intToks seq (Str str) = error $ "Unacceptable token: " ++ str
+        intToks seq (Str str) = error $ "Unacceptable token: " ++ toList str
         intToks seq (One token) = seq |> token
         intToks seq (Multi (Tokens seq' suff' _)) = intToks (seq <> seq') suff'
 
@@ -347,11 +348,11 @@ isInvalid (InvalidTokens _) = True
 isInvalid _ = False
 
 -- Generic template
-suffToStr :: Suffix -> String
+suffToStr :: Suffix -> Seq Char
 suffToStr (Str s) = s
 suffToStr (One token) = lexeme token
 suffToStr (Multi toks) =
-  concatLexemes (currentSeq toks) ++ suffToStr (lastToken toks)
+  concatLexemes (currentSeq toks) <> suffToStr (lastToken toks)
 
 isAccepting :: Tokens -> Bool
 isAccepting (Tokens _ suff _) = case suff of
@@ -362,8 +363,8 @@ isAccepting NoTokens = True
 isAccepting _ = False
 
 -- Genereic template
-concatLexemes :: Seq IntToken -> String
-concatLexemes = foldr ((++) . lexeme) ""
+concatLexemes :: Seq IntToken -> Seq Char
+concatLexemes = foldr ((<>) . lexeme) mempty
 
 insertAtIndex :: String -> Int -> LexTree -> LexTree
 insertAtIndex str i tree = 
@@ -377,6 +378,16 @@ splitTreeAt i tree = split (\(_,s) -> getSum s>i) tree
 
 size :: LexTree -> Int
 size tree = getSum . snd $ measure tree
+
+suffSize :: Suffix -> Int
+suffSize (Multi toks) = toksSize toks
+suffSize (Str s) = SS.length s
+suffSize (One (Token lex _)) = SS.length lex
+
+toksSize :: Tokens -> Int
+toksSize (Tokens seq suff _) = suffSize suff + foldl bla 0 seq
+  where bla _ (Token lex _) = SS.length lex
+toksSize _ = 0
 
 -- wrapper template
 alexMove :: Posn -> Char -> Posn
