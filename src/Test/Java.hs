@@ -171,12 +171,20 @@ data IntToken = Token { lexeme   :: !String
 --Wrapper template
 type Accepts   = [AlexAcc (Posn -> String -> Token) ()]
 
+createToken :: String -> Accepts -> IntToken
+createToken lex acc = Token lex acc
+
+createTokens :: Seq IntToken -> Suffix -> State -> Tokens
+createTokens seq suf state = if S.null seq
+                             then NoTokens
+                             else Tokens seq suf state
+
 tabulate :: (State,State) -> (State -> b) -> Table State b
 access :: Table State b -> (State -> b)
 
 --debug stuff
 instance Show b => Show (Table Int b) where
-  show f = unlines $ ["\n\n\n\n" ++ show i ++ " -> " ++ show (access f i) | i <- [0,83]]
+  show f = unlines $ ["\n\n\n\n" ++ show i ++ " -> " ++ show (access f i) | i <- [0,29]]
 
 -- Generic template?
 newtype Table a b = Tab {getFun :: a -> b}
@@ -218,7 +226,7 @@ instance Measured (Table State Tokens,Size) Char where
           -1 -> InvalidTokens [c]
           os -> case alex_accept ! os of
             []  -> Tokens empty (Str [c]) os
-            acc -> Tokens empty (One (Token [c] acc)) os
+            acc -> Tokens empty (One (createToken [c] acc)) os
     in (tabulate stateRange $ baseCase, Size 1)
 
 -- Wrapper template
@@ -254,30 +262,31 @@ combineWithRHS toks1 trans2 | isEmpty toks2 = toks1
     One tok -> appendTokens (seq1 |> tok) (trans2 startState)
     Str s -> invalidTokens s
   where toks2 = trans2 $ outState toks1
-        seq1 | isValid toks1 = currentSeq toks1
-             | True = error "combineWithRHS"
+        seq1 = currentSeq toks1
 
 -- Generic template
 -- Creates one token from the last token of the first sequence and and the first
 -- token of the second sequence and inserts it between the init of the first
 -- sequence and the tail of the second sequence
 mergeTokens :: Suffix -> Tokens -> Transition -> Tokens
-mergeTokens suff1 toks2 trans2 | out_state == -1 = error "mergeTokens out_state"
-                               | validSuff suff1 = case viewl (currentSeq toks2) of
-  token2 :< seq2' -> let newToken = mergeToken suff1 token2
-                     in toks2 {currentSeq = newToken <| seq2'}
-  EmptyL -> case alex_accept ! out_state of
-    [] -> toks2 {lastToken = mergeSuff suff1 (lastToken toks2) trans2}
-    acc -> let lex = suffToStr suff1 ++ suffToStr (lastToken toks2)
-               newTok = (Token lex acc)
-           in toks2 {lastToken = One newTok}
-                               | otherwise = error "mergeTokens, suff1"
+mergeTokens suff1 toks2 trans2 = case validSuff suff1 of
+  _ -> case viewl (currentSeq toks2) of
+    token2 :< seq2' -> let newToken = mergeToken suff1 token2
+                       in toks2 {currentSeq = newToken <| seq2'}
+    EmptyL -> case alex_accept ! out_state of
+      [] -> toks2 {lastToken = mergeSuff suff1 (lastToken toks2) trans2}
+      acc -> let lex = suffToStr suff1 ++ suffToStr (lastToken toks2)
+                 newTok = (Token lex acc)
+             in toks2 {lastToken = One newTok}
+{-  Right toks1 -> if isEmpty toks1
+                 then toks2
+                 else toks2 {currentSeq = empty, lastToken = Multi toks1}-}
   where out_state = outState toks2
 
-validSuff :: Suffix -> Bool
-validSuff (Multi (InvalidTokens s)) = error s
-validSuff (Multi NoTokens) = error "NoToks"
-validSuff _ = True
+validSuff :: Suffix -> Either () Tokens
+validSuff (Multi (InvalidTokens s)) = Right $ (InvalidTokens s)
+validSuff (Multi NoTokens) = Right NoTokens
+validSuff _ = Left ()
 
 -- Generic template
 -- Creates on token from a suffix and a token
@@ -287,13 +296,17 @@ mergeToken suff1 token2 = token2 {lexeme = suffToStr suff1 ++ lexeme token2}
 -- Generic template?
 -- Creates the apropiet new suffix from two suffixes
 mergeSuff :: Suffix -> Suffix -> Transition -> Suffix
-mergeSuff (Multi toks1) _ trans2 = Multi $ combineWithRHS toks1 trans2
+mergeSuff (Multi toks1) suff2 trans2 = Multi $
+  let newToks = combineWithRHS toks1 trans2
+  in if isValid $ newToks
+     then newToks
+     else toks1 {lastToken = mergeSuff (lastToken toks1) suff2 trans2}
 mergeSuff (Str s1) suff2 _ = Str $ s1 ++ suffToStr suff2
-mergeSuff (One token1) (Str _) trans2 =
+mergeSuff (One token1) (Str s) trans2 =
   let toks2 = trans2 startState
   in if isValid toks2
      then Multi $ toks2 {currentSeq = token1 <| currentSeq toks2}
-     else error "InvalidTokens" "mergeSuff"
+     else Multi $ createTokens (singleton token1) (Str s) (-1)
 mergeSuff suff1 (One token2) _ = One $ mergeToken suff1 token2
 mergeSuff suff1 (Multi toks2) trans2 = Multi $ mergeTokens suff1 toks2 trans2
 
@@ -352,9 +365,8 @@ isInvalid _ = False
 suffToStr :: Suffix -> String
 suffToStr (Str s) = s
 suffToStr (One token) = lexeme token
-suffToStr (Multi toks) | isValid toks =
+suffToStr (Multi toks) =
   concatLexemes (currentSeq toks) ++ suffToStr (lastToken toks)
-                       | True = error "suffToStr"
 
 isAccepting :: Tokens -> Bool
 isAccepting (Tokens _ suff _) = case suff of

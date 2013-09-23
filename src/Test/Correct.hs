@@ -48,10 +48,8 @@ propMergeResult s = forAllShrink (subStrings s) subShrinker $ \(s1,s2) ->
 splits xs = zip (inits xs) (tails xs)
 
 test_string x = unlines $ map show $ 
-  [ (xs,ys,y', measureToTokens $ measure (makeTree xs) <> measure(makeTree ys)
-               <> measure (makeTree y')) | 
-    (_,x') <- splits x,
-    (y,y') <- splits x',
+  [ (xs,ys, measureToTokens $ measure (makeTree xs) <> measure(makeTree ys))
+  | (x',y) <- splits x,
     (xs,ys) <- splits y]
 
 splitToTree :: String -> [(LexTree,LexTree)]
@@ -117,7 +115,7 @@ checker (J.PT _ tok1) (A.PT _ tok2) = checker' tok1 tok2
 
 core002 :: String
 core002 = "import datastructures.*;\n" ++
-          "/* a comment */\n\n" ++
+          "/* a @ comment */\n\n" ++
           "// hej\n" ++
           "int foo.thur() {\n" ++
           "printString(foo);\n" ++
