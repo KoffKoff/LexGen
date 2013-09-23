@@ -17,10 +17,10 @@ import Data.Array.Base (unsafeAt)
 import Array
 import Char (ord)
 #endif
-import Prelude as P hiding (foldr)
+import Prelude hiding (foldl,foldr,null)
 import Data.FingerTree (FingerTree,Measured,measure,split,fromList)
-import Data.Sequence as S hiding (fromList)
-import Data.Foldable (foldr)
+import Data.Sequence hiding (fromList)
+import Data.Foldable (foldl,foldr)
 import Data.Monoid
 
 -- Wrapper template
@@ -162,22 +162,14 @@ data Suffix = Str !String
             | One !IntToken
             | Multi !Tokens
                  deriving Show
-data Size      = Size Int
-                 deriving Show
+type Size      = Sum Int
+--Wrapper
 type LexTree   = FingerTree (Table State Tokens,Size) Char
 data IntToken = Token { lexeme   :: !String
 --                      , prev     :: Char
                       , token_id :: Accepts}
 --Wrapper template
 type Accepts   = [AlexAcc (Posn -> String -> Token) ()]
-
-createToken :: String -> Accepts -> IntToken
-createToken lex acc = Token lex acc
-
-createTokens :: Seq IntToken -> Suffix -> State -> Tokens
-createTokens seq suf state = if S.null seq
-                             then NoTokens
-                             else Tokens seq suf state
 
 tabulate :: (State,State) -> (State -> b) -> Table State b
 access :: Table State b -> (State -> b)
@@ -207,13 +199,8 @@ instance Show IntToken where
             AlexAccSkip -> "Skip:" ++ show (lexeme token)
 
 -- Generic template
-instance Monoid Size where
-  mempty = Size 0
-  Size m `mappend` Size n = Size (m+n)
-
--- Generic template
 instance Monoid (Table State Tokens) where
-  mempty = tabulate stateRange (\_ -> NoTokens)
+  mempty = tabulate stateRange (\_ -> emptyTokens)
   f `mappend` g = tabulate stateRange $ combineTokens (access f) (access g)
 
 -- Wrapper template
@@ -227,7 +214,15 @@ instance Measured (Table State Tokens,Size) Char where
           os -> case alex_accept ! os of
             []  -> Tokens empty (Str [c]) os
             acc -> Tokens empty (One (createToken [c] acc)) os
-    in (tabulate stateRange $ baseCase, Size 1)
+    in (tabulate stateRange $ baseCase, Sum 1)
+
+createToken :: String -> Accepts -> IntToken
+createToken lex acc = Token lex acc
+
+createTokens :: Seq IntToken -> Suffix -> State -> Tokens
+createTokens seq suf state = if null seq
+                             then NoTokens
+                             else Tokens seq suf state
 
 -- Wrapper template
 invalidTokens :: String -> Tokens
@@ -275,8 +270,7 @@ mergeTokens suff1 toks2 trans2 = case viewl (currentSeq toks2) of
   EmptyL -> case alex_accept ! out_state of
     [] -> toks2 {lastToken = mergeSuff suff1 (lastToken toks2) trans2}
     acc -> let lex = suffToStr suff1 ++ suffToStr (lastToken toks2)
-               newTok = (Token lex acc)
-           in toks2 {lastToken = One newTok}
+           in toks2 {lastToken = One $ createToken lex acc}
   where out_state = outState toks2
 
 -- Generic template
@@ -284,7 +278,7 @@ mergeTokens suff1 toks2 trans2 = case viewl (currentSeq toks2) of
 mergeToken :: Suffix -> IntToken -> IntToken
 mergeToken suff1 token2 = token2 {lexeme = suffToStr suff1 ++ lexeme token2}
 
--- Generic template?
+-- Generic template
 -- Creates the apropiet new suffix from two suffixes
 mergeSuff :: Suffix -> Suffix -> Transition -> Suffix
 mergeSuff (Multi toks1) suff2 trans2 = Multi $
@@ -379,11 +373,10 @@ insertAtIndex str i tree =
      where (l,r) = splitTreeAt i tree
 
 splitTreeAt :: Int -> LexTree -> (LexTree,LexTree)
-splitTreeAt i tree = split (\(_,Size n) -> n>i) tree
+splitTreeAt i tree = split (\(_,s) -> getSum s>i) tree
 
 size :: LexTree -> Int
-size tree = let Size n = snd $ measure tree
-            in n
+size tree = getSum . snd $ measure tree
 
 -- wrapper template
 alexMove :: Posn -> Char -> Posn
