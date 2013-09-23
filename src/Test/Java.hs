@@ -269,24 +269,15 @@ combineWithRHS toks1 trans2 | isEmpty toks2 = toks1
 -- token of the second sequence and inserts it between the init of the first
 -- sequence and the tail of the second sequence
 mergeTokens :: Suffix -> Tokens -> Transition -> Tokens
-mergeTokens suff1 toks2 trans2 = case validSuff suff1 of
-  _ -> case viewl (currentSeq toks2) of
-    token2 :< seq2' -> let newToken = mergeToken suff1 token2
-                       in toks2 {currentSeq = newToken <| seq2'}
-    EmptyL -> case alex_accept ! out_state of
-      [] -> toks2 {lastToken = mergeSuff suff1 (lastToken toks2) trans2}
-      acc -> let lex = suffToStr suff1 ++ suffToStr (lastToken toks2)
-                 newTok = (Token lex acc)
-             in toks2 {lastToken = One newTok}
-{-  Right toks1 -> if isEmpty toks1
-                 then toks2
-                 else toks2 {currentSeq = empty, lastToken = Multi toks1}-}
+mergeTokens suff1 toks2 trans2 = case viewl (currentSeq toks2) of
+  token2 :< seq2' -> let newToken = mergeToken suff1 token2
+                     in toks2 {currentSeq = newToken <| seq2'}
+  EmptyL -> case alex_accept ! out_state of
+    [] -> toks2 {lastToken = mergeSuff suff1 (lastToken toks2) trans2}
+    acc -> let lex = suffToStr suff1 ++ suffToStr (lastToken toks2)
+               newTok = (Token lex acc)
+           in toks2 {lastToken = One newTok}
   where out_state = outState toks2
-
-validSuff :: Suffix -> Either () Tokens
-validSuff (Multi (InvalidTokens s)) = Right $ (InvalidTokens s)
-validSuff (Multi NoTokens) = Right NoTokens
-validSuff _ = Left ()
 
 -- Generic template
 -- Creates on token from a suffix and a token
