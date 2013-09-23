@@ -175,8 +175,8 @@ tabulate :: (State,State) -> (State -> b) -> Table State b
 access :: Table State b -> (State -> b)
 
 --debug stuff
-instance Show b => Show (Table Int b) where
-  show f = unlines $ ["\n\n\n\n" ++ show i ++ " -> " ++ show (access f i) | i <- [0,29]]
+-- instance Show b => Show (Table Int b) where
+--   show f = unlines $ ["\n\n\n\n" ++ show i ++ " -> " ++ show (access f i) | i <- [0,29]]
 
 {-- Generic template?
 newtype Table a b = Tab {getFun :: a -> b}

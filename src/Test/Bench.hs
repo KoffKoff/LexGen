@@ -15,8 +15,15 @@ import Data.Foldable (mapM_)
 import Data.Sequence as S hiding (zip)
 import Data.Monoid
 
-instance NFData J.LexTree where
-  rnf = (flip seq) () . unsafeFmap rnf
+
+newtype Forced a = Forced a
+
+instance Monoid a => Monoid (Forced a) where
+   mempty = Forced mempty
+
+   
+-- instance NFData J.LexTree where
+  -- rnf = rnf . measure . fmap (Forced . rnf)
 
 allTest :: [String]
 allTest = ["Alex","IncLex","Update"]
@@ -31,21 +38,36 @@ main = do
   let tests = case tests' of
         [] -> allTest
         _  -> tests'
-      codes' = concat . P.take 20 $ repeat codes
-      trees' = map J.lexCode codes
-      trees = map (\tree -> map ((uncurry (F.><)) . flip splitTreeAt tree) [0..size tree]) trees'
-      trees'' = map (\tree -> tree !! (P.length trees `div` 2)) trees
+      codes' = map (concat . P.take 400 . repeat) codes  -- multiply the size of each file by 20
+      trees' = map J.lexCode codes' -- lexing the input using the bottom-up method
+      trees = do
+        code <- codes'
+        let tree = J.lexCode code
+            halfSize = size tree `div` 2
+            (left,right) = splitTreeAt halfSize tree
+        return (left F.>< right)
+      measures = do
+        code <- codes'
+        let tree = J.lexCode code
+            halfSize = size tree `div` 2
+            (left,right) = splitTreeAt halfSize tree
+        return (measure left, measure right)
+      -- trees'' = map (\tree -> tree !! (P.length trees `div` 2)) trees
       sizeTrees = map (\tree -> foldl (helperIncBuilder tree) [] [1..10]) trees'
       testFuns =
         [ ("Alex",map (benchStuff alexScanTokens) (zip codes' files))
-        , ("IncLex",map (benchStuff (J.tokens . J.lexCode)) (zip codes' files))
-        , ("Update",map (benchStuff J.tokens) (zip trees'' files))
-        , ("Sizes",[bgroup name (map (benchStuff (\tree' -> J.tokens (tree' <> tree'))) (tree))
-                   | (tree,name) <- zip sizeTrees files])
-        , ("AllUp",[bgroup name (map (benchStuff J.tokens) (zip tree (map show [0..])))
-                   | (tree,name) <- zip trees files ])
+        -- ,  ("Alex2",map (benchStuff alexScanTokens) (zip codes files))
+        -- , ("IncLex",map (benchStuff (J.tokens . J.lexCode)) (zip codes' files))
+        -- , ("Update",map (benchStuff J.tokens) (zip trees files))
+        , ("Update;Measures",map (benchStuff (uncurry mappend)) (zip measures files))
+        -- , ("Sizes",[bgroup name (map (benchStuff (\tree' -> J.tokens (tree' <> tree'))) (tree))
+        --            | (tree,name) <- zip sizeTrees files])
+        -- , ("AllUp",[bgroup name (map (benchStuff J.tokens) (zip tree (map show [0..])))
+        --            | (tree,name) <- zip trees files ])
         ]
-  trees' `deepseq` sizeTrees `deepseq` withArgs (tests ++ arg) $
+  print $ measures
+  -- trees' `deepseq` sizeTrees `deepseq` 
+  withArgs (tests ++ arg) $
     defaultMain [ bgroup name tests | (name,tests) <- testFuns ]
 
 repeatTree :: Int -> LexTree -> LexTree

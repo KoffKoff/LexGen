@@ -1,5 +1,9 @@
 THIS WE NEED TO DO!!!!!
 
+20130923:
+- Try to replace String by sequence of chars
+- Try to estimate how much "ambiguity" there is in the tree.
+
 20130916:
 
 report:
