@@ -29,6 +29,25 @@ $S_2$ is equal $S$.getRange($(n/2)+1$, $n$). The indexing of the sequence starts
 \item The to sequences $S_1$ and $S_2$ is has now be recursively sorted and can be merged. Assign $S$ to the result of the merging.
 \end{enumerate}
 
+\begin{theorem}{Master Theorem, Cormen et al.}. \\
+Assume a function
+$T_n$ constrained by the recurrence
+$T_n = aT_{frac{n}{b}}+ f(n)$\\
+(Such an equation will typically come from a divide-and-conquer
+algorithm, where a is the number of sub-problems at each recursive
+step, $n=b$ is the size of each sub-problem, and $f(n)$ is the running
+time of dividing up the problem space into a parts, and combining
+the sub-results together.)
+If we let $e = log_b a$ and $f(n) = O(n^c log^d n)$, then\\
+\begin{center}
+\begin{tabular}{r c l l}
+$Tn$ & $=$ & $O(n^e)$ &  $if c < e$\\
+$Tn$ & $=$ & $O(n^c log^{d+1} n)$ & $if c = e$\\
+$Tn$ & $=$ & $O(n^c)$ & $if c > e$
+\end{tabular}
+\end{center}
+\end{theorem}
+
 \section{Divide and Conquer Lexing in General}
 
 \section{Transition map}
