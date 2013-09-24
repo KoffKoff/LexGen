@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 module Main where
 
-import Prelude as P hiding (mapM_)
+import Prelude as P hiding (mapM_,foldl1)
 import System.Environment
 import System.IO
 import Criterion.Main
@@ -11,27 +11,39 @@ import Test.Lexjava
 import Control.DeepSeq
 import Data.FingerTree as F
 import Data.Map as M (foldrWithKey',insert,empty)
-import Data.Foldable (mapM_)
+import Data.Foldable (mapM_,foldl1)
 import Data.Sequence as S hiding (zip)
 import Data.Monoid
+import Data.Char
+import Data.Array
 
+instance (NFData v,NFData a,Measured v a) => NFData (FingerTree v a) where
+  rnf tree = foldl1 (seq . rnf) tree `seq` rnf (measure tree)
 
-newtype Forced a = Forced a
-
---instance Monoid a => Monoid (Forced a) where
---   mempty = Forced mempty
---   f `mappend` g = Forced (f `mappend` g)
-
+instance NFData a => NFData (Seq a) where
+  rnf = flip seq () . foldl1 (seq . rnf)
    
--- instance NFData J.LexTree where
-  -- rnf = rnf . measure . fmap (Forced . rnf)
+instance NFData a => NFData (Sum a) where
+  rnf (Sum a) = rnf a
+
+instance NFData Tokens where
+  rnf (Tokens toks suff _) = rnf toks `seq` rnf suff
+  rnf _ = ()
+
+instance NFData IntToken where
+  rnf (Token lex _) = rnf lex
+
+instance NFData Suffix where
+  rnf (Str s) = rnf s
+  rnf (One t) = rnf t
+  rnf (Multi toks) = rnf toks
 
 allTest :: [String]
-allTest = ["Alex","IncLex","Update"]
+allTest = ["Alex","Update"]
 
 main = do
   args <- getArgs
-  let (inFiles,tests',arg) = sortArgs args
+  let (n,inFiles,tests',arg) = sortArgs args
   (files,codes) <- case inFiles of
     [] -> return (["internal"],[core002])
     _  -> do lazyCode <- mapM (\f -> openFile f ReadMode >>= hGetContents) inFiles
@@ -39,7 +51,7 @@ main = do
   let tests = case tests' of
         [] -> allTest
         _  -> tests'
-      codes' = map (concat . P.take 400 . repeat) codes  -- multiply the size of each file by 20
+      codes' = map (concat . P.take n . repeat) codes  -- multiply the size of each file by 20
       trees' = map J.lexCode codes' -- lexing the input using the bottom-up method
       trees = do
         code <- codes'
@@ -56,19 +68,16 @@ main = do
       -- trees'' = map (\tree -> tree !! (P.length trees `div` 2)) trees
       sizeTrees = map (\tree -> foldl (helperIncBuilder tree) [] [1..10]) trees'
       testFuns =
-        [ ("Alex",map (benchStuff alexScanTokens) (zip codes' files))
-        -- ,  ("Alex2",map (benchStuff alexScanTokens) (zip codes files))
-        -- , ("IncLex",map (benchStuff (J.tokens . J.lexCode)) (zip codes' files))
+        [ ("Alex",map (benchStuff (show . alexScanTokens)) (zip codes' files))
+        , ("IncLex",map (benchStuff (J.lexCode)) (zip codes' files))
         -- , ("Update",map (benchStuff J.tokens) (zip trees files))
         , ("Update;Measures",map (benchStuff (uncurry mappend)) (zip measures files))
-        -- , ("Sizes",[bgroup name (map (benchStuff (\tree' -> J.tokens (tree' <> tree'))) (tree))
-        --            | (tree,name) <- zip sizeTrees files])
-        -- , ("AllUp",[bgroup name (map (benchStuff J.tokens) (zip tree (map show [0..])))
-        --            | (tree,name) <- zip trees files ])
+--        , ("Sizes",[bgroup name (map (benchStuff (\tree' -> J.tokens (tree' <> tree'))) (tree))
+--                    | (tree,name) <- zip sizeTrees files])
+--        , ("AllUp",[bgroup name (map (benchStuff J.tokens) (zip tree (map show [0..])))
+--                    | (tree,name) <- zip trees files ])
         ]
-  print $ measures
-  -- trees' `deepseq` sizeTrees `deepseq` 
-  withArgs (tests ++ arg) $
+  measures `deepseq` withArgs (tests ++ arg) $
     defaultMain [ bgroup name tests | (name,tests) <- testFuns ]
 
 repeatTree :: Int -> LexTree -> LexTree
@@ -79,17 +88,20 @@ repeatTree i tree = tree <> repeatTree (i-1) tree
 helperIncBuilder :: LexTree -> [(LexTree,String)] -> Int -> [(LexTree,String)]
 helperIncBuilder tree sizeTrees i = sizeTrees ++ [(repeatTree i tree, show i)]
 
-benchStuff :: Show b => (a -> b) -> (a,String) -> Benchmark
-benchStuff f (x,name) = bench name $ nf (show . f) x
+benchStuff :: NFData b => (a -> b) -> (a,String) -> Benchmark
+benchStuff f (x,name) = bench name $ nf f x
 
-sortArgs :: [String] -> ([String],[String],[String])
-sortArgs args = foldl sortArg ([],[],[]) args
-  where sortArg (files,tests,args) arg@('-':_) = (files,tests,(arg):args)
-        sortArg (files,tests,args) ('+':test)  = (files,if test `elem` "Sizes":"AllUp":allTest
-                                                        then test:tests
-                                                        else tests
-                                                  ,args)
-        sortArg (files,tests,args) file        = (file:files,tests,args)
+sortArgs :: [String] -> (Int,[String],[String],[String])
+sortArgs args = foldl sortArg (10,[],[],[]) args
+  where sortArg (num,files,tests,args) arg@('-':_) =
+          (num,files,tests,(arg):args)
+        sortArg (num,files,tests,args) ('+':test)  =
+          (num,files,if test `elem` "Sizes":"AllUp":"IncLex":allTest
+                     then test:tests
+                     else tests
+                               ,args)
+        sortArg (num,files,tests,args) arg | and $ map isDigit arg = (read arg,files,tests,args)
+                                           | otherwise = (num,arg:files,tests,args)
 
 core002 :: String
 core002 = "/*@ @@*/\n\n" ++
