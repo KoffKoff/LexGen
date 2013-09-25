@@ -3,6 +3,7 @@
 \usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{amsthm}
+\usepackage{amssymb}
 \usepackage{ae}
 \usepackage{icomma}
 \usepackage{units}
@@ -27,6 +28,7 @@
 \usepackage{cleveref}
 \usepackage{listings}
 \usepackage{tikz}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 
 \usetikzlibrary{arrows,automata,positioning,shadows}
 
@@ -71,6 +73,8 @@
 			\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{#3}
 			\vfill
 }}}
+
+\newcommand{\qeda}{\hfill $\blacksquare$}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{lemma}[theorem]{Lemma}
