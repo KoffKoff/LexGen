@@ -8,16 +8,17 @@ will be described below. \#Some ref to divide and conquer?
 
 \section{Divide and Conquer in General}
 This capter will try to give a idea of how the Divide and Conquer algorithm works in a general case. So when talking about the incremental lexer you as a reader will have a basic idea of the structure of the algorithm.
-
+\subsection{The Basics}
 A Divide and Conquer algorithm always consist of a pattern with three steps. \cite{Goodrich}
 \begin{description}
 \item[Divide:] That is if the input size is bigger than the basecase divide the input to sub problems. Otherwise solve the problem using a straightforward method.
 \item[Recur:] Recursively solve the subproblems associated with the subset.
 \item[Conquer:] Given the solutions to the subproblem, merge them into to the original problem.
 \end{description}
-Now follows how this can be used for a basic problem. This if for putting this pattern into some form of context. A genral problem is sorting or more precies sorting a list of integers. 
 
-The input to the algorithm is a sequence of integers $S$ containing $n$ integers. 
+\subsection{Hand on Example}
+The divide and conquer pattern can be preformed on different sorts of algorithm that solves different problems. A general problem is sorting or more precies sorting a list of integers. This example will show merge-sort.
+
 \begin{enumerate}
 \item The algorthim starts by the divide step. Givien the input $S$ the algorithm will check if $S$ consist of a number of elements less or equal to 1.
 \begin{itemize}
@@ -28,25 +29,71 @@ $S_2$ is equal $S$.getRange($(n/2)+1$, $n$). The indexing of the sequence starts
 \item The next step is to sort the subsequences $S_1$ and $S_2$. This is done by recursively call it self with the subsequences as input. There will be 2 calls, one with $S_1$ as input and one with with $S_2$ as input.
 \item The to sequences $S_1$ and $S_2$ is has now be recursively sorted and can be merged. Assign $S$ to the result of the merging.
 \end{enumerate}
+Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
 
-\begin{theorem}{Master Theorem, Cormen et al.}. \\
-Assume a function
-$T_n$ constrained by the recurrence
-$T_n = aT_{frac{n}{b}}+ f(n)$\\
-(Such an equation will typically come from a divide-and-conquer
-algorithm, where a is the number of sub-problems at each recursive
-step, $n=b$ is the size of each sub-problem, and $f(n)$ is the running
-time of dividing up the problem space into a parts, and combining
-the sub-results together.)
-If we let $e = log_b a$ and $f(n) = O(n^c log^d n)$, then\\
+\begin{algorithm}
+\DontPrintSemicolon
+\KwData{Sequence of integers $S$ containing $n$ integers}
+\KwResult{Sorted sequence $S$}
+\If {$length(S) \leq 1$}{
+  \Return $S$ \;
+}
+\Else {
+  $(S_1,S_2) \gets splitAt(S,n/2)$ \;
+  $S_1 \gets MergeSort(S_1)$\;
+  $S_2 \gets MergeSort(S_2)$\;
+  $S \gets Merge(S_1, S_2)$\;
+  \Return $S$
+}
+\caption{MergeSort}
+\label{Alg:MergSort}
+\end{algorithm}
+
+\subsection{Time Complexity}
+To calculate the running time of an divide and conquer algorithm the master method can be applied. \cite{Cormen} This method is based on the following theorem.
+
+\begin{theorem}[Master Theorem \cite{Cormen} \label{MasterTheo}]
+Assume a function\\ $T_n$ constrained by the recurrence
+\begin{center}
+$T_n = aT_{frac{n}{b}}+ f(n)$
+\end{center}
+This is typically the equation of a divide-and-conquer algorithm, where $a$ is the number of sub-problems at each recursive
+step, $n/b$ is the size of each sub-problem, and $f(n)$ is the running
+time of dividing up the problem space into $a$ parts, and combining
+the sub-results together.\\
+If we let $e = log_b a$, then
 \begin{center}
 \begin{tabular}{r c l l}
-$Tn$ & $=$ & $O(n^e)$ &  $if c < e$\\
-$Tn$ & $=$ & $O(n^c log^{d+1} n)$ & $if c = e$\\
-$Tn$ & $=$ & $O(n^c)$ & $if c > e$
+1. $Tn$ & $=$ & $\Theta(n^{e})$ &  if $f(n) = O(n^{e - \epsilon}$ and $\epsilon > 0$\\
+2. $Tn$ & $=$ & $\Theta(n^{e} log n)$ & if $f(n) = \Theta(n^e log n)$\\
+3. $Tn$ & $=$ & $\Theta(f(n))$ & \begin{minipage}[t]{0.6 \columnwidth}
+  if $f(n) = \Omega(n^{e+\epsilon})$ and $\epsilon > 0$ and $a \cdot f(n/b) \leq c \cdot f(n)$ where $c < 1$ and all sufficiently large $n$
+  \end{minipage}
 \end{tabular}
 \end{center}
+\qeda
 \end{theorem}
+
+\begin{example}{master theorem in preactice}\cite{Cormen}\\
+Given the function:
+\begin{center}
+ $T(n) = 9T(n/3) + n$.
+\end{center}
+Results in: 
+\begin{center}
+$a = 9$, $b = 3$ and $f(n) = n \;
+\Rightarrow n^{log_b a} = n^{log_3 9} = \Theta(n^2)$
+\end{center}
+Since, 
+\begin{center}
+$f(n) = O(n^{log_3 9 - \epsilon})$ where $\epsilon = 1$
+\end{center}
+which falls under case 1 from the master theorem.
+\end{example}
+
+Given the information from \cref{MasterTheo} and the case of an incremental divide and conquer algorithm (where only one side of the subproblem will be calculated). The number of subproblems will only be $1$. The size of the subproblem will be $n/2$, gives $ a = 1$, $b = 2$ and $e = log_2 1 = 0$. SOMEHOW THE $f(n)$ FUNCTION WILL GIVE A $c$ THAT IS $0$. HELP.
+Given that $e = c$ the time-complexity for the incremental algorithm will follow the equation $n^c log^{d+1} n$. After inserting the known constants the expected time-complexity for an incremental divide and conquer algorithm should be, $O(log^{d+1} n)$.
+ 
 
 \section{Divide and Conquer Lexing in General}
 
