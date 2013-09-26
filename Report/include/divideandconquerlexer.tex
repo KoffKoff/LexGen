@@ -91,11 +91,26 @@ $f(n) = O(n^{log_3 9 - \epsilon})$ where $\epsilon = 1$
 which falls under case 1 from the master theorem.
 \end{example}
 
-Given the information from \cref{MasterTheo} and the case of an incremental divide and conquer algorithm (where only one side of the subproblem will be calculated). The number of subproblems will only be $1$. The size of the subproblem will be $n/2$, gives $ a = 1$, $b = 2$ and $e = log_2 1 = 0$. SOMEHOW THE $f(n)$ FUNCTION WILL GIVE A $c$ THAT IS $0$. HELP.
-Given that $e = c$ the time-complexity for the incremental algorithm will follow the equation $n^c log^{d+1} n$. After inserting the known constants the expected time-complexity for an incremental divide and conquer algorithm should be, $O(log^{d+1} n)$.
- 
 
 \section{Divide and Conquer Lexing in General}
+This section is for give a more general image of the ideas of the incremental divide and conquer lexer. To give the reader a more overviewing image why this is a good idea before starting to go into deep details about the project.
+
+\subsection{Treestructure}
+For a good structuer where the codes lexeme can be related to its tokens, current result can be saved and easy recalculated. A divide and conquer lexer should use a tree structure to save the lexed result in.  
+
+\subsection{Incremental}
+To be incremental meens that, whenever some part of the data to the algorithm changes the algorithm tries to save time by only recomputing the changed data and the parts that depend on this changed data. 
+
+For a divide and conquer lexer this would meen only recompute the changed token and the token to the right of the changed token. This is done recurrsivly until the root of the tree is reached. The expected result of this would be that when a character is added to the code of 1024 tokens, instead of relex all 1024 tokens the lexer will only do 10 recalculations for new tokens. Since, $log_2 1024 = 10$. 
+
+\subsection{Basecase}
+
+\subsection{Conquer Step}
+
+\subsection{Expected Time Complexity}
+Given the information from \cref{MasterTheo} and the case of an incremental divide and conquer algorithm (where only one side of the subproblem will be calculated). The number of subproblems will only be $1$. The size of the subproblem will be $n/2$, gives $ a = 1$, $b = 2$ and $e = log_2 1 = 0$. SOMEHOW THE $f(n)$ FUNCTION WILL GIVE A $c$ THAT IS $0$. HELP.
+Given that $e = c$ the time-complexity for the incremental algorithm will follow the equation $n^c log^{d+1} n$. After inserting the known constants the expected time-complexity for an incremental divide and conquer algorithm should be, $O(log^{d+1} n)$.
+
 
 \section{Transition map}
 To be able to make a divide-and-conquer lexer work you can use a transition map
