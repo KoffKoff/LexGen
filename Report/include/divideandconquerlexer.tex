@@ -101,7 +101,7 @@ This section is for give a more general image of the ideas of the incremental di
 For a good structuer where the codes lexeme can be related to its tokens, current result can be saved and easy recalculated. A divide and conquer lexer should use a tree structure to save the lexed result in.  
 
 \subsection{Incremental}
-To be incremental meens that, whenever some part of the data to the algorithm changes the algorithm tries to save time by only recomputing the changed data and the parts that depend on this changed data. 
+To be incremental meens that, whenever some part of the data to the algorithm changes the algorithm tries to save time by only recomputing the changed data and the parts that depend on this changed data. \cite{incrementalDef}
 
 For a divide and conquer lexer this would meen only recompute the changed token and the token to the right of the changed token. This is done recurrsivly until the root of the tree is reached. The expected result of this would be that when a character is added to the code of 1024 tokens, instead of relex all 1024 tokens the lexer will only do 10 recalculations for new tokens. Since, $log_2 1024 = 10$. 
 
