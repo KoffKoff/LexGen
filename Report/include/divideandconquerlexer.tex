@@ -16,6 +16,31 @@ A Divide and Conquer algorithm always consist of a pattern with three steps. \ci
 \item[Conquer:] Given the solutions to the subproblem, merge them into to the original problem.
 \end{description}
 
+\subsection{Time Complexity}
+To calculate the running time of an divide and conquer algorithm the master method can be applied. \cite{Cormen} This method is based on the following theorem.
+
+\begin{theorem}[Master Theorem \cite{Cormen} \label{MasterTheo}]
+Assume a function\\ $T_n$ constrained by the recurrence
+\begin{center}
+$T_n = aT_{\frac{n}{b}}+ f(n)$
+\end{center}
+This is typically the equation of a divide-and-conquer algorithm, where $a$ is the number of sub-problems at each recursive
+step, $n/b$ is the size of each sub-problem, and $f(n)$ is the running
+time of dividing up the problem space into $a$ parts, and combining
+the sub-results together.\\
+If we let $e = log_b a$, then
+\begin{center}
+\begin{tabular}{r c l l}
+1. $Tn$ & $=$ & $\Theta(n^{e})$ &  if $f(n) = O(n^{e - \epsilon}$ and $\epsilon > 0$\\
+2. $Tn$ & $=$ & $\Theta(n^{e} log n)$ & if $f(n) = \Theta(n^e)$\\
+3. $Tn$ & $=$ & $\Theta(f(n))$ & \begin{minipage}[t]{0.6 \columnwidth}
+  if $f(n) = \Omega(n^{e+\epsilon})$ and $\epsilon > 0$ and $a \cdot f(n/b) \leq c \cdot f(n)$ where $c < 1$ and all sufficiently large $n$
+  \end{minipage}
+\end{tabular}
+\end{center}
+\qeda
+\end{theorem}
+
 \subsection{Hand on Example}
 The divide and conquer pattern can be preformed on different sorts of algorithm that solves different problems. A general problem is sorting or more precies sorting a list of integers. This example will show merge-sort.
 
@@ -49,47 +74,24 @@ Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
 \label{Alg:MergSort}
 \end{algorithm}
 
-\subsection{Time Complexity}
-To calculate the running time of an divide and conquer algorithm the master method can be applied. \cite{Cormen} This method is based on the following theorem.
-
-\begin{theorem}[Master Theorem \cite{Cormen} \label{MasterTheo}]
-Assume a function\\ $T_n$ constrained by the recurrence
+Given the mergesort algorithm, this is how the time complexity is calculated.
+There are $2$ recurrsive calls, the subproblems are $1/2$ of the original problem size. To merge the two sorted subproblems the worst case is to check every element in the two list, $2 \cdot n/2 = n$. 
 \begin{center}
-$T_n = aT_{\frac{n}{b}}+ f(n)$
-\end{center}
-This is typically the equation of a divide-and-conquer algorithm, where $a$ is the number of sub-problems at each recursive
-step, $n/b$ is the size of each sub-problem, and $f(n)$ is the running
-time of dividing up the problem space into $a$ parts, and combining
-the sub-results together.\\
-If we let $e = log_b a$, then
-\begin{center}
-\begin{tabular}{r c l l}
-1. $Tn$ & $=$ & $\Theta(n^{e})$ &  if $f(n) = O(n^{e - \epsilon}$ and $\epsilon > 0$\\
-2. $Tn$ & $=$ & $\Theta(n^{e} log n)$ & if $f(n) = \Theta(n^e log n)$\\
-3. $Tn$ & $=$ & $\Theta(f(n))$ & \begin{minipage}[t]{0.6 \columnwidth}
-  if $f(n) = \Omega(n^{e+\epsilon})$ and $\epsilon > 0$ and $a \cdot f(n/b) \leq c \cdot f(n)$ where $c < 1$ and all sufficiently large $n$
-  \end{minipage}
-\end{tabular}
-\end{center}
-\qeda
-\end{theorem}
-
-\begin{example}{master theorem in preactice}\cite{Cormen}\\
-Given the function:
-\begin{center}
- $T(n) = 9T(n/3) + n$.
+ $T(n) = 2T(n/2) + n$.
 \end{center}
 Results in: 
 \begin{center}
-$a = 9$, $b = 3$ and $f(n) = n \;
-\Rightarrow n^{log_b a} = n^{log_3 9} = \Theta(n^2)$
+$a = 2$, $b = 2$ and $f(n) = n \;
+\Rightarrow n^{log_b a} = n^{log_2 2} = n$
 \end{center}
-Since, 
+Case 2 applies, since
 \begin{center}
-$f(n) = O(n^{log_3 9 - \epsilon})$ where $\epsilon = 1$
+$f(n) = O(n)$
 \end{center}
-which falls under case 1 from the master theorem.
-\end{example}
+So the solution will be:
+\begin{center}
+$T(n) = \Theta(n^{log_2 2} \cdot log n) = \Theta(n \cdot log n)$
+\end{center}
 
 
 \section{Divide and Conquer Lexing in General}
