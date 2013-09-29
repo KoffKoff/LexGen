@@ -11,7 +11,7 @@
 %% DON'T FORGET: Change PDF metadata in settings.tex !!
 %%
 %%%%%
-\documentclass[11pt,a4paper,twoside,openleft]{report}
+\documentclass[11pt,a4paper,twoside]{report}
 
 % Packages and commands file
 \input{include/packagescommands}
@@ -28,16 +28,10 @@
 \newpage
 \pagenumbering{roman}
 \setcounter{page}{1}
-\pagestyle{fancy}
-\setspecialhdr
 \tableofcontents
 
 % Main area
 \newpage
-%\setdefaulthdr
-\fancyhead{}
-\fancyhead[LE]{\leftmark}
-\fancyhead[RO]{\rightmark}
 \pagenumbering{arabic}	
 \setcounter{page}{1}
 % Content
