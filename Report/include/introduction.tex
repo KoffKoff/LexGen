@@ -11,14 +11,10 @@ parsers, but they give delayed feedback to the user. Building a parser with good
 characteristics is challenging: no system offers such a combination of properties
 
 \section{Scope of work}
-*Usage of BNFC
-*With help of regexp build a finit state machine that will lex a code string.
-*Give finite states with corresponding Monoid data type.
-*Flag for errors from the Lexer, give meningfull info to the user, and stop 
-    the worklow after lexer, until new updated text.
-*If no errors, handel layout
-*Parse the Monoid data type tree, 
-    AKA integrate the result with an existing parser.
-*Smile and be happy!
+Dan Piponi has writen a blogpost on how to determend in a incremental way if a string furfills a regular expression. This is done by using Monoids, Fingertrees and tabulate functions. \cite{blog}
 
- 
+This blogpost is the fundamental idea behind the project. To build one same general idea, but instead build a tool that generates a lexical analyser given a bnf file specification of a language. Where the core algorithm in the tool follows the blogposts idea. The project will use Alex \cite{alex} as mutch as possible, that is this algorithm will be used as a wrapper to the Alex lexing tool.  
+
+The coal of the project is to create an algorithm that can do a lexical analysis on a update to an already lexed code with a sufficent fast time cost. With a sufficent fast time means that the lexical analysier can be runed in real time.
+
+The report will start by give a more general knowledge about lexical analysis. Then start to give a overviewing image of what is needed of the algorithm to work correctly. Which building blocks needed to create the algorithm. This will lead up to the implementation of the algorithm and specific recvierments on the algorithm for it to be fully correct. The report will also describe how the testing has been done. That is test for correctness, rubustness and efficiency. Also pressent the result for the benchmarking on different computer systemts. The last part of the report will give a more fomal preformance of the algorithm, discussion of the result, some conclussions and futher work.
