@@ -7,11 +7,11 @@ THIS WE NEED TO DO!!!!!
   - Explain what the parameter (e) means on 
       1. e=1 the mergesort example (every node must be visited once) 
       2. e=0 the incremental case  (only log(n) nodes are visited, the cost of visiting one node will dominate the running time)
-  - The testing section should be folded into results (explain every result after how you measure it)
-  - Sort your references by author last name (sort option to the package)
+  x The testing section should be folded into results (explain every result after how you measure it)
+  x Sort your references by author last name (sort option to the package)
   - Cite me :) 
-  - The reference for Data.Sequence is Hinze and Patersson (Finger Trees)
-  - Rename sec. 4 to "implementation"
+  x The reference for Data.Sequence is Hinze and Patersson (Finger Trees)
+  x Rename sec. 4 to "implementation"
 
 @article{hinze_finger_2006,
 	author = {Ralf Hinze and Ross Paterson},
