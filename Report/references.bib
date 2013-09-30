@@ -1,12 +1,5 @@
 % ARTICLES (FLUID DYNAMICS)
 
-@article{BernardyKoen,
-    title       = "Efficient Divide-and-Conquer Parsing
-                    of Practical Context-Free Languages",
-    author      = "Jean-Philippe, Bernardy and Koen, Claessen",
-    journal     = "Chalmers University of Technology and University of Gothenburg",
-    year        = "2013",
-}
 @article{QuickCheck,
  author = {Claessen, Koen and Hughes, John},
  title = {QuickCheck: a lightweight tool for random testing of Haskell programs},
@@ -25,6 +18,20 @@
  publisher = {ACM},
  address = {New York, NY, USA},
 } 
+@article{fingertree,
+author = {HINZE,RALF and PATERSON,ROSS},
+title = {Finger trees: a simple general-purpose data structure},
+journal = {Journal of Functional Programming},
+volume = {16},
+issue = {02},
+month = {3},
+year = {2006},
+issn = {1469-7653},
+pages = {197--217},
+numpages = {21},
+doi = {10.1017/S0956796805005769},
+URL = {http://journals.cambridge.org/article_S0956796805005769},
+}
 
 % BOOKS (FLUID DUNAMICS)
 
@@ -139,6 +146,55 @@
  publisher = {ACM},
  address = {New York, NY, USA},
 } 
+@inproceedings{bernardy_efficient_2013,
+	author = {Jean-Philippe Bernardy and Koen Claessen},
+	title = {Efficient Divide-and-Conquer Parsing of Practical Context-Free Languages},
+	year = {2013},
+	booktitle = {Proceeding of the 18th {ACM} {SIGPLAN} international conference on Functional Programming},
+	note = {To appear}
+}
+@inproceedings{bernardy_editor_2008,
+	author = {Jean-Philippe Bernardy},
+	address = {Victoria, {BC,} Canada},
+	title = {Yi: an editor in {{Haskell}} for {{Haskell}}},
+	isbn = {978-1-60558-064-7},
+	shorttitle = {Yi},
+	url = {http://portal.acm.org/citation.cfm?id=1411286.1411294},
+	doi = {10.1145/1411286.1411294},
+	abstract = {Yi is a text editor written in Haskell and extensible in Haskell. 
+	We take advantage of Haskell's expressive power to define embedded {DSLs} that f
+	orm the foundation of the editor. In turn, these {DSLs} provide a flexible mechanism t
+	o create extended versions of the editor. Yi also provides some support for editing Haskell code.},
+	booktitle = {Proceedings of the first {ACM} {SIGPLAN} symposium on Haskell},
+	publisher = {{ACM}},
+	year = {2008},
+	keywords = {editor, functional programming},
+	pages = {61--62}
+}
+@inproceedings{bernardy_lazy_2009,
+	author = {Jean-Philippe Bernardy},
+	address = {Edinburgh, Scotland},
+	title = {Lazy functional incremental parsing},
+	isbn = {978-1-60558-508-6},
+	url = {http://portal.acm.org/citation.cfm?id=1596638.1596645},
+	doi = {10.1145/1596638.1596645},
+	abstract = {Structured documents are commonly edited using a free-form editor. 
+	Even though every string is an acceptable input, it makes sense to maintain a structured 
+	representation of the edited document. The structured representation has a number of 
+	uses: structural navigation (and optional structural editing), structure highlighting, 
+	etc. The construction of the structure must be done incrementally to be efficient: the 
+	time to process an edit operation should be proportional to the size of the change, 
+	and (ideally) independent of the total size of the document. We show that combining lazy 
+	evaluation and caching of intermediate (partial) results enables incremental parsing.
+	We build a complete incremental parsing library for interactive systems with support 
+	for error-correction.},
+	booktitle = {Proceedings of the 2nd {ACM} {SIGPLAN} symposium on Haskell},
+	publisher = {{ACM}},
+	year = {2009},
+	keywords = {dynamic programming, editor, haskell, incremental computing, lazy evaluation, parsing, polish representation},
+	pages = {49--60},
+	see = {cites:wagner_efficient_1998;cites:ghezzi_incremental_1979}
+}
 
 @misc{blog,
 author = {Piponi, Dan},
@@ -154,10 +210,6 @@ author = {Dornan, Chris and Jones, Isaac and Marlow, Simon},
 title = {Alex User Guide},
 organization  = {Haskell},
 note = {www.haskell.org/alex/doc/html/index.html}
-}@manual{haskell,
-title = {Haskell API},
-organization  = {Haskell},
-note = {hackage.haskell.org}
 }
 
 

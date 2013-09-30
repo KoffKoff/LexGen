@@ -1,5 +1,32 @@
 \chapter{Result}
-\#What have been the result?
+The incremental lexer has ass mention before three requirements, Robust, Efficient and Precise. To be robustness the lexer don't crash when encounter an error in the syntax. That is, the lexer will find the correct token if the syntactical error is fixed by the user. For it to be efficient the feedback to the user must be instant.
+Finally to be precise the lexer must give a correct result. This chapter will talk about how this requirements are tested and if they are fulfilled. 
+
+\section{Robustness}
+
+\section{Efficiency}
+
+\section{Preciseness}
+For an incremental lexer to work, the lexer must be able to do lexical analysis of any substring of a code. That is, come to correct result for that substring. It must also be able to merge any two substrings neighboring in a code and the result of this merge must be the same as lexing the two substrings as one substring.
+
+One would think that haskells quickcheck would be a good way to generate in-data for the lexer. Since quickcheck is build to generate good input for testing a function for any arguments \cite{QuickCheck}. But the problem is not to test any string representation. It is instead to test valid code segments and any substring of this code segments. Also invalid pieces of code, to see that the lexer informs the user for syntactical errors in these codes. To write a input generator in quickcheck which would generate full code with all of it components and all the different properties would be have to high cost in develop time for the outcome. It would be more time efficient to test the lexer on several different code files. There for the testing of the incremental lexer has not been done with the help of quickcheck.
+
+To test if the lexer is as close as possible to the result done by the compiler the resulting token sequence should be the same sequence given from Alex, a open-source lexer written in Haskell, when lexing the same code-string.
+To control this the separate tokens in the resulting sequences are compared for equality. 
+The code in \cref{fig:CheckEquility} shows the test for equality:
+
+\begin{figure}[h!]
+  \centering
+  \lstinputlisting[language=c]{examples/CorrectEquility.hs}
+  notEqual function is a function which patter-match on the to different tokens and returns true if they are not of the same type.
+  \caption{Code for testing tokens from IncLex is equal to tokens from Alex. 
+  \label{fig:CheckEquility}}
+\end{figure} 
+
+\subsection{Check Splits}
+
+\subsection{Check Merges} 
+
 
 \# Just some bench data:
 

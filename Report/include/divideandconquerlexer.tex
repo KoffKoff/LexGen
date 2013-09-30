@@ -18,6 +18,11 @@ A Divide and Conquer algorithm always consist of a pattern with three steps. \ci
 \item[Conquer:] Given the solutions to the subproblem, merge them into to the original problem.
 \end{description}
 
+\subsection{Associative Function}
+The associative property stated for when an expression containing two or more of the same operator, or function, in a row. The order of which of the operations that are executed first has no impact on the result. 
+
+In divide and conquer this is essential. On the conquer step in the divide and conquer algorithm, there is no certain order of which how the subproblems are going to be conquered. So the result of running any part with another part must give the same result as doing it in any other way.
+
 \subsection{Time Complexity}
 To calculate the running time of an divide and conquer algorithm the master method can be applied. \cite{Cormen} This method is based on the following theorem.
 
@@ -101,10 +106,41 @@ This section is for give a more general image of the ideas of the incremental di
 \subsection{Treestructure}
 For a good structuer where the code-lexemes can be related to its tokens, current result can be saved and easy recalculated. A divide and conquer lexer should use a tree structure to save the lexed result in. Since every problem can be divided in to several subproblems, until the basecase is reached. This is cleraly a tree structure of solutions, where the leafs are the tokens for a single character. and the root is a sequence of all tokens in the code.  
 
-\subsection{Incremental Computing}
-To be incremental meens that, whenever some part of the data to the algorithm changes the algorithm tries to save time by only recomputing the changed data and the parts that depend on this changed data. \cite{incrementalDef}
+\begin{figure}[!htp]
+\centering
+\begin{tikzpicture}[level/.style={sibling distance=60mm/#1, align=center, text centered}]
+\node [circle,red,draw, text width = 1.5em, text centered] (z){$r'$}
+  child {node [circle,red,draw, text width = 1.5em] (a) {$c'$}
+    child {node [circle,draw, text width = 1.5em] (b) {$a$}
+      child {node [circle,draw, text width = 1.5em] (c) {$-$}} 
+      child {node [circle,draw, text width = 1.5em] (d) {$-$}}
+    }
+    child {node [circle,red,draw, text width = 1.5em] (e) {$b'$}
+      child {node [circle,draw, text width = 1.5em] (f) {$x$}}
+      child {node [circle,red,draw, text width = 1.5em] (g) {$y'$}}
+    }
+  }
+  child {node [circle,draw, text width = 1.5em] (i) {$d$}
+    child {node [circle,draw, text width = 1.5em] (j) {$-$}
+      child {node [circle,draw, text width = 1.5em] (k) {$-$}}
+      child {node [circle,draw, text width = 1.5em] (l) {$-$}}
+    }
+    child {node [circle,draw, text width = 1.5em] (m) {$-$}
+      child {node [circle,draw, text width = 1.5em] (n) {$-$}}
+      child {node [circle,draw, text width = 1.5em] (o) {$-$}}
+    }
+  };
+\end{tikzpicture}
+\caption{Incremental Computing, the updated nodes when a leaf changes \label{fig:incUp}}
+\end{figure}
 
-For a divide and conquer lexer this would meen only recompute the changed token and the token to the right of the changed token. This is done recurrsivly until the root of the tree is reached. The expected result of this would be that when a character is added to the code of 1024 tokens, instead of relex all 1024 tokens the lexer will only do 10 recalculations for new tokens. Since, $log_2 1024 = 10$. 
+\subsection{Incremental Computing}
+To be incremental means that, whenever some part of the data to the algorithm changes the algorithm tries to save time by only recomputing the changed data and the parts that depend on this changed data. \cite{incrementalDef}
+
+For a divide and conquer lexer this would mean only recompute the changed token and the token to the right of the changed token. This is done recurrsivly until the root of the tree is reached. The expected result of this would be that when a character is added to the code of 1024 tokens, instead of relex all 1024 tokens the lexer will only do 10 recalculations for new tokens. Since, $log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}.
+
+Since incremental computing stated that only content which depends on the new data will be recalculated. That is, follow the branch of the tree from the new leaf to the root and recalculated every node on this path. 
+As shown by \cref{fig:incUp}. Only one subproblem is updated in every level of the tree. Back to the master theorem. Let put this in to numbers, $e = log_b a$ where $a$ is number of recursive calls and $n/b$ is size of the subproblem where $n$ is the size of the original problem. As shown by the \cref{fig:incUp} number of needed update calls is $1$, therefor $a = 1$. The constant $b$ is still $2$. This will give $e = log_2 1 = 0$. Thus the update function of the incremental algorithm will have a time complexity of $\Theta(n^0 \cdot log n) = \Theta(log n)$
 
 \subsection{Basecase}
 The basecase is the token for a single character. Since a single character always can be part of the code, special characters can be in a comment.
@@ -579,11 +615,6 @@ Now when $\text{Token}_a$ and $\text{Token}_b$ are combined it will result in an
     \label{fig.SepToken}}
 \end{figure}
 \end{example}
-
-\section{Associative Function}
-The associative property stated for when an expression containing two or more of the same operator, or function, in a row. The order of which of the operations that are executed first has no impact on the result. 
-
-In this incremental lexer this is essential. There is no way of knowing which part that will be lexed first, so the result of lexing any part with another part must give the same result as doing it in any other way.
 
 \section{Lexical Errors}
 Since the lexer has to be able to handle any kind of possible not "complete"
