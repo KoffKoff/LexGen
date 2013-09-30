@@ -12,7 +12,37 @@ THIS WE NEED TO DO!!!!!
   - Cite me :) 
   - The reference for Data.Sequence is Hinze and Patersson (Finger Trees)
   - Rename sec. 4 to "implementation"
-
+  - Context: explain that this can be used to provide highlighting in an editor such as Yi (see reference below); and that the current incremental parsing algorithm (see ref. below) is brittle.
+@inproceedings{bernardy_editor_2008,
+	author = {Jean-Philippe Bernardy},
+	address = {Victoria, {BC,} Canada},
+	title = {Yi: an editor in {{Haskell}} for {{Haskell}}},
+	isbn = {978-1-60558-064-7},
+	shorttitle = {Yi},
+	url = {http://portal.acm.org/citation.cfm?id=1411286.1411294},
+	doi = {10.1145/1411286.1411294},
+	abstract = {Yi is a text editor written in Haskell and extensible in Haskell. We take advantage of Haskell's expressive power to define embedded {DSLs} that form the foundation of the editor. In turn, these {DSLs} provide a flexible mechanism to create extended versions of the editor. Yi also provides some support for editing Haskell code.},
+	booktitle = {Proceedings of the first {ACM} {SIGPLAN} symposium on Haskell},
+	publisher = {{ACM}},
+	year = {2008},
+	keywords = {editor, functional programming},
+	pages = {61--62}
+},
+@inproceedings{bernardy_lazy_2009,
+	author = {Jean-Philippe Bernardy},
+	address = {Edinburgh, Scotland},
+	title = {Lazy functional incremental parsing},
+	isbn = {978-1-60558-508-6},
+	url = {http://portal.acm.org/citation.cfm?id=1596638.1596645},
+	doi = {10.1145/1596638.1596645},
+	abstract = {Structured documents are commonly edited using a free-form editor. Even though every string is an acceptable input, it makes sense to maintain a structured representation of the edited document. The structured representation has a number of uses: structural navigation (and optional structural editing), structure highlighting, etc. The construction of the structure must be done incrementally to be efficient: the time to process an edit operation should be proportional to the size of the change, and (ideally) independent of the total size of the document. We show that combining lazy evaluation and caching of intermediate (partial) results enables incremental parsing. We build a complete incremental parsing library for interactive systems with support for error-correction.},
+	booktitle = {Proceedings of the 2nd {ACM} {SIGPLAN} symposium on Haskell},
+	publisher = {{ACM}},
+	year = {2009},
+	keywords = {dynamic programming, editor, haskell, incremental computing, lazy evaluation, parsing, polish representation},
+	pages = {49--60},
+	see = {cites:wagner_efficient_1998;cites:ghezzi_incremental_1979}
+},
 @article{hinze_finger_2006,
 	author = {Ralf Hinze and Ross Paterson},
 	title = {Finger trees: a simple general-purpose data structure},
