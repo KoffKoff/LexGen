@@ -1,7 +1,8 @@
 THIS WE NEED TO DO!!!!! 
 
 20130930, Extras
-  - Context: explain that this can be used to provide highlighting in an editor such as Yi (see reference below); and that the current incremental parsing algorithm (see ref. below) is brittle.
+  - Context: explain that this can be used to provide highlighting in an editor such as Yi (see reference below); 
+  and that the current incremental parsing algorithm (see ref. below) is brittle.
 @inproceedings{bernardy_editor_2008,
 	author = {Jean-Philippe Bernardy},
 	address = {Victoria, {BC,} Canada},
@@ -10,7 +11,10 @@ THIS WE NEED TO DO!!!!!
 	shorttitle = {Yi},
 	url = {http://portal.acm.org/citation.cfm?id=1411286.1411294},
 	doi = {10.1145/1411286.1411294},
-	abstract = {Yi is a text editor written in Haskell and extensible in Haskell. We take advantage of Haskell's expressive power to define embedded {DSLs} that form the foundation of the editor. In turn, these {DSLs} provide a flexible mechanism to create extended versions of the editor. Yi also provides some support for editing Haskell code.},
+	abstract = {Yi is a text editor written in Haskell and extensible in Haskell. 
+	We take advantage of Haskell's expressive power to define embedded {DSLs} that f
+	orm the foundation of the editor. In turn, these {DSLs} provide a flexible mechanism t
+	o create extended versions of the editor. Yi also provides some support for editing Haskell code.},
 	booktitle = {Proceedings of the first {ACM} {SIGPLAN} symposium on Haskell},
 	publisher = {{ACM}},
 	year = {2008},
@@ -24,7 +28,16 @@ THIS WE NEED TO DO!!!!!
 	isbn = {978-1-60558-508-6},
 	url = {http://portal.acm.org/citation.cfm?id=1596638.1596645},
 	doi = {10.1145/1596638.1596645},
-	abstract = {Structured documents are commonly edited using a free-form editor. Even though every string is an acceptable input, it makes sense to maintain a structured representation of the edited document. The structured representation has a number of uses: structural navigation (and optional structural editing), structure highlighting, etc. The construction of the structure must be done incrementally to be efficient: the time to process an edit operation should be proportional to the size of the change, and (ideally) independent of the total size of the document. We show that combining lazy evaluation and caching of intermediate (partial) results enables incremental parsing. We build a complete incremental parsing library for interactive systems with support for error-correction.},
+	abstract = {Structured documents are commonly edited using a free-form editor. 
+	Even though every string is an acceptable input, it makes sense to maintain a structured 
+	representation of the edited document. The structured representation has a number of 
+	uses: structural navigation (and optional structural editing), structure highlighting, 
+	etc. The construction of the structure must be done incrementally to be efficient: the 
+	time to process an edit operation should be proportional to the size of the change, 
+	and (ideally) independent of the total size of the document. We show that combining lazy 
+	evaluation and caching of intermediate (partial) results enables incremental parsing.
+	We build a complete incremental parsing library for interactive systems with support 
+	for error-correction.},
 	booktitle = {Proceedings of the 2nd {ACM} {SIGPLAN} symposium on Haskell},
 	publisher = {{ACM}},
 	year = {2009},
@@ -38,7 +51,8 @@ THIS WE NEED TO DO!!!!!
 - Report:
   - Explain what the parameter (e) means on 
       1. e=1 the mergesort example (every node must be visited once) 
-      2. e=0 the incremental case  (only log(n) nodes are visited, the cost of visiting one node will dominate the running time)
+      2. e=0 the incremental case  (only log(n) nodes are visited, the cost of visiting one node 
+      will dominate the running time)
   x The testing section should be folded into results (explain every result after how you measure it)
   x Sort your references by author last name (sort option to the package)
   - Cite me :) 
