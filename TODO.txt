@@ -1,17 +1,6 @@
-THIS WE NEED TO DO!!!!!
+THIS WE NEED TO DO!!!!! 
 
-
-20130930:
-- For performance testing: take the measure of the final tree, and just do whnf of that.
-- Report:
-  - Explain what the parameter (e) means on 
-      1. e=1 the mergesort example (every node must be visited once) 
-      2. e=0 the incremental case  (only log(n) nodes are visited, the cost of visiting one node will dominate the running time)
-  - The testing section should be folded into results (explain every result after how you measure it)
-  - Sort your references by author last name (sort option to the package)
-  - Cite me :) 
-  - The reference for Data.Sequence is Hinze and Patersson (Finger Trees)
-  - Rename sec. 4 to "implementation"
+20130930, Extras
   - Context: explain that this can be used to provide highlighting in an editor such as Yi (see reference below); and that the current incremental parsing algorithm (see ref. below) is brittle.
 @inproceedings{bernardy_editor_2008,
 	author = {Jean-Philippe Bernardy},
@@ -43,6 +32,19 @@ THIS WE NEED TO DO!!!!!
 	pages = {49--60},
 	see = {cites:wagner_efficient_1998;cites:ghezzi_incremental_1979}
 },
+
+20130930:
+- For performance testing: take the measure of the final tree, and just do whnf of that.
+- Report:
+  - Explain what the parameter (e) means on 
+      1. e=1 the mergesort example (every node must be visited once) 
+      2. e=0 the incremental case  (only log(n) nodes are visited, the cost of visiting one node will dominate the running time)
+  x The testing section should be folded into results (explain every result after how you measure it)
+  x Sort your references by author last name (sort option to the package)
+  - Cite me :) 
+  x The reference for Data.Sequence is Hinze and Patersson (Finger Trees)
+  x Rename sec. 4 to "implementation"
+
 @article{hinze_finger_2006,
 	author = {Ralf Hinze and Ross Paterson},
 	title = {Finger trees: a simple general-purpose data structure},
