@@ -58,6 +58,19 @@ THIS WE NEED TO DO!!!!!
   - Cite me :) 
   x The reference for Data.Sequence is Hinze and Patersson (Finger Trees)
   x Rename sec. 4 to "implementation"
+  Read and Rewrite:
+  	1.opening - Add more candy to the store
+  	1.1 - Add more candy to the store
+  	1.2 - This text feels lite the writer was in need of taking a poo while writing.
+  
+  	2.1 - Saing same thing several times
+  	2.2.1 - No harmoni in the text
+  	2.2.3 - Check sentances.
+  	2.3.opening - Check sentances
+  	2.3.token remove last sentence
+  	2.4.2 - Remove, description of regualr expression
+  	
+  	
 
 @article{hinze_finger_2006,
 	author = {Ralf Hinze and Ross Paterson},
