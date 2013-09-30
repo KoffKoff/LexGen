@@ -1,8 +1,41 @@
 THIS WE NEED TO DO!!!!!
 
+
+20130930:
+- For performance testing: take the measure of the final tree, and just do whnf of that.
+- Report:
+  - Explain what the parameter (e) means on 
+      1. e=1 the mergesort example (every node must be visited once) 
+      2. e=0 the incremental case  (only log(n) nodes are visited, the cost of visiting one node will dominate the running time)
+  - The testing section should be folded into results (explain every result after how you measure it)
+  - Sort your references by author last name (sort option to the package)
+  - Cite me :) 
+  - The reference for Data.Sequence is Hinze and Patersson (Finger Trees)
+  - Rename sec. 4 to "implementation"
+
+@article{hinze_finger_2006,
+	author = {Ralf Hinze and Ross Paterson},
+	title = {Finger trees: a simple general-purpose data structure},
+	journal = {Journal of Functional Programming},
+	volume = {16},
+	number = {2},
+	pages = {197--218},
+	year = {2006},
+	publisher = {Cambridge Univ Press}
+},
+
+@inproceedings{bernardy_efficient_2013,
+	author = {Jean-Philippe Bernardy and Koen Claessen},
+	title = {Efficient Divide-and-Conquer Parsing of Practical Context-Free Languages},
+	year = {2013},
+	booktitle = {Proceeding of the 18th {ACM} {SIGPLAN} international conference on Functional Programming},
+	note = {To appear}
+}, 
+
 20130923:
 - Try to replace String by sequence of chars
 - Try to estimate how much "ambiguity" there is in the tree.
+  
 
 20130916:
 
