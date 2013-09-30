@@ -1,4 +1,21 @@
 \chapter{Used Structures}
-\#Unsertain of the name of this chapter. But here we should talk about bnfc and
+Here we should talk about bnfc and
 alex. What we use from the differnet programs. How this is usefull
 is it becouse of lazynes or are the existing solutions good??
+
+\section{Alex}
+What is this, how have this tool helped us in this project.
+Some basics how it works and why it therefore fits our project.
+
+\section{Monoid}
+What is this, how have this tool helped us in this project.
+Some basics how it works and why it therefore fits our project.
+
+\section{Fingertree}
+What is this, how have this tool helped us in this project.
+Some basics how it works and why it therefore fits our project.
+
+\section{Sequences}
+A sequence in Haskell is a form of sophisticated list. That is a list with better performance than the basic [] list notation. Where a list in Haskell has $\Theta(n)$ for finding, inserting or deleting elements, that is in a list there is only known current element and the rest of the list. Which will result in for example finding the last element of a list, the computer must look at every element until the empty list has been found as the rest of the list. Where in a sequence the last element can be obtained in $\Theta(1)$ time. Adding a element anywhere in the sequence can be done in worst case, $\Theta(log n)$ \cite{Haskell}. 
+
+Since this project is about creating as real-time lexing tool, performance is very important. String in Haskell are just a list of characters, [Char], and therefor has $\Theta(n)$ in time cost. Lexing is working with strings in a high frequency and there for there is a idea of instead define a string as a sequence of characters instead of a list of character. 
