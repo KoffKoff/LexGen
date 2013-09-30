@@ -39,7 +39,7 @@ instance NFData Suffix where
   rnf (Multi toks) = rnf toks
 
 allTest :: [String]
-allTest = ["Alex","Update"]
+allTest = ["Alex","Update.Measure","Update","Update.Tree"]
 
 main = do
   args <- getArgs
@@ -58,26 +58,27 @@ main = do
         let tree = J.lexCode code
             halfSize = size tree `div` 2
             (left,right) = splitTreeAt halfSize tree
-        return (left F.>< right)
+        return (left, right)
       measures = do
         code <- codes'
         let tree = J.lexCode code
             halfSize = size tree `div` 2
             (left,right) = splitTreeAt halfSize tree
         return (measure left, measure right)
-      -- trees'' = map (\tree -> tree !! (P.length trees `div` 2)) trees
       sizeTrees = map (\tree -> foldl (helperIncBuilder tree) [] [1..10]) trees'
       testFuns =
         [ ("Alex",map (benchStuff (show . alexScanTokens)) (zip codes' files))
         , ("IncLex",map (benchStuff (J.lexCode)) (zip codes' files))
-        -- , ("Update",map (benchStuff J.tokens) (zip trees files))
-        , ("Update;Measures",map (benchStuff (uncurry mappend)) (zip measures files))
+        , ("Update.Measure",map (benchStuff (getOutState . uncurry mappend))
+                            (zip measures files))
+        , ("Update.Tree",map (benchStuff (getOutState . measure . uncurry mappend))
+                         (zip trees files))
 --        , ("Sizes",[bgroup name (map (benchStuff (\tree' -> J.tokens (tree' <> tree'))) (tree))
 --                    | (tree,name) <- zip sizeTrees files])
 --        , ("AllUp",[bgroup name (map (benchStuff J.tokens) (zip tree (map show [0..])))
 --                    | (tree,name) <- zip trees files ])
         ]
-  measures `deepseq` withArgs (tests ++ arg) $
+  trees `deepseq` measures `deepseq` withArgs (tests ++ arg) $
     defaultMain [ bgroup name tests | (name,tests) <- testFuns ]
 
 repeatTree :: Int -> LexTree -> LexTree
@@ -102,6 +103,12 @@ sortArgs args = foldl sortArg (10,[],[],[]) args
                                ,args)
         sortArg (num,files,tests,args) arg | and $ map isDigit arg = (read arg,files,tests,args)
                                            | otherwise = (num,arg:files,tests,args)
+
+getOutState :: (Table State Tokens,Size) -> Bool
+getOutState (table,_) = case access table 0 of
+  Tokens _ _ s -> s == 0
+  NoTokens -> 0 == 0
+  _ -> False
 
 core002 :: String
 core002 = "/*@ @@*/\n\n" ++
