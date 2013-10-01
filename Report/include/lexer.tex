@@ -7,16 +7,16 @@ automata. Which are central concepts in formal language theory. \cite{Aho1990}
 All on which will be described in this chapter.
 
 \section{Lexing vs Parsing}
-There are several reasons why a compiler should be separated in to lexical 
-analyser and a parser (syntax analyser) phases. Simplicity of design is the most
-important reason. When dividing the task in to these to sub task, it allows the
+There are several reasons why a compiler should be separated in to a lexical 
+analyser and a parser (syntax analyser). Simplicity of design is the most
+important reason. When dividing the task in to these two sub task, it allows the
 system to simplify one of these sub-tasks. For example, a parser that has to 
-deal with white-spaces and comments as syntactical units would be more complex 
-then one that can assume white-spaces and comments have already been removed by 
-an lexer. Also when the two tasks are divided into sub-tasks it can lead to 
+deal with white-spaces and comments would be more complex 
+then one that can assume these have already been removed by 
+an lexer. Also when the two tasks have been seperated into sub-tasks it can lead to 
 cleaner overall design when designing a new language \cite{Aho2006}
 Lexers work as a subprogram to the parser, giving it's result to the syntax 
-analyser. So the only thing the syntax analyser will see is the output from the 
+analyser. The only thing the syntax analyser will see is the output from the 
 lexer, tokens and lexemes which will be described later in this chapter. 
 \cite{sebesta2012}
 The lexer also skips comments and white-spaces, since these are not relevant 
@@ -36,14 +36,13 @@ computer readable list of tokens. To define these abstract data-types in form of
 strings the lexer uses different techniques. This section will describe these
 techniques used when writing rules for the tokens patterns. 
 \subsection{Languages}
-An alphabet is an finite set of symbols, such an alphabet is for example the 
-Unicode, which includes approximately $100,000$ characters. A language is any 
-countable set of strings over some fixed alphabet. \cite{Aho2006}
+An alphabet is an finite set of symbols, for example Unicode. Which 
+includes approximately $100,000$ characters. A language is any 
+countable set of some fixed alphabet. \cite{Aho2006}
 The term formal languages refers to languages which can be described by a body 
-of systematic rules. Like any formal language, a regular language is a set of 
-strings. In other words a sequence of symbols, from a finite set of symbols. 
-Only some formal languages are regular; in fact, regular languages are exactly 
-those that can be defined by regular expressions. \cite{Ranta2012}
+of systematic rules. There is a subset of languages to formal languages called 
+regular language, these regular languages refers to those languages 
+that can be defined by regular expressions. \cite{Ranta2012}
 \subsection{Regular Expressions}
 Say that we want to express the set of valid C identifiers. Use of regular 
 expressions make it very easy, as shown in \cref{regexpEx}. 
@@ -75,13 +74,13 @@ In \cref{regexp} is the formal definition for regular expressions.
 \end{definition}
 Many parentheses can be reduced by adopting the convention that the Kleene
 closure operator $*$ has the highest precedence, then concat and then or
-operator $|$. The two binary operators, cancat and $|$ are left 
+operator $|$. The two binary operators, concat and $|$ are left 
 left-associative. \cite{Aho1990}
 \subsection{Regular Definitions}
-In a definition of a language it is useful to give regular expressions names, 
-so they can for example be used in other regular expressions, as these names 
-where themself symbols. If $\Sigma$ is an alphabet of basic symbols, then a 
-regular definition is a sequence of definitions of the form:
+When defining a language it is useful to give the regular expressions names, 
+so they can for example be used in other regular expressions. These names for
+the regular expressions are them self symbols. If $\Sigma$ is an alphabet of 
+basic symbols, then a regular definition is a sequence of definitions of the form:
 \begin{center}
 \begin{tabular}{l c r}
 $d_1$ & $\to$ & $r_1$\\
@@ -103,11 +102,11 @@ definitions avoid recursive definitions.
 \cite{Aho2006}
 
 \section{Tokens, Patterns and Lexemes}
-When the rules are defined, the lexer needs structures of representing theses 
-rules and the result from lexing the code-string. This section will describe the 
-data-structures the lexical analyser works with for representing the abstract 
-data. What the lexer use them for and what is sent forward to the syntactical 
-analyser. 
+When rules have been defined for a language, the lexer needs structures to
+represent these rules and the result from lexing the code-string. 
+This section will describe the structures which the lexical analyser use
+for representing the abstract data. What these structures are for and what is 
+forwarded to the syntactical analyser. 
 
 A lexical analyser uses three different terms. All which is described here 
 below. 
@@ -115,8 +114,7 @@ below.
   \item[Token]
     is a pair consisting of a token name and an optional attribute value. The 
 token name is a abstract symbol corresponding to a lexical unit \cite{Aho2006}. 
-For example, a particular keyword, data-type or identifier.  The token names is 
-what is given to the parser. 
+For example, a particular keyword, data-type or identifier.
   \item[Pattern]
     is a description of what form a lexemes of a token may take. \cite{Aho2006} 
 For example, a keyword is just the sequence of characters that forms the 
@@ -195,8 +193,7 @@ state
     \end{description}
 \end{itemize}
 Both these forms of finite automate are capable of recognising the same 
-language, called regular languages. These are languages that regular 
-expressions can describe. \cite{Aho2006}
+subset of languages, all regular languages. \cite{Aho2006}
 The formal definition of a finite automata follows:
 \begin{definition}[Finite Automata] \label{finiteAutomataDef} 
 \cite{sipser2006} \\
