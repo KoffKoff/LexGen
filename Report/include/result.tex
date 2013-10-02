@@ -28,6 +28,8 @@ The code in \cref{fig:CheckEquility} shows the test for equality:
 \subsection{Check Merges} 
 
 \subsection{Performance}
+upd splits a piece of code into two parts then evaluates the out state in order to make sure that the entire structure is evaluated. the alex might need to be looked into.
+
 \begin{filecontents*}{data.csv}
 n     alex   upd
 10    383    112
@@ -44,9 +46,6 @@ n     alex   upd
 1100  42970  361
 1200  46890  370
 \end{filecontents*}
-
-
-
 \begin{tikzpicture}
     \begin{axis}[
     width=0.9\textwidth,
