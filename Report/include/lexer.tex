@@ -100,6 +100,30 @@ d_2 \dots d_{i-1}\}$
 By restricting $r_i$ to $\Sigma$ and previously defined $d$'s the regular 
 definitions avoid recursive definitions \cite{Aho2006}.
 
+\subsection{Longest Match}
+A lexer should always prefer the longest sequence matching a regular expression.
+\cite{Aho2006}
+\begin{example}[Longest Match] $ $\\
+Given the regular expressions: $a*b+$\\
+and the input sequence: "aaaabbbbbbbbbbb"\\
+valid outputs are:
+\begin{center}
+\begin{tabular}{r | l}
+1 & "b"\\
+$\vdots$ & $\vdots$\\
+11 & "bbbbbbbbbbb"\\
+12 & "ab"\\
+$\vdots$ & $\vdots$\\
+22 & "abbbbbbbbbbb"\\
+$\vdots$ & $\vdots$\\
+44 & "aaaabbbbbbbbbbb"
+\end{tabular}
+\end{center}
+Even if there are 44 different valid results from this given input, only the
+longest sequence should be treated as correct by the lexer.
+In this example, result number 44: "aaaabbbbbbbbbbb".
+\end{example}
+
 \section{Tokens, Patterns and Lexemes}
 When rules have been defined for a language, the lexer needs structures to
 represent rules and the result from lexing the code-string. 
@@ -134,9 +158,22 @@ token \cite{Aho2006}. A lexer collects chars into logical groups and assigns
 internal codes to these groups. according to their structure \cite{sebesta2012}. 
 Where the groups of chars are lexemes and the internal codes are tokens. 
 A example follows how a small piece of code would be divided.
-\begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}
+\begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
 This is the code being lexed:
 \lstinputlisting[language=c]{examples/token.c}
+Given some basic tokens patterns:
+\begin{center}
+\begin{tabular}{l c l}
+$letter$ & :: & $\{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$\\
+$digit$ & :: & $\{0 \dots 9\}$\\
+IDENT & :: & $letter(letter|digit)*$\\
+INT\_LIT & :: & $digit+$\\
+ASSING\_OP & :: & =\\
+SUB\_OP & :: & -\\
+DIV\_OP & :: & /\\
+SEMICOLON & :: & ;
+\end{tabular}
+\end{center}
 This is how it will be divided:
 \begin{center}
 \begin{tabular}{l c}
@@ -176,7 +213,7 @@ of mathematical machines called finite automata. Finite automata can be
 designed to recognise members of a class of languages called regular languages, 
 mentioned above \cite{sebesta2012}.
 \subsection{Finite Automata}
-A finite automata is essentially a graph, like transitions diagrams, with some 
+A finite automaton is essentially a graph, like transitions diagrams, with some 
 differences:
 \begin{itemize}
   \item Finite automata are recognizers; they simply say "YES" or "NO" about 
@@ -193,7 +230,7 @@ state. The empty string $\epsilon$ is not a valid label.
 \end{itemize}
 Both these forms of finite automata are capable of recognising the same 
 subset of languages, all regular languages \cite{Aho2006}.
-The formal definition of a finite automata follows:
+The formal definition of a finite automaton follows:
 \begin{definition}[Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
 A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 \begin{enumerate}
