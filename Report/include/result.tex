@@ -1,34 +1,74 @@
 \chapter{Result}
-The incremental lexer has ass mention before three requirements, Robust, Efficient and Precise. To be robustness the lexer don't crash when encounter an error in the syntax. That is, the lexer will find the correct token if the syntactical error is fixed by the user. For it to be efficient the feedback to the user must be instant.
-Finally to be precise the lexer must give a correct result. This chapter will talk about how this requirements are tested and if they are fulfilled. 
+#Robustness, har vi egentligen i datastrukturen, det enda man kan nämna är väl att hela transition mappen sparas?
+
+#vissa grejer kanske ska flyttas till incremental lexer delen.
+
+The incremental lexer has as mentioned before three requirements, it should be
+Robust, Efficient and Precise. Robustness means that the lexer doesn't crash
+when it encounter an error in the syntax. That is, if a string would yield an
+error when lexed from the starting state the lexer doesn't return that error but
+instead stores the error and lexes the rest of the possible input states since
+the current string might not be at the start of the code. For it to be efficient
+the feedback to the user must be instant, or more formaly the combination of two
+string should be handled in $O(log(n))$ time. Finally to be precise the lexer
+must give a correct result. This chapter will talk about how these requirements
+are tested and what results the from the tests were.
 
 \section{Robustness}
 
-\section{Efficiency}
-
 \section{Preciseness}
-For an incremental lexer to work, the lexer must be able to do lexical analysis of any substring of a code. That is, come to correct result for that substring. It must also be able to merge any two substrings neighboring in a code and the result of this merge must be the same as lexing the two substrings as one substring.
+For an incremental lexer to work, the lexer must be able to do lexical analysis
+of any substring of a code. That is, come to a correct result for that substring
+for every possible instate. It must also be able to merge any two substrings
+neighboring in a code and the result of this merge must be the same as lexing
+the two substrings as one substring.
 
-One would think that haskells quickcheck would be a good way to generate in-data for the lexer. Since quickcheck is build to generate good input for testing a function for any arguments \cite{QuickCheck}. But the problem is not to test any string representation. It is instead to test valid code segments and any substring of this code segments. Also invalid pieces of code, to see that the lexer informs the user for syntactical errors in these codes. To write a input generator in quickcheck which would generate full code with all of it components and all the different properties would be have to high cost in develop time for the outcome. It would be more time efficient to test the lexer on several different code files. There for the testing of the incremental lexer has not been done with the help of quickcheck.
+One would think that haskells quickcheck would be a good way to generate in-data
+for the lexer. Since quickcheck is built to generate good input for testing a
+function for any arguments \cite{QuickCheck}. But the problem is not to test any
+string representation, it is instead to test valid code segments and any
+substring of this code segments. Also invalid pieces of code, to see that tring the
+lexer informs the user for syntactical errors in these codes. To write a input
+generator in quickcheck which would generate full code with all of it
+components and all the different properties would be have to high cost in
+develop time for the outcome. It would be more time efficient to test the lexer
+on several different code files. There for the testing of the incremental lexer
+has not been done with the help of quickcheck.
 
-To test if the lexer is as close as possible to the result done by the compiler the resulting token sequence should be the same sequence given from Alex, a open-source lexer written in Haskell, when lexing the same code-string.
-To control this the separate tokens in the resulting sequences are compared for equality. 
+To test if the lexer is as close as possible to the result done by the compiler
+the resulting token sequence should be the same sequence given from Alex, an
+open-source lexer written in Haskell, when lexing the same code-string.
+To control this the separate tokens in the resulting sequences are compared for
+equality. 
 The code in \cref{fig:CheckEquility} shows the test for equality:
 
 \begin{figure}[h!]
   \centering
   \lstinputlisting[language=c]{examples/CorrectEquility.hs}
-  notEqual function is a function which patter-match on the to different tokens and returns true if they are not of the same type.
+  notEqual function is a function which pattern-match on the two different
+  tokens and returns true if they are not of the same type.
   \caption{Code for testing tokens from IncLex is equal to tokens from Alex. 
   \label{fig:CheckEquility}}
 \end{figure} 
 
 \subsection{Check Splits}
 
-\subsection{Check Merges} 
+\subsection{Check Merges}
 
-\subsection{Performance}
-upd splits a piece of code into two parts then evaluates the out state in order to make sure that the entire structure is evaluated.
+%\section{Efficiency}
+\section{Performance}
+To measure the perfomance of the incremental step we created the fingertree for
+two pieces of code. By creating the two fingertrees the transition map for the
+code in those trees are created aswell. The benchmarking was then done on the
+combining step of these two trees and compared to the the time a traditional
+sequential lexer would take for the total length of the code. For the
+incremental testing we got running times which are $O(log(n))$.
+
+#Lägga till nåt om minnes utrymmet som krävs.
+
+#Bättre förklaring till graferna.
+
+#Tester för nybyggning av träd?
 
 \begin{filecontents*}{data.csv}
 n     alex   upd
@@ -63,8 +103,8 @@ n     alex   upd
     ytick scale label code/.code={*10ms},
     legend pos=outer north east
     ]
-        \addplot table[x=n,y=alex] {data.csv};\addlegendentry{alex}
         \addplot table[x=n,y=upd] {data.csv};\addlegendentry{upd}
+        \addplot table[x=n,y=alex] {data.csv};\addlegendentry{alex}
     \end{axis}
 \end{tikzpicture}\\
 \begin{tikzpicture}
@@ -81,27 +121,3 @@ n     alex   upd
         \addplot table[x=n,y=upd] {data.csv};\addlegendentry{upd}
     \end{axis}
 \end{tikzpicture}
-
-\# Just some bench data:
-
-Hugos Home-Computer: AMD X2 3.1 GHz, 4 Gb Ram, 32 bit OS Windows 8
-Func:
-  Alex - 12.38 ms
-  IncLex - 55.02 ms
-  Update - 35.29 ms
-Array:
-  Alex - 14.22 ms
-  IncLex - 331.75 ms
-  Update - 9.92 ms
-
-Hugos Laptop: Intel Celeron M 1.6 GHz, 1 Gb Ram, 32 bit OS Unix
-
-Func:
-  Alex - 24.12
-  IncLex - 182.47 ms
-  Update - 113.22 ms
-Array:
-  Alex - 26.54 ms
-  IncLex - 658.53 ms
-  Update - 11.40 ms
-
