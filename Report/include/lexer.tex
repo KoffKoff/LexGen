@@ -1,52 +1,50 @@
 \chapter{Lexer}
-A lexer, lexical analyser, is a pattern matcher. Its job is to find sequence 
-of characters in a larger string. The Lexer is a front end of a syntax 
+A lexer, lexical analyser, is a pattern matcher. Its job is to divide a text into a sequence of tokens (such as words, punctuation and symbols). The Lexer is a front end of a syntax 
 analyser \cite{sebesta2012}.
 This can be done by using regular expressions, regular sets and finite
-automata. Which are central concepts in formal language theory \cite{Aho1990}.
-All on which will be described in this chapter.
+automata, which are central concepts in formal language theory \cite{Aho1990}.
+The rest of this chapter describes these concepts in detail.
 
 \section{Lexing vs Parsing}
-Lexers work as a subprogram to the parser, giving it's result to the syntax 
+Lexers work usually as a pass before parser; giving their result to the syntax 
 analyser.
 There are several reasons why a compiler should be separated in to a lexical 
-analyser and a parser (syntax analyser). Simplicity of design is the most
-important reason. When dividing the task in to these two sub tasks, it allows the
-system to simplify each of these sub-tasks. For example, a parser that has to 
+analyser and a parser (syntax analyser). First, simplicity of design is the most
+important reason. When dividing the task into these two sub tasks, it allows the
+programmer to simplify each of these sub-tasks. For example, a parser that has to 
 deal with white-spaces and comments would be more complex 
 than one that can assume these have already been removed by 
 an lexer. Also when the two tasks have been seperated into sub-tasks it can lead to 
 cleaner overall design when designing a new language.
 The only thing the syntax analyser will see is the output from the 
-lexer, tokens and lexemes which will be described later in this chapter.
-The lexer also skips comments and white-spaces, since these are not relevant 
+lexer, tokens and lexemes.
+The lexer also usually skips comments and white-spaces, since these are not relevant 
 for the syntax analyser.
-Further overall efficiency of the compiler can be improved. When separating the 
+Second, overall efficiency of the compiler can be improved. When separating the 
 lexical analyser it allows for use of specialised techniques that can be used 
 only in the lexical task.
-Last, compiler portability can be enhanced. That is Input-device-specific 
+Third and last, compiler portability can be enhanced. That is Input-device-specific 
 peculiarities can be restricted to the lexical analysis \cite{Aho2006}.
-So the lexer can detect syntactical errors in tokens, such as ill-formed 
+Therefore the lexer can detect syntactical errors in tokens, such as ill-formed 
 floating-points literals, and report these errors to the user \cite{sebesta2012}.
-Breaking the compilation before running the syntax analyser, 
-saving computing time. 
+Finding these errors allows the compiler to breaking the compilation before
+running the syntax analyser, thereby saving computing time. 
 \section{Token Specification}
-The job of lexical analyser is to translate a human readable string to an abstract 
-computer-readable list of tokens. How these abstract data-types can be obtained
-from a string the lexer uses different techniques. This section describe the
+The job of lexical analyser is to translate a human readable text to an abstract 
+computer-readable list of tokens. There are different techniques a lexer can
+use when finding the abstract tokens representing a text. This section describes the
 techniques used when writing rules for the tokens patterns. 
 \subsection{Regular Expressions}
 \begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
 Say that we want to express the set of valid C identifiers. Using regular 
-expressions makes it very easy. Given a sequence of elements, where the elements
-are one character.
+expressions makes it easy.
 Say we have a element $letter \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup 
 \{$\_$\}$
 and another element $digit \in \{0 \dots 9\}$
-Then with help of regular expressions the definition of all valid C identifiers 
-would look like this: $letter (letter | digit)*$. 
+Then using a regular expression, the definition of all valid C identifiers 
+could look like this: $letter (letter | digit)*$. 
 \end{example}
-\begin{definition}[Regular Expressions \cite{Aho1990}]\label{regexp} 
+\begin{definition}[Regular Expressions \cite{Aho1990}]\label{regexp} $ $\\
 \begin{enumerate}
   \item The following characters are meta characters $\{ '|', '(', ')', '*' \}$.
   \item A none meta character $a$ is a regular expression that matches the 
@@ -64,12 +62,12 @@ would look like this: $letter (letter | digit)*$.
       matches the same string as $r$.
 \end{enumerate}
 \end{definition}
-Many parentheses can be reduced by adopting the convention that the Kleene
-closure operator $*$ has the highest precedence, then concat $(r_1)(r_2)$ and then or
-operator $|$. The two binary operators, concat and or are
+Many parentheses can be omitted by adopting the convention that the \emph{Kleene
+closure} operator $*$ has the highest precedence, the \emph{concat} operator $(r_1)(r_2)$ the second highest and last the \emph{or}
+operator $|$. The two binary operators, \emph{concat} and \emph{or} are
 left-associative.
 \subsection{Languages}
-An alphabet is an finite set of symbols, for example Unicode. Which 
+An alphabet is a finite set of symbols, for example Unicode, which 
 includes approximately $100,000$ characters. A language is any 
 countable set of some fixed alphabet \cite{Aho2006}.
 The term "formal languages" refers to languages which can be described by a body 
@@ -79,7 +77,7 @@ that can be defined by regular expressions \cite{Ranta2012}.
 \subsection{Regular Definitions}
 When defining a language it is useful to give the regular expressions names, 
 so they can for example be used in other regular expressions. These names for
-the regular expressions are them self symbols. If $\Sigma$ is an alphabet of 
+the regular expressions are themselves symbols. If $\Sigma$ is an alphabet of 
 basic symbols, then a regular definition is a sequence of definitions of the form:
 \begin{center}
 \begin{tabular}{l c r}
@@ -99,30 +97,6 @@ d_2 \dots d_{i-1}\}$
 \end{enumerate}
 By restricting $r_i$ to $\Sigma$ and previously defined $d$'s the regular 
 definitions avoid recursive definitions \cite{Aho2006}.
-
-\subsection{Longest Match}
-A lexer should always prefer the longest sequence matching a regular expression.
-\cite{Aho2006}
-\begin{example}[Longest Match] $ $\\
-Given the regular expressions: $a*b+$\\
-and the input sequence: "aaaabbbbbbbbbbb"\\
-valid outputs are:
-\begin{center}
-\begin{tabular}{r | l}
-1 & "b"\\
-$\vdots$ & $\vdots$\\
-11 & "bbbbbbbbbbb"\\
-12 & "ab"\\
-$\vdots$ & $\vdots$\\
-22 & "abbbbbbbbbbb"\\
-$\vdots$ & $\vdots$\\
-44 & "aaaabbbbbbbbbbb"
-\end{tabular}
-\end{center}
-Even if there are 44 different valid results from this given input, only the
-longest sequence should be treated as correct by the lexer.
-In this example, result number 44: "aaaabbbbbbbbbbb".
-\end{example}
 
 \section{Tokens, Patterns and Lexemes}
 When rules have been defined for a language, the lexer needs structures to
@@ -155,14 +129,16 @@ but it is important for the code generator to know which lexeme was found.
 Therefore the lexer often returns not just the token but also an attribute value 
 that describes the lexeme found in the source program corresponding to this 
 token \cite{Aho2006}. A lexer collects chars into logical groups and assigns 
-internal codes to these groups. according to their structure \cite{sebesta2012}. 
-Where the groups of chars are lexemes and the internal codes are tokens. 
+internal codes to these groups according to their structure, 
+where the groups of chars are lexemes and the internal codes are tokens \cite{sebesta2012}. 
 A example follows how a small piece of code would be divided.
 \begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
-This is the code being lexed:
+Consider the following text; to be lexed:
+\begin{quote}
 \lstinputlisting[language=c]{examples/token.c}
-Given some basic tokens patterns:
-\begin{center}
+\end{quote}
+Given some patterns for tokens:
+\begin{quote}
 \begin{tabular}{l c l}
 $letter$ & :: & $\{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$\\
 $digit$ & :: & $\{0 \dots 9\}$\\
@@ -173,9 +149,10 @@ SUB\_OP & :: & -\\
 DIV\_OP & :: & /\\
 SEMICOLON & :: & ;
 \end{tabular}
-\end{center}
+\end{quote}
+
 This is how it will be divided:
-\begin{center}
+\begin{quote}
 \begin{tabular}{l c}
 \underline{Token} & \underline{Lexeme}\\
 IDENT & result\\
@@ -187,7 +164,7 @@ DIV\_OP & $/$\\
 INT\_LIT & 100\\
 SEMICOLON & ;
 \end{tabular}
-\end{center}
+\end{quote}
 \end{example}
 
 \section{Recognition of Tokens}
@@ -195,19 +172,35 @@ In previous section the topic have been, how to represent a pattern using
 regular expressions and how these expressions relates to tokens. This section 
 will highlight how to transform a sequence of characters into a sequence of 
 abstract tokens. First giving some basic understanding with transition diagrams.  
+
+\subsection{Longest Match}
+In the case when there are multiple feasible solutions a lexer 
+uses the longest matching regular expression \cite{Aho2006}.
+\begin{example}[Longest Match] $ $\\
+Given the regular expression:
+\begin{center} $ab$, $abb+$ and $b+$ \end{center}
+If the text which will be lexed is \emph{abbbb$\ldots$b}, the possible
+representation by the given regular expressions is:
+\begin{center}$\{ab, b+\}$ and $\{abb+\}$\end{center}
+The lexer should always choose the regular expression representing the longest
+sequence in the input text. 
+Therefore the correct expression in this example is $abb+$
+\end{example}
+
 \subsection{Transition Diagrams}
 A state transition diagram, or just transition diagram is a directed graph,
 where the nodes are labelled with state names. Each node 
 represents a state which could occur during the process of scanning the input, 
 looking for a lexeme that matches one of several patterns \cite{Aho2006}. The 
 edges are labelled with the input characters that causes transitions among 
-the states. An edge may also contain actions the lexer must perform when 
-transition is token \cite{sebesta2012}. Some properties for a 
-transition diagram follows. One state is said to be initial state. The transition 
+the states. An edge may also contain actions that the lexer must perform when the
+transition is a token \cite{sebesta2012}. Some properties of transition diagrams
+follow. One state is said to be initial state. The transition 
 diagram always begins at this state, before any input symbols have been read. 
 Some states are said to be accepting (final). They indicate that a lexeme has 
-been found. The found token should then be returned with any additional 
-optional values, mentioned in previous section.\cite{Aho2006}
+been found. If the found token is the longest match then the token will be 
+returned with any additional optional values, mentioned in previous section, 
+and the transition is reset to the initial state \cite{Aho2006}.
 Transition diagrams of the formed used in lexers are representations of a class 
 of mathematical machines called finite automata. Finite automata can be 
 designed to recognise members of a class of languages called regular languages, 
@@ -230,8 +223,8 @@ state. The empty string $\epsilon$ is not a valid label.
 \end{itemize}
 Both these forms of finite automata are capable of recognising the same 
 subset of languages, all regular languages \cite{Aho2006}.
-The formal definition of a finite automaton follows:
-\begin{definition}[Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
+The formal definition of a deterministic finite automaton follows:
+\begin{definition}[Deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
 A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 \begin{enumerate}
   \item $Q$ is a finite set called the states,
@@ -314,7 +307,7 @@ DFA is a special case of an NFA where,
   \item for each state $s$ and input symbol $a$, there is exactly one edge out
         of $s$ labelled with $a$.
 \end{enumerate}
-While NFA is an abstract representation of an algorithm to recognise the string 
+While a NFA is an abstract representation of an algorithm to recognise the string 
 of a language, the DFA is a simple concrete algorithm for recognising strings. 
 Every regular expression can be converted in to a NFA and every NFA can be 
 converted in to a DFA and then converted back to a regular expression \cite{Aho2006}. 
