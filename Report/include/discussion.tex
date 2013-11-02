@@ -1,2 +1,14 @@
 \chapter{Discussion}
 \#Discuss discuss!!
+
+One would think that haskells quickcheck would be a good way to generate in-data
+for the lexer. Since quickcheck is built to generate good input for testing a
+function for any arguments \cite{QuickCheck}. But the problem is not to test any
+string representation, it is instead to test valid code segments and any
+substring of this code segments. Also invalid pieces of text, to see that the
+lexer informs the user of syntactical errors in these texts. To write a input
+generator in quickcheck which would generate full code with all of its
+components and all the different properties would have to high cost in
+develop time for the outcome. It would be more time efficient to test the lexer
+on several different code files. There for the testing of the incremental lexer
+has not been done with the help of quickcheck.
