@@ -7,13 +7,13 @@ result should be a sequence of token that represent the code. How this is done
 will be described below.
 
 \section{Divide and Conquer in General}
-This capter will try to give a idea of how the Divide and Conquer algorithm works in a general case. So when talking about the incremental lexer you as a reader will have a basic idea of the structure of the algorithm.
+This section will try to give a idea of how the Divide and Conquer algorithm works in a general case. So when talking about the incremental lexer there is an understanding about the underlying techniques.
 
 \subsection{The Basics}
-The general idea of a divide and conquer is to divide a problem into to smaler parts and solv them separatly and then combine the results. 
-A Divide and Conquer algorithm always consist of a pattern with three steps. \cite{Goodrich}
+The general idea of a divide and conquer is to divide a problem into to smaler parts and solve them separatly and then combine the results. 
+A Divide and Conquer algorithm always consist of a pattern with these three steps \cite{Goodrich}.
 \begin{description}
-\item[Divide:] That is if the input size is bigger than the basecase divide the input to sub problems. Otherwise solve the problem using a straightforward method.
+\item[Divide:] If the input size is bigger than the basecase then divide the input into subproblems. Otherwise solve the problem using a straightforward method.
 \item[Recur:] Recursively solve the subproblems associated with the subset.
 \item[Conquer:] Given the solutions to the subproblem, merge them into to the original problem.
 \end{description}
@@ -24,10 +24,10 @@ The associative property stated for when an expression containing two or more of
 In divide and conquer this is essential. On the conquer step in the divide and conquer algorithm, there is no certain order of which how the subproblems are going to be conquered. So the result of running any part with another part must give the same result as doing it in any other way.
 
 \subsection{Time Complexity}
-To calculate the running time of an divide and conquer algorithm the master method can be applied. \cite{Cormen} This method is based on the following theorem.
+To calculate the running time of an divide and conquer algorithm the master method can be applied \cite{Cormen}. This method is based on the following theorem.
 
-\begin{theorem}[Master Theorem \cite{Cormen} \label{MasterTheo}]
-Assume a function\\ $T_n$ constrained by the recurrence
+\begin{theorem}[Master Theorem \cite{Cormen} \label{MasterTheo}] $ $\\
+Assume a function $T_n$ constrained by the recurrence
 \begin{center}
 $T_n = aT_{\frac{n}{b}}+ f(n)$
 \end{center}
@@ -49,10 +49,10 @@ If we let $e = log_b a$, then
 \end{theorem}
 
 \subsection{Hand on Example}
-The divide and conquer pattern can be preformed on different sorts of algorithm that solves different problems. A general problem is sorting or more precies sorting a list of integers. This example will show merge-sort.
+The divide and conquer pattern can be preformed on different sorts of algorithm that solves different problems. A general problem is sorting, or more precies sorting a list of integers. This example will show merge-sort.
 
 \begin{enumerate}
-\item The algorthim starts by the divide step. Givien the input $S$ the algorithm will check if $S$ consist of a number of elements less or equal to 1.
+\item The algorthim starts with the divide step. Givien the input $S$ the algorithm will check if $S$ consist of a number of elements less or equal to 1.
 \begin{itemize}
 \item If this is true, return the sequence. A sequence of one or zero elements is always sorted.  
 \item If this is false, split the sequence into two (as close as possible) equaly big sequences. $S_1$ and $S_2$, $S_1$ is equal $S$.getRange($1$, $n/2$).
@@ -81,7 +81,7 @@ Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
 \label{Alg:MergSort}
 \end{algorithm}
 
-Given the mergesort algorithm, this is how the time complexity is calculated.
+Given the mergesort algorithm, time complexity is calculated this way.
 There are $2$ recurrsive calls, the subproblems are $1/2$ of the original problem size. To merge the two sorted subproblems the worst case is to check every element in the two list, $2 \cdot n/2 = n$. 
 \begin{center}
  $T(n) = 2T(n/2) + n$.
@@ -91,7 +91,7 @@ Results in:
 $a = 2$, $b = 2$ and $f(n) = n \;
 \Rightarrow n^{log_b a} = n^{log_2 2} = n$
 \end{center}
-Case 2 applies, since
+Case 2 of the master theorem applies, since
 \begin{center}
 $f(n) = O(n)$
 \end{center}
@@ -101,92 +101,35 @@ $T(n) = \Theta(n^{log_2 2} \cdot log n) = \Theta(n \cdot log n)$
 \end{center}
 
 \section{Divide and Conquer Lexing in General}
-This section is for give a more general image of the ideas of the incremental divide and conquer lexer. To give the reader a more overviewing image why this is a good idea before starting to go into deep details about the project.
+This section will give a general view of the techniques for an incremental
+divide and conquer lexer. Also an overview why it is a good idea using these
+techniques, before going into deep details about the incremental lexer this
+report relates to.
 
 \subsection{Treestructure}
-For a good structuer where the code-lexemes can be related to its tokens, current result can be saved and easy recalculated. A divide and conquer lexer should use a tree structure to save the lexed result in. Since every problem can be divided in to several subproblems, until the basecase is reached. This is cleraly a tree structure of solutions, where the leafs are the tokens for a single character. and the root is a sequence of all tokens in the code.  
+The incremental divide and conquer lexer should use a structuer where the
+code-lexemes can be related to its tokens, current result can be saved and easy
+recalculated. A divide and conquer lexer should therefore use a tree structure
+to save the lexed result in. Since every problem can be divided in to several
+subproblems, until the basecase is reached. This is cleraly a tree structure of
+solutions, where the leafs are the tokens for a single character. and the root
+is a sequence of all tokens in the code.  
 
-\begin{figure}[!htp]
-\centering
-\begin{tikzpicture}[level/.style={sibling distance=60mm/#1, align=center, text centered}]
-\node [circle,red,draw, text width = 1.5em, text centered] (z){$r'$}
-  child {node [circle,red,draw, text width = 1.5em] (a) {$c'$}
-    child {node [circle,draw, text width = 1.5em] (b) {$a$}
-      child {node [circle,draw, text width = 1.5em] (c) {$-$}} 
-      child {node [circle,draw, text width = 1.5em] (d) {$-$}}
-    }
-    child {node [circle,red,draw, text width = 1.5em] (e) {$b'$}
-      child {node [circle,draw, text width = 1.5em] (f) {$x$}}
-      child {node [circle,red,draw, text width = 1.5em] (g) {$y'$}}
-    }
-  }
-  child {node [circle,draw, text width = 1.5em] (i) {$d$}
-    child {node [circle,draw, text width = 1.5em] (j) {$-$}
-      child {node [circle,draw, text width = 1.5em] (k) {$-$}}
-      child {node [circle,draw, text width = 1.5em] (l) {$-$}}
-    }
-    child {node [circle,draw, text width = 1.5em] (m) {$-$}
-      child {node [circle,draw, text width = 1.5em] (n) {$-$}}
-      child {node [circle,draw, text width = 1.5em] (o) {$-$}}
-    }
-  };
-\end{tikzpicture}
-\caption{Incremental Computing, the updated nodes when a leaf changes \label{fig:incUp}}
-\end{figure}
-
-\subsection{Incremental Computing}
-To be incremental means that, whenever some part of the data to the algorithm changes the algorithm tries to save time by only recomputing the changed data and the parts that depend on this changed data. \cite{incrementalDef}
-
-For a divide and conquer lexer this would mean only recompute the changed token and the token to the right of the changed token. This is done recurrsivly until the root of the tree is reached. The expected result of this would be that when a character is added to the code of 1024 tokens, instead of relex all 1024 tokens the lexer will only do 10 recalculations for new tokens. Since, $log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}.
-
-Since incremental computing stated that only content which depends on the new data will be recalculated. That is, follow the branch of the tree from the new leaf to the root and recalculated every node on this path. 
-As shown by \cref{fig:incUp}. Only one subproblem is updated in every level of the tree. Back to the master theorem. Let put this in to numbers, $e = log_b a$ where $a$ is number of recursive calls and $n/b$ is size of the subproblem where $n$ is the size of the original problem. As shown by the \cref{fig:incUp} number of needed update calls is $1$, therefor $a = 1$. The constant $b$ is still $2$. This will give $e = log_2 1 = 0$. Thus the update function of the incremental algorithm will have a time complexity of $\Theta(n^0 \cdot log n) = \Theta(log n)$
-
-\subsection{Basecase}
-The basecase is the token for a single character. Since a single character always can be part of the code, special characters can be in a comment.
-The basecase should always return a valid result. The result is saved with a transistions map, which is described futher down in this chapter.
-
-\subsection{Conquer Step}
-When conquering two sequences tokens in to one sequence of tokens the transitions are checked. To see if there is a way of combining the the right most token in the left sequence and the left most token in the right sequence. 
-
-In general the conquer step in a divide and conquer lexer needs to follow the following rules:
-\begin{itemize}
-\item If two tokens can be combined, combine the result with the next token.
-\item All tokens must start in the starting state (exception are single
-character tokens).
-\item If two tokens can't be completly combined, combine the first token with as
-much as possible of the second token and check that the combination ends in an
-accepting state.
-\end{itemize}
-
-\subsection{Expected Time Complexity}
-Given the information from \cref{MasterTheo} and the case of an incremental divide and conquer algorithm (where only one side of the subproblem will be calculated). The number of subproblems will only be $1$. The size of the subproblem will be $n/2$, gives $ a = 1$, $b = 2$ and $e = log_2 1 = 0$. SOMEHOW THE $f(n)$ FUNCTION WILL GIVE A $c$ THAT IS $0$. HELP.
-Given that $e = c$ the time-complexity for the incremental algorithm will follow the equation $n^c log^{d+1} n$. After inserting the known constants the expected time-complexity for an incremental divide and conquer algorithm should be, $O(log^{d+1} n)$.
-
-\section{Transition map}
+\subsection{Transition map}
 To be able to make a divide-and-conquer lexer work you can use a transition map
 for the subexpression that has currently been lexed. That is you store for each
 subexpression a list of tuples which are built up of an in state, a list of
 tokens and an out state. This could in haskell look something like this.
 \begin{verbatim}
-type Transition = (State,Tokens,State)
+type Transition = (State,[Tokens],Suffix,State)
 type Transitions = [Transition]
 \end{verbatim}
-The $tokens$ type helps to think of as being a sufix, that is the first part of
-the substring, this has to end in an accepting state; a list of tokens which all
-are complete tokens, they start in the starting state and end in an accepting
-state; and a prefix, the last part of the lexed substring, this part has
-to begin in the starting state; or just a single partial token that can be
-anywhere in a token.
-\begin{verbatim}
-data Tokens = Single String
-            | Multiple String [Token] String
-\end{verbatim}
-Now lets see how these data types work in order to create list of tokens for a
-String.
+\paragraph{The States}
+\paragraph{List if Tokens}
+\paragraph{The Suffix}
 
 \subsection{The Base Case}
-When the lexer tries to lex one character it will create the above transition
+When the lexer tries to lex one character it will create a transition
 table using the DFA for the language. It will for each state in the DFA lookup
 what out state the character would yield and create a Tokens type of Single.
 For the character '/' part of a transition map might look like the following.
@@ -202,11 +145,15 @@ conquer step work.
 
 \subsection{Conquer Step}
 The most general case is a naive lexer that takes the first accepting state it
-can find. When two lists of tokens are combined it will create two tokens if the
-out state of the first list is accepting then the second list will be appended
-to the first list. The other case us when the first list of tokens does not end
-in an accepting state. In this case the lexer will try to find an in state in
-the second list that is the same as the out state of the first transition.
+can find. When two lists of tokens are combined there are two different outcomes:
+\begin{description} 
+  \item[Concat:]create two tokens if the
+    out state of the first list is accepting then the second list will be appended
+    to the first list.
+  \item[Combine:]The other case is when the first list of tokens does not end
+    in an accepting state. In this case the lexer will try to find an in state in
+    the second list that is the same as the out state of the first transition.
+\end{description}
 \begin{center}
 $\left[\begin{array}{ccc}
 0&Single '/'&1\\
@@ -227,7 +174,7 @@ lexed as two tokens, ``o'' and ``s''. To solve this some more work is needed to
 be done.
 
 \subsection{Longest Match}
-Instead of taking the naive aproach where a token is created if you find an
+Instead of taking the naive aproach where a token is created if the lexer finds an
 accepting state, the rule for creating a new token will instead be when the
 combination of two transitions yields $NoState$ the lists will be appended. That
 is, when there is an out state from the first transition that corresponds to an
@@ -260,9 +207,186 @@ This means that the two lists of tokens can't be combined. In this case the
 first token in the second list will be viewed as the start of a token and the
 last token in the first list will be viewed as the end of a token.
 
-\section{The First Attempt}
-The first naive solution whas to \"bruteforce\" to find the lex. This was showned to be to resource-eating. But it describes the general idea of how the problem could be solved. Why it was a bad solution will be described futher on in the text. 
+\begin{figure}[!htp]
+\centering
+\begin{tikzpicture}[level/.style={sibling distance=60mm/#1, align=center, text centered}]
+\node [circle,red,draw, text width = 1.5em, text centered] (z){$r'$}
+  child {node [circle,red,draw, text width = 1.5em] (a) {$c'$}
+    child {node [circle,draw, text width = 1.5em] (b) {$a$}
+      child {node [circle,draw, text width = 1.5em] (c) {$-$}} 
+      child {node [circle,draw, text width = 1.5em] (d) {$-$}}
+    }
+    child {node [circle,red,draw, text width = 1.5em] (e) {$b'$}
+      child {node [circle,draw, text width = 1.5em] (f) {$x$}}
+      child {node [circle,red,draw, text width = 1.5em] (g) {$y'$}}
+    }
+  }
+  child {node [circle,draw, text width = 1.5em] (i) {$d$}
+    child {node [circle,draw, text width = 1.5em] (j) {$-$}
+      child {node [circle,draw, text width = 1.5em] (k) {$-$}}
+      child {node [circle,draw, text width = 1.5em] (l) {$-$}}
+    }
+    child {node [circle,draw, text width = 1.5em] (m) {$-$}
+      child {node [circle,draw, text width = 1.5em] (n) {$-$}}
+      child {node [circle,draw, text width = 1.5em] (o) {$-$}}
+    }
+  };
+\end{tikzpicture}
+\caption{Incremental Computing, the updated nodes when a leaf changes \label{fig:incUp}}
+\end{figure}
 
+\subsection{Incremental Computing}
+To be incremental means that, whenever some part of the data to the algorithm changes the algorithm tries to save time by only recomputing the changed data and the parts that depend on this changed data. \cite{incrementalDef}
+
+For a divide and conquer lexer this would mean only recompute the changed token and the token to the right of the changed token. This is done recurrsivly until the root of the tree is reached. The expected result of this would be that when a character is added to the code of 1024 tokens, instead of relex all 1024 tokens the lexer will only do 10 recalculations for new tokens. Since, $log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}. How this is calculated for an incremental divide and conquer lexer is described more in detail in the next sub-section.
+
+\subsection{Expected Time Complexity}
+Since incremental computing stated that only content which depends on the new data will be recalculated. That is, follow the branch of the tree from the new leaf to the root and recalculated every node on this path. 
+As shown by \cref{fig:incUp}. Only one subproblem is updated in every level of the tree. Back to the master theorem. Let put this in to numbers, $e = log_b a$ where $a$ is number of recursive calls and $n/b$ is size of the subproblem where $n$ is the size of the original problem. As shown by the \cref{fig:incUp} number of needed update calls is $1$, therefor $a = 1$. The constant $b$ is still $2$. This will give $e = log_2 1 = 0$. Thus the update function of the incremental algorithm will have a time complexity of $\Theta(n^0 \cdot log n) = \Theta(log n)$
+
+\section{Pitfalls}
+This section will describe techniques that were tried under the constuction of 
+the incremental divide and conquer lexer but was shown to give bad results.
+
+\subsection{Brutefore}
+The first naive solution was to "bruteforce" to find the lex. This was showned to be to resource-eating. But it describes the general idea of how the problem could be solved. Why it was a bad solution will be described futher on in the text. 
+
+The above rules will work for very simple languages. When comments are
+introduced you will get the problem that the whole code can be one long partial
+comment token. To remedy this you can add two rules:
+\begin{itemize}
+\item Every time you combine two tokens you only do so if the combination has a
+transition from the starting state.
+\item If two tokens can be combined completly, check if the next token can be
+combined aswell.
+\end{itemize}
+This ensures that every token starts in the starting state and that each token
+is as long as it can be.
+
+This also has some problems though. When keywords like ``else if'' are
+introduced the lexer will start to lex like in \cref{elseif}. To solve this the
+lexer checks when two tokens are completely uncombinable if the first of these
+have an accepting state as outgoing state. If the token don't have an accepting
+out state, the lexer tries to break up the token until it does. The exception to
+this rule is single characters which are permitted to not have no accepting out
+states.
+\begin{example}[else if lexing]\label{elseif}
+Somewhere in the middle of the code ``... 1 else 0 ...''
+\begin{center}
+\begin{tabular}{ll}
+String & Type\\
+1 & $Number$\\
+\_ & $Space$\\
+else\_ & $Nothing$\\
+0 & $Number$\\
+\end{tabular}
+\end{center}
+\end{example}
+
+\begin{example}[Devide and Append]
+The lexer will always try to build as lage tokens as possible. When it realizes that this cant be done it has to backup and try to combine the parts in a different way. This example will show how this is done in theory. 
+
+The code segment for this example is: 
+\begin{center}
+"else return".
+\end{center}
+The tree in \cref{fig1:elseif} shows the first step of the token combine rutine. Clearly this returns a nonexsisting token. 
+\begin{figure}[h!]
+  \centering
+  \begin{tikzpicture}[
+    error/.style={rectangle, draw=none, rounded corners=1mm, fill=black!20!red, drop shadow,
+        text centered, anchor=north, text=white},
+    fact/.style={rectangle, draw=none, rounded corners=1mm, fill=black!60!green, drop shadow,
+        text centered, anchor=north, text=white},
+    state/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
+        text centered, anchor=north, text=white},
+    leaf/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
+        text centered, anchor=north, text=white},
+    level distance=0.5cm, growth parent anchor=south
+    ]
+    \node (State00) [error] {NoToken} [->]
+        child{ [sibling distance=9cm]
+            node (State01) [state] {"else return"}
+            child{
+                node (Fact02) [fact] {PossibleToken(ElseIf)}
+                child{ [sibling distance=4cm]
+                    node (State02) [state] {"else "}
+                    child{
+                        node (Fact03) [fact] {Token(Else)}
+                        child{
+                            node (State03) [leaf] {"else"}
+                        }
+                    }
+                    child{
+                        node (Fact04) [fact] {Token(WhiteSpace)}
+                        child{ [sibling distance=1.2cm]
+                            node (State04) [leaf] {" "}
+                        }
+                    }
+                }
+            }
+            child{ [sibling distance=4cm]
+                node (Fact05) [fact] {Token(Return)}
+                child{
+                    node (State05) [leaf] {"return"}
+                }
+            }
+        }
+    ;
+  \end{tikzpicture}
+  \caption{Lexer thinks "else " is an "else if" pattern. 
+  \label{fig1:elseif}}
+\end{figure}
+From here when the lexer has found that there are no tokens for this lexeme it will try to split the left child token.
+\begin{center}
+    split("else ") => ["else"," "]
+\end{center} 
+Now the lexer has a pair of two lexems that represent valid tokens. The lexer knows that combinding these two lexems in the pair returns in a NoToken result. So The only thing to do is to try to combine the right token in the pair with the right child token and let the token to the left in the pair stand alone. 
+\begin{figure}[!h]
+  \centering
+  \begin{tikzpicture}[
+    error/.style={rectangle, draw=none, rounded corners=1mm, fill=black!20!red, drop shadow,
+        text centered, anchor=north, text=white},
+    fact/.style={rectangle, draw=none, rounded corners=1mm, fill=black!60!green, drop shadow,
+        text centered, anchor=north, text=white},
+    state/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
+        text centered, anchor=north, text=white},
+    leaf/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
+        text centered, anchor=north, text=white},
+    level distance=0.5cm, growth parent anchor=south
+    ]
+    \node (State00) [error] {NoToken} [->]
+        child{ [sibling distance=4cm]
+            node (State01) [state] {" return"}
+            child{ [sibling distance=4cm]
+                node (State02) [fact] {Token(WhiteSpace)}
+                child{
+                    node (Fact02) [leaf] {" "}
+                }
+            }
+            child{ [sibling distance=4cm]
+                node (Fact03) [fact] {Token(Return)}
+                child{
+                    node (State03) [leaf] {"return"}
+                }
+            }
+        }
+    ;
+  \end{tikzpicture}
+  \caption{Lexer tries to combine an white space with a return statement
+  \label{fig4:elseif}}
+\end{figure}
+This also return a NoToken. So the same thing will be done again. The lexer tries to split the left child before NoToken was given. In this case the whitespace. 
+\begin{center}
+split(" ") => []
+\end{center}
+But becouse the whitespace is of the lowest form and is not build up by smaller tokens the resulting list from the split function will be empty. Now the lexer knows that this token must be by it self. The "return" is the last lexeme in this example code so the lexer can't combine it futher. Thus the lexer has found the resulting sequence of tokens:
+\begin{center}
+    [(Token(Else), "else"), (Token(WhiteSpace)," "), (Token(Return), "return")]
+\end{center} 
+\end{example}
+
+\subsection{Dont know what to call this!}
 When the code is divided the lexer doesn't know if the string (or character) it
 lexes is the first, last or is somewhere in the middle of a token. Instead of
 checking what type of token the string will be (if it were to begin from the
@@ -417,204 +541,6 @@ in & out\\
 \end{example}
 When all partial tokens has been combined in this way the resulting sequence of
 tokens represents the the code the lexer was run on.
-
-\subsection{Pitfalls}
-The above rules will work for very simple languages. When comments are
-introduced you will get the problem that the whole code can be one long partial
-comment token. To remedy this you can add two rules:
-\begin{itemize}
-\item Every time you combine two tokens you only do so if the combination has a
-transition from the starting state.
-\item If two tokens can be combined completly, check if the next token can be
-combined aswell.
-\end{itemize}
-This ensures that every token starts in the starting state and that each token
-is as long as it can be.
-
-This also has some problems though. When keywords like ``else if'' are
-introduced the lexer will start to lex like in \cref{elseif}. To solve this the
-lexer checks when two tokens are completely uncombinable if the first of these
-have an accepting state as outgoing state. If the token don't have an accepting
-out state, the lexer tries to break up the token until it does. The exception to
-this rule is single characters which are permitted to not have no accepting out
-states.
-\begin{example}[else if lexing]\label{elseif}
-Somewhere in the middle of the code ``... 1 else 0 ...''
-\begin{center}
-\begin{tabular}{ll}
-String & Type\\
-1 & $Number$\\
-\_ & $Space$\\
-else\_ & $Nothing$\\
-0 & $Number$\\
-\end{tabular}
-\end{center}
-\end{example}
-
-\begin{example}[Devide and Append]
-The lexer will always try to build as lage tokens as possible. When it realizes that this cant be done it has to backup and try to combine the parts in a different way. This example will show how this is done in theory. 
-
-The code segment for this example is: 
-\begin{center}
-"else return".
-\end{center}
-The tree in \cref{fig1:elseif} shows the first step of the token combine rutine. Clearly this returns a nonexsisting token. 
-\begin{figure}[h!]
-  \centering
-  \begin{tikzpicture}[
-    error/.style={rectangle, draw=none, rounded corners=1mm, fill=black!20!red, drop shadow,
-        text centered, anchor=north, text=white},
-    fact/.style={rectangle, draw=none, rounded corners=1mm, fill=black!60!green, drop shadow,
-        text centered, anchor=north, text=white},
-    state/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
-        text centered, anchor=north, text=white},
-    leaf/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
-        text centered, anchor=north, text=white},
-    level distance=0.5cm, growth parent anchor=south
-    ]
-    \node (State00) [error] {NoToken} [->]
-        child{ [sibling distance=9cm]
-            node (State01) [state] {"else return"}
-            child{
-                node (Fact02) [fact] {PossibleToken(ElseIf)}
-                child{ [sibling distance=4cm]
-                    node (State02) [state] {"else "}
-                    child{
-                        node (Fact03) [fact] {Token(Else)}
-                        child{
-                            node (State03) [leaf] {"else"}
-                        }
-                    }
-                    child{
-                        node (Fact04) [fact] {Token(WhiteSpace)}
-                        child{ [sibling distance=1.2cm]
-                            node (State04) [leaf] {" "}
-                        }
-                    }
-                }
-            }
-            child{ [sibling distance=4cm]
-                node (Fact05) [fact] {Token(Return)}
-                child{
-                    node (State05) [leaf] {"return"}
-                }
-            }
-        }
-    ;
-  \end{tikzpicture}
-  \caption{Lexer thinks "else " is an "else if" pattern. 
-  \label{fig1:elseif}}
-\end{figure}
-From here when the lexer has found that there are no tokens for this lexeme it will try to split the left child token.
-\begin{center}
-    split("else ") => ["else"," "]
-\end{center} 
-Now the lexer has a pair of two lexems that represent valid tokens. The lexer knows that combinding these two lexems in the pair returns in a NoToken result. So The only thing to do is to try to combine the right token in the pair with the right child token and let the token to the left in the pair stand alone. 
-\begin{figure}[!h]
-  \centering
-  \begin{tikzpicture}[
-    error/.style={rectangle, draw=none, rounded corners=1mm, fill=black!20!red, drop shadow,
-        text centered, anchor=north, text=white},
-    fact/.style={rectangle, draw=none, rounded corners=1mm, fill=black!60!green, drop shadow,
-        text centered, anchor=north, text=white},
-    state/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
-        text centered, anchor=north, text=white},
-    leaf/.style={rectangle, draw=none, rounded corners=1mm, fill=blue, drop shadow,
-        text centered, anchor=north, text=white},
-    level distance=0.5cm, growth parent anchor=south
-    ]
-    \node (State00) [error] {NoToken} [->]
-        child{ [sibling distance=4cm]
-            node (State01) [state] {" return"}
-            child{ [sibling distance=4cm]
-                node (State02) [fact] {Token(WhiteSpace)}
-                child{
-                    node (Fact02) [leaf] {" "}
-                }
-            }
-            child{ [sibling distance=4cm]
-                node (Fact03) [fact] {Token(Return)}
-                child{
-                    node (State03) [leaf] {"return"}
-                }
-            }
-        }
-    ;
-  \end{tikzpicture}
-  \caption{Lexer tries to combine an white space with a return statement
-  \label{fig4:elseif}}
-\end{figure}
-This also return a NoToken. So the same thing will be done again. The lexer tries to split the left child before NoToken was given. In this case the whitespace. 
-\begin{center}
-split(" ") => []
-\end{center}
-But becouse the whitespace is of the lowest form and is not build up by smaller tokens the resulting list from the split function will be empty. Now the lexer knows that this token must be by it self. The "return" is the last lexeme in this example code so the lexer can't combine it futher. Thus the lexer has found the resulting sequence of tokens:
-\begin{center}
-    [(Token(Else), "else"), (Token(WhiteSpace)," "), (Token(Return), "return")]
-\end{center} 
-\end{example}
-
-\section{A Better Solution} %Better title
-A text of the general idea behind this solution, why it should be better then the first attempt. And so on and so on!!
-
-\subsection{The Data Structure}
-For the lexer to be able to represent every possible substring of the code in the same datastructure. There need to be a generic representation for tokens and subtokens. A subtoken is a representing of a lexeme for that subtoken and a list of accepting tokens for that lexeme. The final tokens is a sequence of subtokens the output state for this sequence and an suffix, this suffix can be empty or conssist of an alternetiv ending for the sequence of tokens. What this is and how it works will be described more in detail in \cref{section:Suffix}.
-In \cref{fig:DataStruct} is a code representation of the datastructure
-
-\begin{figure}[h!]
-  \centering
-  \lstinputlisting[language=c]{examples/Datastruct.hs}
-  \caption{Datastructure for tokens and lexems. 
-  \label{fig:DataStruct}}
-\end{figure} 
-
-\subsection{The Power of Suffix
-\label{section:Suffix}}
-The suffix is a structure for saving one alternative sequence of acceptable subtokens, for a lexed token that can not end in a accepting state. It is build up by subtokens of the not yet accepting token that the lexer is trying to lex. If the token finally end in a accepting state, after some combination with an other token, the suffix of this accepting token will be set to None. Where None is a data-structure for showing that this token is complete. 
-
-This could be shown by \cref{ex.suffix}.
-\begin{example}
-\label{ex.suffix}
-Two tokens is trying to be lexed together. A token $a$ which has the lexeme \"else \", an else with a whitespace following it. A token $b$ which has the lexeme \"return\". The structure for theses tokens and there suffixes is shown in \cref{fig.TokenSuffix}
-
-\begin{figure}[!h]
-  \centering
-  \begin{tabular}{r c l}
-    $\text{Token}_a$ & : & $\textsuperscript{start\_state} \downarrow
-      \underbrace{ \text{else \_ }} \downarrow ^{\text{out\_state} \, \notin 
-      \, \text{accepting\_states} }$\\
-    $\text{Suffix}_a$ & : & $\left[ \textsuperscript{start\_state} \downarrow
-      \underbrace{ \text{else}} \downarrow ^{\text{accepting\_state} } , \, 
-      \textsuperscript{start\_state} \downarrow \underbrace{ \text{\_}}
-      \downarrow ^{\text{accepting\_state} } \right]$\\
-    $\text{Token}_b$ & : & $\textsuperscript{start\_state} \downarrow
-      \underbrace{ \text{return}} \downarrow ^{\text{accepting\_state}}$\\
-    $\text{Suffix}_b$ & : & None
-  \end{tabular}\\
-  where accepting\_states is a list of all accepting states.
-  \caption{The tokens and there suffixes.
-    \label{fig.TokenSuffix}}
-\end{figure}
-
-Now when $\text{Token}_a$ and $\text{Token}_b$ are combined it will result in an illegal token, that is the out\_state will not be a valid state. So something has to be done, because $\text{Token}_a$ does not end in an accepting state. And since the lexer always want the longest possible tokens, the lexer will try to combine this in an other way. The lexer then replaces $\text{Token}_a$ into it's suffixes, saves all the suffixes as finished tokens except for the last suffix. In this case the $\underbrace{ \text{\_}}$ suffix. It now tries to combine this suffix with $\text{Token}_b$, which will also return a no valid state. And recursively does the same thing again. But this time the $\underbrace{ \text{\_}}$ suffix is a single character token and has no suffixes. So the lexer can't do anything further with this, therefor the final result will be three separate tokens. shown in \cref{fig.SepToken}
-
-\begin{figure}[!h]
-  \centering
-  \begin{tabular}{r c l}
-    $\text{Token}_{a1}$ & : & $\textsuperscript{start\_state} \downarrow
-      \underbrace{ \text{else}} \downarrow ^{\text{accepting\_state} }$\\
-    $\text{Suffix}_{a1}$ & : & None\\
-    $\text{Token}_{a2}$ & : & $\textsuperscript{start\_state} \downarrow
-      \underbrace{ \text{\_}} \downarrow ^{\text{accepting\_state} }$\\
-    $\text{Suffix}_{a2}$ & : & None\\
-    $\text{Token}_b$ & : & $\textsuperscript{start\_state} \downarrow
-      \underbrace{ \text{return}} \downarrow ^{\text{accepting\_state}}$\\
-    $\text{Suffix}_{b}$ & : & None
-  \end{tabular}
-  \caption{The resulting tokens.
-    \label{fig.SepToken}}
-\end{figure}
-\end{example}
 
 \section{Lexical Errors}
 Since the lexer has to be able to handle any kind of possible not "complete"
