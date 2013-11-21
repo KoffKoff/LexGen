@@ -19,10 +19,16 @@ lexical routines differs.
 
 \section{Preciseness}
 For an incremental lexer to work, the lexer must be able to do lexical analysis
-of any subsection of a text. That is, come to a correct result for that subsection
-for every possible instate. It must also be able to merge any two neighboring
-subsections in a text. The result of that merge must be the same as lexing
-the two subsections as one section.
+of any subtext of a text and be able to combine two subtexts. If the lexical
+analysis of one subtext doesn't result in any legal tokens it must be able to be
+combined with other subtexts that makes it legal tokens. The lexical analysis of
+a subtext might not always result in the same tokens that the combination of the
+subtext with another text would give.
+
+To test these cases a test was constructed that does a lexical analysis on two
+subtexts using the incremental lexer and then combining the results into one
+text. The result of the combination should be the same as the lexical analysis
+of the text using the incremental lexer and the result using a sequential lexer.
 
 It is not enough to test if the combination of two subsections yields the
 same sequence of tokens as the section. To test that the result of the
@@ -46,7 +52,7 @@ To measure the perfomance of the incremental step we created the fingertree for
 two pieces of code. By creating the two fingertrees the transition map for the
 code in those trees are created aswell. The benchmarking was then done on the
 combination of the two trees. The results of the incremental lexer benchmarking
-suggest running time of $O(log(n))$.
+suggests a running time of $O(log(n))$.
 
 To get a reference point the same text was lexed using a sequential lexer.
 
@@ -80,24 +86,24 @@ n    alex   upd
 180  42570  496
 190  42410  513
 \end{filecontents*}
-%\begin{example}[Benchmarking times of the incremental and sequential lexer]\label{bench}
+\begin{example}[Benchmarking times of the incremental and sequential lexer\\]\label{bench}
 \begin{tikzpicture}
     \begin{axis}[
-    width=0.9\textwidth,
+    width=0.7\textwidth,
     height=0.4\textwidth,
     ymajorgrids,
     title = {Comparison},
     x tick label style={/pgf/number format/1000 sep=},
-    ytick scale label code/.code={ms},
+    ytick scale label code/.code={$ms$},
     legend pos=outer north east
     ]
-        \addplot table[x=n,y=alex] {data.csv};\addlegendentry{Sequential}
         \addplot table[x=n,y=upd] {data.csv};\addlegendentry{Incremental update}
+        \addplot table[x=n,y=alex] {data.csv};\addlegendentry{Sequential}
     \end{axis}
 \end{tikzpicture}\\
 \begin{tikzpicture}
     \begin{axis}[
-    width=0.9\textwidth,
+    width=0.7\textwidth,
     height=0.4\textwidth,
     ymajorgrids,
     title = {Incremental lexer},
@@ -108,4 +114,4 @@ n    alex   upd
         \addplot table[x=n,y=upd] {data.csv};\addlegendentry{Incremental update}
     \end{axis}
 \end{tikzpicture}\\
-%\end{example}
+\end{example}
