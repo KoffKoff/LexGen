@@ -4,13 +4,20 @@ alex. What we use from the differnet programs. How this is usefull
 is it becouse of lazynes or are the existing solutions good??
 
 \section{Alex}
-What is this, how have this tool helped us in this project.
-Some basics how it works and why it therefore fits our project.
+Alex is a tool for generating lexical analysers built in Haskell, given a description of the language
+in form of regular expressions. The result will be Haskell 98 compatible and can easly be used with the
+parser Happy, a parser generator for Haskell.
 \subsection{The DFA design}
 
 \section{Monoid}
-What is this, how have this tool helped us in this project.
-Some basics how it works and why it therefore fits our project.
+In abstract algebra a monoid is a set, $S$, and a binary operation $\bullet$ which furfills the following
+three properties:
+\begin{description}
+\item[Closure] $\forall a,b \in S: a \bullet b \in S$
+\item[Associativity] $\forall a,b,c \in S: (a \bullet b) \bullet c = a \bullet (b \bullet c)$
+\item[Identity element] $\exists e \in S: \forall a \in S: e \bullet a = a \bullet e = a$
+\end{description}
+
 \subsection{The Basecase}
 \subsection{The Conquer Step}
 
