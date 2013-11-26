@@ -4,8 +4,6 @@ module Main where
 import Prelude as P hiding (mapM_,foldl1)
 import System.Environment
 import System.IO
-import Criterion.Main
-import Criterion.Config
 import Test.Java as J
 import Test.Lexjava as A
 import Control.DeepSeq
@@ -41,47 +39,25 @@ instance NFData Suffix where
   rnf (One t) = rnf t
   rnf (Multi toks) = rnf toks
 
-allTest :: [String]
-allTest = ["Alex","Update"]
-
 testSizes :: [Int]
 testSizes = 10:[100,200..1900]
 
 main = do
   args <- getArgs
-  let (n,inFile,tests',arg) = sortArgs args
-  (file,code) <- case inFile of
-    [] -> return ("internal",core002)
-    _  -> do lazyCode <- openFile inFile ReadMode >>= hGetContents
-             return (inFile,lazyCode)
-  let tests = case tests' of
-        [] -> allTest
-        _  -> tests'
-      code = concat . P.take n $ repeat code
-  putStrLn . show . getOutState . measure $ makeTree code
-  
-repeatTree :: Int -> LexTree -> LexTree
-repeatTree 0 _ = mempty
-repeatTree 1 tree = tree
-repeatTree i tree = tree <> repeatTree (i-1) tree
+  let (n,inFile,arg) = sortArgs args
+  code <- case inFile of
+    "" -> return core002
+    _  -> openFile inFile ReadMode >>= hGetContents
+  let code' = concat . P.take n $ repeat code
+--      tokens = {-# SCC "alex" #-} alexScanTokens code
+      tree = {-# SCC "inc" #-} makeTree code'
+  print . getOutState $ measure tree
+--  print $ last tokens
 
-helperIncBuilder :: LexTree -> [(LexTree,String)] -> Int -> [(LexTree,String)]
-helperIncBuilder tree sizeTrees i = sizeTrees ++ [(repeatTree i tree, show i)]
-
-benchStuff :: (NFData b, NFData a) => (a -> b) -> (a,String) -> Benchmark
-benchStuff f (x,name) = x `deepseq` bench name $ nf f x
-
-sortArgs :: [String] -> (Int,String,[String],[String])
-sortArgs args = foldl sortArg (10,[],[],[]) args
-  where sortArg (num,files,tests,args) arg@('-':_) =
-          (num,files,tests,(arg):args)
-        sortArg (num,files,tests,args) ('+':test)  =
-          (num,files,if test `elem` "IncLex":allTest
-                     then test:tests
-                     else tests
-                               ,args)
-        sortArg (num,files,tests,args) arg | and $ map isDigit arg = (read arg,files,tests,args)
-                                           | otherwise = (num,arg,tests,args)
+sortArgs args = foldl sortArg (10,[],[]) args
+  where sortArg (num,files,args) arg@('-':_) = (num,files,(arg):args)
+        sortArg (num,files,args) arg | and $ map isDigit arg = (read arg,files,args)
+                                     | otherwise = (num,arg,args)
 
 getOutState :: (Table State Tokens,Size) -> Int
 getOutState (table,_) = case access table 0 of
@@ -96,6 +72,3 @@ core002 = "/*@ @@*/\n\n" ++
           "printString(\"foo\");\n" ++
           "return if true then else if 1 else null;\n" ++
           "}"
-          
-simpleTest = mapM_ putStrLn $ fmap (J.prToken) $ treeToTokens $ makeTree core002
-

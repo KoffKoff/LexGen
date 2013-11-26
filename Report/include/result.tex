@@ -30,8 +30,8 @@ subtexts using the incremental lexer and then combining the results into one
 text. The result of the combination should be the same as the lexical analysis
 of the text using the incremental lexer and the result using a sequential lexer.
 
-It is not enough to test if the combination of two subsections yields the
-same sequence of tokens as the section. To test that the result of the
+It is not enough to test if the combination of two subtexts yields the
+same sequence of tokens as the text. To test that the result of the
 incremental lexer is the correct sequence of tokens generated, it is compared to
 what a sequential lexer generates. This comparison is an equality test of
 the text, it checks token for token that they are the same kind of token and
@@ -114,4 +114,7 @@ n    alex   upd
         \addplot table[x=n,y=upd] {data.csv};\addlegendentry{Incremental update}
     \end{axis}
 \end{tikzpicture}\\
+
+The space complexity for the fingertree structure is O(n). According to our
+tests 100 characters of code translates to roughly 1MB of datastructure.
 \end{example}
