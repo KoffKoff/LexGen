@@ -1,0 +1,17 @@
+\chapter{Regular Language}\label{reglang}
+Here follows a simple regular language for expressing mathematical expressions.
+It contains variables integers and some operators. the space macro refers to
+space tab and new line.\\
+\begin{tabular}{l c l}
+$letter$ & :: & $\{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$\\
+$digit$ & :: & $\{0 \dots 9\}$\\
+$space$ & :: & (\textbackslash9|\textbackslash10|\textbackslash32)\\
+IDENT & :: & $letter(letter|digit)*$\\
+INT\_LIT & :: & $digit+$\\
+ASSING\_OP & :: & \textbackslash=\\
+ADD\_OP & :: & \textbackslash+\\
+SUB\_OP & :: & \textbackslash-\\
+MUL\_OP & :: & \textbackslash*\\
+DIV\_OP & :: & \textbackslash/\\
+SEMICOLON & :: & ;
+\end{tabular}

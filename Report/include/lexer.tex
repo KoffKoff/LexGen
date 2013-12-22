@@ -137,11 +137,9 @@ Consider the following text; to be lexed:
 \begin{quote}
 \lstinputlisting[language=c]{examples/token.c}
 \end{quote}
-Given some patterns for tokens:
+Given the regular languaged defined in \cref{reglang}, the lexical analyser would use the following rules:
 \begin{quote}
 \begin{tabular}{l c l}
-$letter$ & :: & $\{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$\\
-$digit$ & :: & $\{0 \dots 9\}$\\
 IDENT & :: & $letter(letter|digit)*$\\
 INT\_LIT & :: & $digit+$\\
 ASSING\_OP & :: & =\\
@@ -150,8 +148,7 @@ DIV\_OP & :: & /\\
 SEMICOLON & :: & ;
 \end{tabular}
 \end{quote}
-
-This is how it will be divided:
+In order to produce the following tokens.
 \begin{quote}
 \begin{tabular}{l c}
 \underline{Token} & \underline{Lexeme}\\
