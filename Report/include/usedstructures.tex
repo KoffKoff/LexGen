@@ -37,9 +37,9 @@ Reduction with a monoid always return the same value, independent of the argumen
 an arbitraty constant and binary operation there must be a specified nesting rule. 
 If combining operation are only nested to the right, or to the
 left, the obtained result will be a skewed reductions, which can be singled out as a type class.
-class Reduce f where\\
-reducer :: (a → b → b) → (f a → b → b)\\
-reducel :: (b → a → b) → (b → f a → b)\\
+%class Reduce f where\\
+%reducer :: (a → b → b) → (f a → b → b)\\
+%reducel :: (b → a → b) → (b → f a → b)\\
 \cite{fingertree}
 
 \section{Sequences}
