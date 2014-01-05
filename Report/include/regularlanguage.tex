@@ -8,12 +8,12 @@ $capital$ & $=$ & [A-Z]\\
 $lower$   & $=$ & [a-z]\\
 $letter$  & $=$ & [a-zA-Z]\\
 $digit$   & $=$ & [0-9]\\
-$ident$   & $=$ & $letter$ | $digit$ | [_'] & Identifier Characters\\
+$ident$   & $=$ & $letter$ | $digit$ | [\_'] & Identifier Characters\\
 $white$   & $=$ & [ \textbackslash{t}\textbackslash{r}\textbackslash{n}\textbackslash{v}\textbackslash{f}] & The white space characters\\
-$rsyms$   & $=$ & \( | \) | \{ | \} | \; | \= | \+ \+ | \< | \+ | \* & Reserved characters\\
+$rsyms$   & $=$ & \textbackslash( | \textbackslash) | \textbackslash{ | \textbackslash} | ; | = | \textbackslash+\textbackslash+ | < | \textbackslash+ | \textbackslash* & Reserved characters\\
 Rules\\
 & & // [.]* & Single line comment\\
-& & /(\*) ([\^\*] | (\*) [\^\/])* (\*)+ / & Multi line comment\\
+& & /\textbackslash*) ([\^\textbackslash*] | (\textbackslash*) [\^/])* (\textbackslash*)+ / & Multi line comment\\
 Identifier & $=$ & $letter$ $ident$*\\
 Integer    & $=$ & $digit$+\\
 Double     & $=$ & $digit$+ \textbackslash. $digit$+\\
