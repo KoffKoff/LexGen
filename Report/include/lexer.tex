@@ -10,20 +10,24 @@ The rest of this chapter describes the concepts of the lexer in detail.
 Lexers usually work as a pass before parser; giving their result to the syntax 
 analyser.
 There are several reasons why a compiler should be separated in to a lexical 
-analyser and a parser (syntax analyser). First, simplicity of design is the most
+analyser and a parser (syntax analyser). 
+
+First, simplicity of design is the most
 important reason. When dividing the task into these two sub tasks, it allows the
 programmer to simplify each of these sub-tasks. For example, a parser that has to 
 deal with white-spaces and comments would be more complex 
 than one that can assume these have already been removed by 
-an lexer. Also when the two tasks have been seperated into sub-tasks it can lead to 
+a lexer. When the two tasks have been seperated into sub-tasks it can lead to 
 cleaner overall design when designing a new language.
 The only thing the syntax analyser will see is the output from the 
 lexer, tokens and lexemes.
-The lexer also usually skips comments and white-spaces, since these are not relevant 
+The lexer usually skips comments and white-spaces, since these are not relevant 
 for the syntax analyser.
+
 Second, overall efficiency of the compiler can be improved. When separating the 
 lexical analyser it allows for use of specialised techniques that can be used 
 only in the lexical task.
+
 Third and last, compiler portability can be enhanced. That is Input-device-specific 
 peculiarities can be restricted to the lexical analysis \cite{Aho2006}.
 Therefore the lexer can detect syntactical errors in tokens, such as ill-formed 
@@ -31,7 +35,7 @@ floating-points literals, and report these errors to the user \cite{sebesta2012}
 Finding these errors allows the compiler to break the compilation before
 running the syntax analyser, thereby saving computing time. 
 \section{Token Specification}
-The job of lexical analyser is to translate a human readable text to an abstract 
+The job of the lexical analyser is to translate a human readable text to an abstract 
 computer-readable list of tokens. There are different techniques a lexer can
 use when finding the abstract tokens representing a text. This section describes the
 techniques used when writing rules for the tokens patterns. 
@@ -211,7 +215,7 @@ Consider the following text; to be lexed.
 \begin{quote}
 \lstinputlisting[language=c]{examples/longesttoken.c}
 \end{quote}
-Allthough this tex is not legal code, there is no lexical errors in it. Since
+Allthough this text is not legal code, there is no lexical errors in it. Since
 the text starts with a multi line comment sign the lexer will try to lex it as
 a comment. When the lexer encounters the end of the text it will return the
 token corresponding to the last accepting state and begin lexing the rest from
