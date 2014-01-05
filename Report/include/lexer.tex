@@ -123,14 +123,20 @@ matches the pattern for a token and is identified by the lexical analyser as an
 instance of a token \cite{Aho2006}.
 \end{description}
 As mentioned before a token consists of a token name and an optional attribute value. 
-This attribute is used when one lexeme can match more then one pattern. 
+This attribute is used when one pattern can match more then one lexeme.
 For example the pattern for a digit token matches both $0$ and $1$, 
 but it is important for the code generator to know which lexeme was found. 
 Therefore the lexer often returns not just the token but also an attribute value 
 that describes the lexeme found in the source program corresponding to this 
-token \cite{Aho2006}. A lexer collects chars into logical groups and assigns 
+token \cite{Aho2006}.
+
+A lexer collects chars into logical groups and assigns 
 internal codes to these groups according to their structure, 
-where the groups of chars are lexemes and the internal codes are tokens \cite{sebesta2012}. 
+where the groups of chars are lexemes and the internal codes are tokens \cite{sebesta2012}.
+In some cases it is not relevent to return a token for a pattern, in these
+cases the token and lexeme is simply discarded and the lexer continues,
+typical examples of this is whitespaces and comments which have no impact on
+the code \cite{Aho2006}.
 An example follows how a small piece of code would be divided.
 \begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
 Consider the following text; to be lexed:
@@ -139,10 +145,10 @@ Consider the following text; to be lexed:
 \end{quote}
 Given the regular languaged defined in \cref{reglang}, the lexical analyser would use the following rules:
 \begin{quote}
-\begin{tabular}{l c l}
-Identifier & \rightarrow & $letter$ $ident$*\\
-Integer    & \rightarrow & $digit$+\\
-Reserved   & \rightarrow & \textbackslash( | \textbackslash) | \textbackslash\{
+\begin{tabular}{l c l l}
+Identifier & $\rightarrow$ & $letter$ $ident$*\\
+Integer    & $\rightarrow$ & $digit$+\\
+Reserved   & $\rightarrow$ & \textbackslash( | \textbackslash) | \textbackslash\{
                          | \textbackslash\} | ; | = | \textbackslash+\textbackslash+
                          | < | \textbackslash+ | - | \textbackslash* | \/ & Reserved characters\\
 \end{tabular}
@@ -191,16 +197,7 @@ If there are multiple feasible solutions when performing the lexical
 analysis, the lexer will return the token that is the longest. To manage this
 the lexer will continue in the transition diagram if there are any legal edges
 leading out of the current state, even if it is an accepting state.\cite{Aho2006}.
-%\begin{example}[Longest Match] $ $\\ %skippa exemple här?
-%Given the regular expression:
-%\begin{center} $ab$, $abb+$ and $b+$ \end{center}
-%If the text which will be lexed is \emph{abbbb$\ldots$b}, the possible
-%representation by the given regular expressions is:
-%\begin{center}$\{ab, b+\}$ and $\{abb+\}$\end{center}
-%The lexer should always choose the regular expression representing the longest
-%sequence in the input text. 
-%Therefore the correct expression in this example is $abb+$
-%\end{example}
+
 The above rule is not always enough since the lexer has to explore all legal
 edges, even if the current state is accepting. If the lexer is in a state that
 is not accepting and don't have any legal edge out of that state, the lexer
@@ -219,15 +216,15 @@ the text starts with a multi line comment sign the lexer will try to lex it as
 a comment. When the lexer encounters the end of the text it will return the
 token corresponding to the last accepting state and begin lexing the rest from
 the initial state. Below follows the rules relevant to this example followed by
-the result to the lexer, the rest of the rules can be found in \cref{reglang}.
-\begin{quote}
+the result to the lexer, the rest of the rules can be found in \cref{reglang}.\\
 The Rules:
-\begin{tabular}{l c l}
+\begin{quote}
+\begin{tabular}{l c l l}
 & & /\textbackslash*) ([\^\textbackslash*] | (\textbackslash*) [\^/])*
     (\textbackslash*)+ / & Multi line comment\\
-Identifier & \rightarrow & $letter$ $ident$*\\
-Integer    & \rightarrow & $digit$+\\
-Reserved   & \rightarrow & \textbackslash( | \textbackslash) | \textbackslash\{
+Identifier & $\rightarrow$ & $letter$ $ident$*\\
+Integer    & $\rightarrow$ & $digit$+\\
+Reserved   & $\rightarrow$ & \textbackslash( | \textbackslash) | \textbackslash\{
                          | \textbackslash\} | ; | = | \textbackslash+\textbackslash+
                          | < | \textbackslash+ | - | \textbackslash* | \/ & Reserved characters\\
 \end{tabular}
@@ -272,22 +269,25 @@ state. The empty string $\epsilon$ is not a valid label.
 \end{itemize}
 Both these forms of finite automata are capable of recognising the same 
 subset of languages, all regular languages \cite{Aho2006}.
-The formal definition of a deterministic finite automaton follows:
-\begin{definition}[Deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
-A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
-\begin{enumerate}
-  \item $Q$ is a finite set called the states,
-  \item $\Sigma$ is a finite set called alphabet,
-  \item $\delta: Q \times \Sigma \to Q$ is a transition function,
-  \item $q_0 \in Q$ is the start state, and
-  \item $F \subseteq Q$ is the set of accept states.
-\end{enumerate}
 
-\end{definition}
 \subsubsection{Non-deterministic Finite Automata}
 An NFA accepts the input; $x$ if and only if there is a path in the transition 
 diagram from the start state to one of the accepting states, such that the 
 symbols along the way spells out $x$ \cite{Aho2006}.
+The formal definition of a non-deterministic finite automaton follows:
+\begin{definition}[Non-deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
+A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
+\begin{enumerate}
+  \item $Q$ is a finite set called the states,
+  \item $\Sigma$ is a finite set called alphabet,
+  \item $\delta: Q \times \Sigma \to P(Q)$ is a transition function,
+  \item $q_0 \in Q$ is the start state, and
+  \item $F \subseteq Q$ is the accept state.
+\end{enumerate} 
+\end{definition}
+The transition function doesn't map to one particular state from a
+state and element tuple. This is because one state may have more then one edge
+per element. An example of this can be seen in \cref{regexp2td}.
 
 There are two different ways of representing an NFA which this report will
 describe. One is by transition diagrams, where the regular expression will be
@@ -360,8 +360,18 @@ While a NFA is an abstract representation of an algorithm to recognise the strin
 of a language, the DFA is a simple concrete algorithm for recognising strings. 
 Every regular expression can be converted in to a NFA and every NFA can be 
 converted in to a DFA and then converted back to a regular expression \cite{Aho2006}. 
-It is the DFA that is implemented and 
-used when building lexical analysers. 
+It is the DFA that is implemented and used when building lexical analysers.
+The formal definition of a deterministic finite automaton follows:
+\begin{definition}[Deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
+A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
+\begin{enumerate}
+  \item $Q$ is a finite set called the states,
+  \item $\Sigma$ is a finite set called alphabet,
+  \item $\delta: Q \times \Sigma \to Q$ is a transition function,
+  \item $q_0 \in Q$ is the start state, and
+  \item $F \subseteq Q$ is the set of accept states.
+\end{enumerate} 
+\end{definition}
 \begin{example}[DFA representation of RegExp \cite{Aho2006}] \label{regexp2dfa}
 A DFA representation of same regular expression from \cref{regexp2td} is shown in \cref{fig:dfa}
 \end{example}
