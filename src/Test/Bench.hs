@@ -23,8 +23,8 @@ instance NFData A.Token where
 instance (NFData v,NFData a,Measured v a) => NFData (FingerTree v a) where
   rnf tree = foldl1 (seq . rnf) tree `seq` rnf (measure tree)
 
-instance NFData a => NFData (Seq a) where
-  rnf = flip seq () . foldl1 (seq . rnf)
+--instance NFData a => NFData (Seq a) where
+--  rnf = flip seq () . foldl1 (seq . rnf)
    
 instance NFData a => NFData (Sum a) where
   rnf (Sum a) = rnf a
