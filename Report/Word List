@@ -1,15 +1,19 @@
 % Words and abrevations we should probably have in a word list in the report
 
 Alex
-BNFC
+BNFC %perhaps skip
 DFA
-FingerTree (Might not use this data structure)
+FingerTree
 Incremental
+Lazy Evaluation
 Lexer
 Lexemes
 Monoid
 NFA
-Regular Expression (maybe not)
+Regular Expression
+Regular Language
+Sequence
 Scanner
 Token
-Transition (Incomming state -> Outgoing State)
+Transition
+Trasnition Map
