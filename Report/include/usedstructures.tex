@@ -109,12 +109,18 @@ implement a sequence. Lets start by looking at an ordinary 2-3 tree like in \cre
   \caption{Ordinary 2-3 tree
   \label{fig:2-3tree}}
 \end{figure}
-In this section the tree will store all data in the leafs. This can be expressed by defining an non-regular or nested type, as follows:
+In this section the tree will store all data in the leafs. This can be expressed
+by defining an non-regular or nested type, as follows:
 \lstinputlisting[language=Haskell]{examples/FingerTree2-3Tree.hs}
-Operations on these types of trees usually takes logarithmic time in the size of the tree. 
-But for sequence representations a constant time complexity is preferable for adding or removing element from the start or end of the sequence.
+Operations on these types of trees usually takes logarithmic time in the size of
+the tree. But for sequence representations a constant time complexity is
+preferable for adding or removing element from the start or end of the sequence.
 
-A finger is a structure which provides efficient access to nodes near the distinguished location. To obtain efficient access to the start and end of the sequence represented by the tree, there should be fingers placed at the left and right end of the tree. In the example tree, taking hold of the end nodes of and lifting them up together. The result should look like in \cref{fig:fingertree}
+A finger is a structure which provides efficient access to nodes near the
+distinguished location. To obtain efficient access to the start and end of the
+sequence represented by the tree, there should be fingers placed at the left and
+right end of the tree. In the example tree, taking hold of the end nodes of and
+lifting them up together. The result should look like in \cref{fig:fingertree}
 \begin{figure}[!h]
   \centering
   \tikzset{
@@ -157,11 +163,101 @@ A finger is a structure which provides efficient access to nodes near the distin
   \label{fig:fingertree}}
 \end{figure}
 
-Since all leafs in the 2-3 tree where at the same level, the left and right spine has the same lenth. Therefor the left and right spines can be pair up to create a single central spine. Branching out from the spine is 2-3 trees. At the top level there are two to three elements on each side, while the other levels have one or two sub-trees, whose depth increases down the spine. Depending on if the root node had 2 or 3 branches in the original 2-3 tree, will the bottom node ether have a single 2-3 tree or empty. This structure can be described as follows:
+Since all leafs in the 2-3 tree where at the same level, the left and right
+spine has the same lenth. Therefor the left and right spines can be pair up to
+create a single central spine. Branching out from the spine is 2-3 trees. At the
+top level there are two to three elements on each side, while the other levels
+have one or two sub-trees, whose depth increases down the spine. Depending on if
+the root node had 2 or 3 branches in the original 2-3 tree, will the bottom node
+ether have a single 2-3 tree or empty. This structure can be described as
+follows:
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
-Where Digit is a buffer of elements stored left to right, here represented as a list for simplicity
+Where Digit is a buffer of elements stored left to right, here represented as a
+list for simplicity
 
-The non-regular definition of the $FingerTree$ type detemines the unusual shape of these trees, which is the key to there performance. The top level of the tree contains elements of type $a$. Next level contains elements of type $Node$ $a$. At the $n$th level, elements are of type $Node^n$ $a$. which are 2-3 trees with a depth of $n$. This will give that a sequence of $n$ elements is represented by a $FingerTree$ of depth $\Theta(\log n)$. Also an element at position $d$ from the nearest end is stored at a depth of $\Theta(\log d)$ in the $FingerTree$ \cite{fingertree}
+The non-regular definition of the $FingerTree$ type detemines the unusual shape
+of these trees, which is the key to there performance. The top level of the tree
+contains elements of type $a$. Next level contains elements of type $Node$ $a$.
+At the $n$th level, elements are of type $Node^n$ $a$. which are 2-3 trees with
+a depth of $n$. This will give that a sequence of $n$ elements is represented by
+a $FingerTree$ of depth $\Theta(\log n)$. Also an element at position $d$ from
+the nearest end is stored at a depth of $\Theta(\log d)$ in the $FingerTree$
+\cite{fingertree}
+
+In fingertrees and nodes the reduce function mentioned in fundamental concepts
+will be generic defined to the following types. 
+Reduction for the node:
+\lstinputlisting[language=Haskell]{examples/FingerTreeReduceNode.hs}
+Reduction of fingertrees single and double liftings of the binary operation:
+\lstinputlisting[language=Haskell]{examples/FingerTreeReduceFingerTree.hs}
+
+\subsection{Double-ended Queue Operations}
+After showing how the Fingertrees basic structure is defined. It is now time to
+show how fingertrees makes effincient Double-ended Queue, a que structure which
+can be accessed from both ends, where all operations having the time complecity
+$\Theta(1)$.
+
+Adding a element to the begining of the sequence is strait forward, except when
+the initial buffer ($Digit$) already is full. In this case, push all but one of
+the elements in the buffer as a node, leaving behind two elements in the buffer:
+\lstinputlisting[language=Haskell]{examples/FingerTreeInfixr.hs}
+Adding to the end of the sequnce is a mirror image of the above:
+\lstinputlisting[language=Haskell]{examples/FingerTreeInfixl.hs}
+
+A insertion operation the basic 2-3 tree, where the data is stored in the leafs,
+is done with a time complecity of $\Theta \log n$. In the fingertree the
+expected time complecity can be argued in the followin way. Digits of two or
+three elements (which is isomorphic to elements of type $Node$ $a$) is
+classified as safe and those of one or four elements is classified as dangerous.
+A double-ended queue operation can only propagate to the next level from a
+dangerous element. By doing so making that dangerous element safe, which means
+that the next operation reaching that digit will not porpagate. This will result
+in that at most half of the operations decend one level, at most 1 quarter two
+levels, and so on. This will give that in a sequence of operations the average
+cost is constant.
+
+The same bound hold in a persistend setting if subtrees are suspended using lazy
+evaluation. Lazyness makes sure that changes deep in the spine do not take place
+until a subsequent operation need to go sonw that far. By the above properties
+of safe and dangearous digits, by that time enought cheap shallow operations
+will have been performed to pay for the more expensive operation \cite{fingertree}.
+
+\subsubsection{The Banker's Method}
+The banker's method accounts for accumulated debt. Each debit represents
+a constant amount of suspended work. When a computaion initially suspends, it
+create a number of debits proportional to it's shared cost and
+associate each debit with a location in the object. The choice of location for
+each debit depends on the nature of the computation. If the computation is
+monolithic (i.e., once begun, it runs to completion), then all debits are
+usually assigned to the root of the result, which the incremental lexer is not. 
+But if the computation is like the lexer a incremental, then the debits may be 
+distributed among the roots of the partial results.
+
+The amortized cost of an operation is the unshared cost of the operation
+plus the number of debits discharged by the operation. Note that the number
+of debits created by an operation is not included in its amortized cost. The
+order in which debits should be discharged depends on how the object will
+be accessed; debits on nodes likely to be accessed soon should be discharged
+first.
+
+Incremental functions play an important role in the banker's method because
+they allow debits to be dispersed to different locations in a data structure,
+each corresponding to a nested suspension. Then, each location can be accessed
+as soon as its debits are discharged, without waiting for the debits at other
+locations to be discharged. This means that the initial partial results of
+an incremental computation can be paid for very quickly, and that subsequent
+partial results may be paid for as they are needed \cite{Okasaki1999}.
+
+\subsubsection{Banker Method on the FingerTree}
+The argument for the amortized time can be expressed using the Banker method.
+This is done by assigning the suspension of the middle tree in each Deep node
+as many debits as the node has safe digits. (0,1 or 2) A double-ended que
+operation which descends $k$ levels turns $k$ dangerous digits into safe digits.
+By doing so creates $k$ debits to pay for the work done.
+Applying the banker's method of debit passing to any debits already attached to
+these $k$ nodes. It can be showned that each operation must discharge at moset
+one debit. Therefore the double-ended que operations run in $\Theta(1)$
+amortized time \cite{fingertree}.
 
 \section{Sequences}
 A sequence in Haskell is a form of sophisticated list. That is a list with better performance than the basic [] list notation. Where a list in Haskell has $\Theta(n)$ for finding, inserting or deleting elements, that is in a list there is only known current element and the rest of the list. Which will result in for example finding the last element of a list, the computer must look at every element until the empty list has been found as the rest of the list. Where in a sequence the last element can be obtained in $\Theta(1)$ time. Adding a element anywhere in the sequence can be done in worst case, $\Theta(log n)$ \cite{fingertree}. 
