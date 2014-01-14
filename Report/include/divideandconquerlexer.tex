@@ -1,20 +1,20 @@
 \chapter{Divide-and-Conquer Lexer}
 An incremental divide and conquer lexer works by dividing the sequence, to be lexicaly analysed,
-into smaller part and analyse them; and then combining them. In the base
-case the lexical analysis is done on a single character. The conquer step is
-then to combine the smaller tokens into as large tokens as possible. The end
-result should be a sequence of token that represent the code. How this is done
+into small parts and analyse them; and then combining them. In the base
+case the lexical analysis is done on a single character. The conquer step
+then combines the smaller tokens into as large tokens as possible. The end
+result is a sequence of token that represent the code. How this is done
 will be described below.
 
 \section{Divide and Conquer in General}
-This section will try to give an idea of how the Divide and Conquer algorithm
-works in a general case. So when talking about the incremental lexer there is an
-understanding about the underlying techniques.
+This section gives an idea of how the Divide and Conquer algorithm
+works in general, before adressing in detail how to apply it to lexing.
+% So when talking about the incremental lexer there is an understanding about the underlying techniques.
 
 \subsection{The Three Steps}
 The general idea of a divide and conquer algorithm is to divide a problem into
 smaller parts and solve them separatly and then combine the results. A Divide
-and Conquer algorithm always consist of a pattern with these three steps \cite{Goodrich}.
+and Conquer algorithm always consists of a pattern with these three steps \cite{Goodrich}.
 \begin{description}
 \item[Divide:] If the input size is bigger than the base case then divide the
 input into subproblems. Otherwise solve the problem using a straightforward
@@ -29,10 +29,10 @@ An associative function, or operator, is a function that doesn't care in what
 order it is applied. An example of such a function is $+$, which is associative
 since it has the propert in \cref{assprop}.
 
-In divide and conquer algorithms this is essential. In the conquer step of the
+In divide and conquer algorithms this is essential. In the divide step of the
 divide and conquer algorithm, there is no certain order of how the subproblems
-are going to be conquered. This means that the order the subproblems are being
-conquered can't matter for the algorithm, hence the conquer step must be
+are going to be divided. This means that the order the subproblems are being
+conquered can't have an impact on the algorithm, hence the conquer step must be
 associative.
 
 \begin{example}[Associativity of the conquer step]\label{assprop}
@@ -55,10 +55,10 @@ Assume a function $T_n$ constrained by the recurrence
 \begin{center}
 $T_n = {\alpha}T_{\frac{n}{\beta}}+ f(n)$
 \end{center}
-This is typically the equation of a divide-and-conquer algorithm, where $\alpha$
+(This is typically the equation for the running time of a divide and conquer algorithm, where $\alpha$
 is the number of sub-problems at each recursive step, $n/\beta$ is the size of
 each sub-problem, and $f(n)$ is the running time of dividing up the problem
-space into $\alpha$ parts, and combining the sub-results together.\\
+space into $\alpha$ parts, and combining the sub-results together.)\\
 If we let $e = log_\beta \alpha$, then
 \begin{center}
 \begin{tabular}{r c l l}
@@ -74,10 +74,10 @@ If we let $e = log_\beta \alpha$, then
 \qeda
 \end{theorem}
 
-\subsection{Hand on Example}
+\subsection{Hands on Example}
 The divide and conquer pattern can be preformed on different sorts of algorithm
-that solves different problems. A general problem is sorting, or more precies
-sorting a sequence of integers. This example will show merge-sort.
+that solves different problems. A general problem is sorting, or more precisely
+sorting a sequence of integers. This example shows merge-sort.
 
 \begin{description}
 \item[divide:] The algorthim starts with the divide step. Given the input $S$ the algorithm
@@ -91,7 +91,7 @@ second half.
 \end{itemize}
 \item[Recur:] The next step is to sort the subsequences $S_1$ and $S_2$. The sorting
 function sorts the subsequences by recursivly calling itself twice with $S_1$ and
-$S_2$ as arguments respectivly
+$S_2$ as arguments respectivly.
 \item[Conquer:] Since $S_1$ and $S_2$ are sorted combining them into one sorted
 sequence is trivial. This process is what's refered to as merge in merge-sort.
 The resulting sequence of this merge is returned.
@@ -117,9 +117,9 @@ Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
 \end{algorithm}
 
 Given the mergesort algorithm, time complexity can be calculated as follows
-using the master method. There are $2$ recurrsive calls, the subproblems are
-$1/2$ of the original problem size. To merge the two sorted subproblems the
-worst case is to check every element in the two list, $2 \cdot n/2 = n$.
+using the master method. There are $2$ recursive calls and the subproblems are
+$1/2$ of the original problem size, so $\alpha=2$ and $\beta=2$. To merge the two sorted subproblems the
+worst case is to check every element in the two list, $f(n) = 2 \cdot n/2 = n$.
 \begin{center}
  $T(n) = 2T(n/2) + n$.
 \end{center}
@@ -140,7 +140,7 @@ $T(n) = \Theta(n^{log_2 2} \cdot log n) = \Theta(n \cdot log n)$
 \section{Divide and Conquer Lexing in General}
 In the last section we covered the general divide and conquer algorithm. In this
 section the general data structures and algorithms for an incremental divide and
-conquer lexer will be covered.
+conquer lexer are covered.
 
 \subsection{Treestructure} % work in progress.
 The incremental divide and conquer lexer should use a structuer where the
@@ -148,8 +148,10 @@ code-lexemes can be related to its tokens, current result can be saved and easy
 recalculated. A divide and conquer lexer should therefore use a tree structure
 to save the lexed result in. Since every problem can be divided in to several
 subproblems, until the basecase is reached. This is cleraly a tree structure of
-solutions, where the leafs are the tokens for a single character. and the root
+solutions, where a leaf is a token for a single character. and the root
 is a sequence of all tokens in the code.  
+
+%TODO master thereom
 
 \subsection{Transition map} % before treestructure?
 When storing a result of a lexed string it is a good idea to store more then
@@ -172,6 +174,10 @@ map using the DFA for the language. It will for each state create a transition
 that has the state as in state, a list containing the character as the only
 token and by using the DFA, lookup what out state the transition should have.
 For the character '/' part of a transition map might look like the following.
+
+In the
+examples below the first number refers to the in state, the middle part is the
+sequence of tokens and the second number is the out state, that can be accepting.
 \begin{center}
 $\left[\begin{array}{ccc}
 10&Single '/'&10\\
@@ -184,16 +190,42 @@ transition will result in a lexical error. For reasons being covered in
 \cref{longmatch}, they can't be discarded.
 
 \subsection{Conquer Step}
+The conquer step of the algorithm is to combine two transition maps in to one
+transition map. This is done by, for every transtion in the left transition map, combining
+the transition with the transition in the right transition map that has the same in state as the
+left transitions out state.
+
 The most general case is a naive lexer that takes the first accepting state it
-can find. When two lists of tokens are combined there are two different outcomes:
+can find. When two transition maps are combined there are two different outcomes:
 \begin{description} 
-  \item[Concat:]create two tokens if the
-    out state of the first list is accepting then the second list will be appended
-    to the first list.
-  \item[Combine:]The other case is when the first list of tokens does not end
-    in an accepting state. In this case the lexer will try to find an in state in
-    the second list that is the same as the out state of the first transition.
+  \item[Concat:]If the out state of the first transition is accepting, the
+    sequence in the transition that starts in the starting state of the second
+    transition map will be appended to the first.\\
+\#Look over syntax in this example
+\begin{center}
+$NewTOKENS=TOKENS1 >< TOKENS2$
+\end{center}
+%create two tokens if the
+%    out state of the first list is accepting then the second list will be appended
+%    to the first list.
+  \item[Combine:]If the out state of the first transition is not accepting, the
+    transition in the second transition map with the same in state as the out
+    state of the first transition will be used. The last token of the sequence
+    from the first transition will be combined with the first token in the second
+    transition in to one token and put between the two sequences.\\
+\#Look over syntax in this example
+\begin{center}
+$TOKENS1=PREFIX1|>token1$\\
+$TOKENS2=token2<|SUFFIX2$\\
+$newtoken=token1 `combinedWith` token2$\\
+$NewTOKENS=PREFIX1 |> newtoken >< SUFFIX2$\\
+\end{center}
+%The other case is when the first list of tokens does not end
+%    in an accepting state. In this case the lexer will try to find an in state in
+%    the second list that is the same as the out state of the first transition.
 \end{description}
+For both the cases the in state of the first transition will be the new in state
+and the out state of the second transition will be the new out state.
 \begin{center}
 $\left[\begin{array}{ccc}
 0&Single '/'&1\\

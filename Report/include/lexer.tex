@@ -73,8 +73,8 @@ left-associative.
 \subsection{Languages}
 An alphabet is a finite set of symbols, for example Unicode, which 
 includes approximately $100,000$ characters. A language is any 
-countable set of some fixed alphabet \cite{Aho2006}.
-The term "formal languages" refers to languages which can be described by a body 
+countable set of strings of some fixed alphabet \cite{Aho2006}.
+The term "formal language" refers to languages which can be described by a body 
 of systematic rules. There is a subset of languages to formal languages called 
 regular language, these regular languages refers to those languages 
 that can be defined by regular expressions \cite{Ranta2012}.
@@ -109,7 +109,7 @@ This section describe the structures which the lexical analyser use
 for representing the abstract data; what these structures are for and what is 
 forwarded to the syntactical analyser. 
 
-A lexical analyser uses three different concepts. All which is described 
+A lexical analyser uses three different concepts. The concepts are described 
 below. 
 \begin{description}
   \item[Token]
@@ -141,7 +141,8 @@ In some cases it is not relevent to return a token for a pattern, in these
 cases the token and lexeme is simply discarded and the lexer continues,
 typical examples of this is whitespaces and comments which have no impact on
 the code \cite{Aho2006}.
-An example follows how a small piece of code would be divided.
+An example follows how a small piece of code would be divided given the regular
+language described in \cref{reglang}.
 \begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
 Consider the following text; to be lexed:
 \begin{quote}
