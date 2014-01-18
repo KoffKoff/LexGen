@@ -13,7 +13,7 @@ works in general, before adressing in detail how to apply it to lexing.
 
 \subsection{The Three Steps}
 The general idea of a divide and conquer algorithm is to divide a problem into
-smaller parts and solve them separatly and then combine the results. A Divide
+smaller parts, solve them indepently and then combine the results. A Divide
 and Conquer algorithm always consists of a pattern with these three steps \cite{Goodrich}.
 \begin{description}
 \item[Divide:] If the input size is bigger than the base case then divide the
@@ -39,9 +39,7 @@ associative.
 Let $f(x,y)$ be the conquer function, where $x$ and $y$ are of the same type as
 the result of $f$, then:
 \begin{center}
-$f(x,f(y,z)) \to a$\\
-$f(f(x,y),z) \to b$\\
-$a=b$
+$f(x,f(y,z)) = f(f(x,y),z)$
 \end{center}
 Otherwise the algorithm can give different results for the same data.
 \end{example}
@@ -94,7 +92,7 @@ function sorts the subsequences by recursivly calling itself twice with $S_1$ an
 $S_2$ as arguments respectivly.
 \item[Conquer:] Since $S_1$ and $S_2$ are sorted combining them into one sorted
 sequence is trivial. This process is what's refered to as merge in merge-sort.
-The resulting sequence of this merge is returned.
+The resulting sequence of the merge is returned.
 \end{description}
 Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
 
@@ -118,15 +116,12 @@ Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
 
 Given the mergesort algorithm, time complexity can be calculated as follows
 using the master method. There are $2$ recursive calls and the subproblems are
-$1/2$ of the original problem size, so $\alpha=2$ and $\beta=2$. To merge the two sorted subproblems the
-worst case is to check every element in the two list, $f(n) = 2 \cdot n/2 = n$.
+$1/2$ of the original problem size, so $\alpha=2$ and $\beta=2$. To merge the
+two sorted subproblems the worst case is to check every element in the two list,
+$f(n) = 2 \cdot n/2 = n$.
 \begin{center}
- $T(n) = 2T(n/2) + n$.
-\end{center}
-Results in: 
-\begin{center}
-$a = 2$, $b = 2$ and $f(n) = n \;
-\Rightarrow n^{log_b a} = n^{log_2 2} = n$
+$T(n) = 2T(n/2) + n$\\
+$e=log_\beta\alpha=log_22=1$
 \end{center}
 Case 2 of the master theorem applies, since
 \begin{center}
@@ -138,9 +133,9 @@ $T(n) = \Theta(n^{log_2 2} \cdot log n) = \Theta(n \cdot log n)$
 \end{center}
 
 \section{Divide and Conquer Lexing in General}
-In the last section we covered the general divide and conquer algorithm. In this
-section the general data structures and algorithms for an incremental divide and
-conquer lexer are covered.
+In the last section we covered the general divide and conquer algorithm. This
+section covers the general data structures and algorithms for an incremental
+divide and conquer lexer.
 
 \subsection{Treestructure} % work in progress.
 The incremental divide and conquer lexer should use a structuer where the
@@ -193,10 +188,14 @@ transition will result in a lexical error. For reasons being covered in
 The conquer step of the algorithm is to combine two transition maps in to one
 transition map. This is done by, for every transtion in the left transition map, combining
 the transition with the transition in the right transition map that has the same in state as the
-left transitions out state.
+left transitions out state. This can be described byt the following logical statement where $T_1$ and $T_2$ refers to the first and second transition map.
+\begin{center}
+$\forall.t_1\in T_1\;\exists.t_2\in T_2\;o_1=i_2,o_1=outState(t_1),i_2=inState(t_2)
+\vdash t_{new}=merge(t_1,t_2)$
+\end{center}
 
 The most general case is a naive lexer that takes the first accepting state it
-can find. When two transition maps are combined there are two different outcomes:
+can find. When two transitions are combined there are two different outcomes:
 \begin{description} 
   \item[Concat:]If the out state of the first transition is accepting, the
     sequence in the transition that starts in the starting state of the second
