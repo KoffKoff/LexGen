@@ -259,6 +259,21 @@ these $k$ nodes. It can be showned that each operation must discharge at moset
 one debit. Therefore the double-ended que operations run in $\Theta(1)$
 amortized time \cite{fingertree}.
 
+\subsection{Concatenation Operations}
+Concatenation is a simple operation for most cases, except for the case when two $Deep$ trees are being concatenated. Concatenating with a $Empty$ will be an identity and with a $Single$ will reduce to $<|$ or $|>$. For the hard part when there are two $Deep$ trees, the prefix of the first tree will be the final prefix. Suffix of the second tree will be the suffix of the final tree. The recursive function $app3$ combines two trees and a list of $Nodes$ (basically the old prefix and suffixes down the spines of the old trees):
+
+\lstinputlisting[language=Haskell]{examples/FingerTreeApp3.hs}
+
+Where $(<|')$ and $(|>')$ are the functions defined in the previous sub-section and $nodes$ groups a list of elements into $Node$s: 
+
+\lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
+
+Now to concatination of the FingerTrees, just call on $app3$ with an empty list between the two trees.
+
+\lstinputlisting[language=Haskell]{examples/FingerTreeConcatFunc.hs}
+
+The time spent on concatination can be reasoned in this way. Each invocation of $app3$ arising from $(><)$ the argument list has a length of at most 4, which means that each of these invocations takes $\Theta(1)$ time. The recursion terminates when the bottom of the shallower tree has been reached, with up to 4 insertions. So the total time complexity id $\Theta(\log min\{n_1, n_2\})$ where $n_1$ and $n_2$ are te number of elements in the two trees. 
+
 \section{Sequences}
 A sequence in Haskell is a form of sophisticated list. That is a list with better performance than the basic [] list notation. Where a list in Haskell has $\Theta(n)$ for finding, inserting or deleting elements, that is in a list there is only known current element and the rest of the list. Which will result in for example finding the last element of a list, the computer must look at every element until the empty list has been found as the rest of the list. Where in a sequence the last element can be obtained in $\Theta(1)$ time. Adding a element anywhere in the sequence can be done in worst case, $\Theta(log n)$ \cite{fingertree}. 
 
