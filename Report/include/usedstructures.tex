@@ -1,16 +1,16 @@
 \chapter{Implementation}
 Here we should talk about bnfc and
-alex. What we use from the differnet programs. How this is usefull
-is it becouse of lazynes or are the existing solutions good??
+alex. What we use from the different programs. How this is useful
+is it because of laziness or are the existing solutions good??
 
 \section{Alex}
-Alex is a tool for generating lexical analysers built in Haskell, given a description of the language
-in form of regular expressions. The result will be Haskell 98 compatible and can easly be used with the
+Alex is a tool for generating lexical analyzers built in Haskell, given a description of the language
+in form of regular expressions. The result will be Haskell 98 compatible and can easily be used with the
 parser Happy, a parser generator for Haskell.
 \subsection{The DFA design}
 
 \section{Monoid}
-In abstract algebra a monoid is a set, $S$, and a binary operation $\bullet$ which furfills the following
+In abstract algebra a monoid is a set, $S$, and a binary operation $\bullet$ which fulfills the following
 three properties:
 \begin{description}
 \item[Closure] $\forall a,b \in S: a \bullet b \in S$
@@ -18,7 +18,7 @@ three properties:
 \item[Identity element] $\exists e \in S: \forall a \in S: e \bullet a = a \bullet e = a$
 \end{description}
 
-\subsection{The Basecase}
+\subsection{The Base case}
 \subsection{The Conquer Step}
 
 \section{Fingertree}
@@ -26,18 +26,18 @@ The incremental lexer uses a tree structure to save already lexed content.
 This tree is of form Fingertree.
 What that is and the basics of it is described in this section.
 
-\subsection{Fundemental Conscepts}
-Before describing the functionality, lets take a look on which buildingblocks
+\subsection{Fundamental Concepts}
+Before describing the functionality, lets take a look on which building blocks
 the fingertrees uses.
 \paragraph{First,}
 fingertrees uses monoids which has been described earlier in this chapter.
 \paragraph{Second,} 
 fingertrees uses Right and Left Reductions. This is a function which
-collapses a structure of $f$ $a$ into a single value of type $a$. The basecase
+collapses a structure of $f$ $a$ into a single value of type $a$. The base case
 for when the tree is empty is replaced with a constant value, such as 
 $\emptyset$. Intermediate results are combined using a binary operation, like
 the monoids $\bullet$. Reduction with a monoid always return the same value,
-independent of the argument nesting. But for a reduction with an arbitraty
+independent of the argument nesting. But for a reduction with an arbitrary
 constant and binary operation there must be a specified nesting rule. If
 combining operation are only nested to the right, or to the left, the obtained
 result will be a skewed reductions, which can be singled out as a type class.
@@ -164,18 +164,18 @@ lifting them up together. The result should look like in \cref{fig:fingertree}
 \end{figure}
 
 Since all leafs in the 2-3 tree where at the same level, the left and right
-spine has the same lenth. Therefor the left and right spines can be pair up to
+spine has the same length. Therefor the left and right spines can be pair up to
 create a single central spine. Branching out from the spine is 2-3 trees. At the
 top level there are two to three elements on each side, while the other levels
 have one or two sub-trees, whose depth increases down the spine. Depending on if
 the root node had 2 or 3 branches in the original 2-3 tree, will the bottom node
-ether have a single 2-3 tree or empty. This structure can be described as
+either have a single 2-3 tree or empty. This structure can be described as
 follows:
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
 Where Digit is a buffer of elements stored left to right, here represented as a
 list for simplicity
 
-The non-regular definition of the $FingerTree$ type detemines the unusual shape
+The non-regular definition of the $FingerTree$ type determines the unusual shape
 of these trees, which is the key to there performance. The top level of the tree
 contains elements of type $a$. Next level contains elements of type $Node$ $a$.
 At the $n$th level, elements are of type $Node^n$ $a$. which are 2-3 trees with
@@ -188,43 +188,43 @@ In fingertrees and nodes the reduce function mentioned in fundamental concepts
 will be generic defined to the following types. 
 Reduction for the node:
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceNode.hs}
-Reduction of fingertrees single and double liftings of the binary operation:
+Reduction of fingertrees single and double lifting of the binary operation:
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceFingerTree.hs}
 
 \subsection{Double-ended Queue Operations}
 After showing how the Fingertrees basic structure is defined. It is now time to
-show how fingertrees makes effincient Double-ended Queue, a que structure which
-can be accessed from both ends, where all operations having the time complecity
+show how fingertrees makes efficient Double-ended Queue, a queue structure which
+can be accessed from both ends, where all operations having the time complexity
 $\Theta(1)$.
 
-Adding a element to the begining of the sequence is strait forward, except when
+Adding a element to the beginning of the sequence is strait forward, except when
 the initial buffer ($Digit$) already is full. In this case, push all but one of
 the elements in the buffer as a node, leaving behind two elements in the buffer:
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixr.hs}
-Adding to the end of the sequnce is a mirror image of the above:
+Adding to the end of the sequence is a mirror image of the above:
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixl.hs}
 
 A insertion operation the basic 2-3 tree, where the data is stored in the leafs,
-is done with a time complecity of $\Theta \log n$. In the fingertree the
-expected time complecity can be argued in the followin way. Digits of two or
+is done with a time complexity of $\Theta \log n$. In the fingertree the
+expected time complexity can be argued in the following way. Digits of two or
 three elements (which is isomorphic to elements of type $Node$ $a$) is
 classified as safe and those of one or four elements is classified as dangerous.
 A double-ended queue operation can only propagate to the next level from a
 dangerous element. By doing so making that dangerous element safe, which means
-that the next operation reaching that digit will not porpagate. This will result
-in that at most half of the operations decend one level, at most 1 quarter two
+that the next operation reaching that digit will not propagate. This will result
+in that at most half of the operations descend one level, at most 1 quarter two
 levels, and so on. This will give that in a sequence of operations the average
 cost is constant.
 
-The same bound hold in a persistend setting if subtrees are suspended using lazy
-evaluation. Lazyness makes sure that changes deep in the spine do not take place
-until a subsequent operation need to go sonw that far. By the above properties
-of safe and dangearous digits, by that time enought cheap shallow operations
+The same bound hold in a persisted setting if subtrees are suspended using lazy
+evaluation. Laziness makes sure that changes deep in the spine do not take place
+until a subsequent operation need to go that far. By the above properties
+of safe and dangerous digits, by that time enough cheap shallow operations
 will have been performed to pay for the more expensive operation \cite{fingertree}.
 
-\subsubsection{The Banker's Method}
-The banker's method accounts for accumulated debt. Each debit represents
-a constant amount of suspended work. When a computaion initially suspends, it
+\subsubsection{The Bankers Method}
+The bankers method accounts for accumulated debt. Each debit represents
+a constant amount of suspended work. When a computation initially suspends, it
 create a number of debits proportional to it's shared cost and
 associate each debit with a location in the object. The choice of location for
 each debit depends on the nature of the computation. If the computation is
@@ -240,7 +240,7 @@ order in which debits should be discharged depends on how the object will
 be accessed; debits on nodes likely to be accessed soon should be discharged
 first.
 
-Incremental functions play an important role in the banker's method because
+Incremental functions play an important role in the bankers method because
 they allow debits to be dispersed to different locations in a data structure,
 each corresponding to a nested suspension. Then, each location can be accessed
 as soon as its debits are discharged, without waiting for the debits at other
@@ -248,15 +248,15 @@ locations to be discharged. This means that the initial partial results of
 an incremental computation can be paid for very quickly, and that subsequent
 partial results may be paid for as they are needed \cite{Okasaki1999}.
 
-\subsubsection{Banker Method on the FingerTree}
+\subsubsection{Banker Method on the Fingertree}
 The argument for the amortized time can be expressed using the Banker method.
 This is done by assigning the suspension of the middle tree in each Deep node
-as many debits as the node has safe digits. (0,1 or 2) A double-ended que
+as many debits as the node has safe digits. (0,1 or 2) A double-ended queue
 operation which descends $k$ levels turns $k$ dangerous digits into safe digits.
 By doing so creates $k$ debits to pay for the work done.
-Applying the banker's method of debit passing to any debits already attached to
-these $k$ nodes. It can be showned that each operation must discharge at moset
-one debit. Therefore the double-ended que operations run in $\Theta(1)$
+Applying the bankers method of debit passing to any debits already attached to
+these $k$ nodes. It can be showed that each operation must discharge at most
+one debit. Therefore the double-ended queue operations run in $\Theta(1)$
 amortized time \cite{fingertree}.
 
 \subsection{Concatenation Operations}
@@ -268,17 +268,19 @@ Where $(<|')$ and $(|>')$ are the functions defined in the previous sub-section 
 
 \lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
 
-Now to concatination of the FingerTrees, just call on $app3$ with an empty list between the two trees.
+Now to concatenation of the Fingertrees, just call on $app3$ with an empty list between the two trees.
 
 \lstinputlisting[language=Haskell]{examples/FingerTreeConcatFunc.hs}
 
-The time spent on concatination can be reasoned in this way. Each invocation of $app3$ arising from $(><)$ the argument list has a length of at most 4, which means that each of these invocations takes $\Theta(1)$ time. The recursion terminates when the bottom of the shallower tree has been reached, with up to 4 insertions. So the total time complexity id $\Theta(\log min\{n_1, n_2\})$ where $n_1$ and $n_2$ are te number of elements in the two trees. 
+The time spent on concatenation can be reasoned in this way. Each invocation of $app3$ arising from $(><)$ the argument list has a length of at most 4, which means that each of these invocations takes $\Theta(1)$ time. The recursion terminates when the bottom of the shallower tree has been reached, with up to 4 insertions. So the total time complexity id $\Theta(\log min\{n_1, n_2\})$ where $n_1$ and $n_2$ are the number of elements in the two trees. 
 
 \section{Sequences}
 A sequence in Haskell is a form of sophisticated list. That is a list with better performance than the basic [] list notation. Where a list in Haskell has $\Theta(n)$ for finding, inserting or deleting elements, that is in a list there is only known current element and the rest of the list. Which will result in for example finding the last element of a list, the computer must look at every element until the empty list has been found as the rest of the list. Where in a sequence the last element can be obtained in $\Theta(1)$ time. Adding a element anywhere in the sequence can be done in worst case, $\Theta(log n)$ \cite{fingertree}. 
 
 Since this project is about creating as real-time lexing tool, performance is very important. String in Haskell are just a list of characters, [Char], and therefor has $\Theta(n)$ in time cost. Lexing is working with strings in a high frequency and there for there is a idea of instead define a string as a sequence of characters instead of a list of character. 
 
+\section{Fingertree}
+The implementation
 \section{Transition Map}
 \subsection{Array Format}
 \subsection{Function Composition Format}
