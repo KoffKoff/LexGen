@@ -354,6 +354,17 @@ Now to concatenation of the Fingertrees, just call on $app3$ with an empty list 
 
 The time spent on concatenation can be reasoned in this way. Each invocation of $app3$ arising from $(><)$ the argument list has a length of at most 4, which means that each of these invocations takes $\Theta(1)$ time. The recursion terminates when the bottom of the shallower tree has been reached, with up to 4 insertions. So the total time complexity id $\Theta(\log min\{n_1, n_2\})$ where $n_1$ and $n_2$ are the number of elements in the two trees. 
 
+\subsection{Sequences}
+A sequence in Haskell is a special case of the fingertree that has no measure.
+The performance is therefor superior to that of standard lists. Where a list in Haskell has
+$\Theta(n)$ for finding, inserting or deleting elements, that is in a list there
+is only known current element and the rest of the list. Which will result in for
+example finding the last element of a list, the computer must look at every
+element until the empty list has been found as the rest of the list. Where in a
+sequence the last element can be obtained in $\Theta(1)$ time. Adding an element
+anywhere in the sequence can be done in worst case, $\Theta(log n)$
+\cite{fingertree}.
+
 \section{Divide and Conquer Lexing in General}
 In the last section we covered the general divide and conquer algorithm. This
 section covers the general data structures and algorithms for an incremental

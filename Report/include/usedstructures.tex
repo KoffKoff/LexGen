@@ -4,23 +4,120 @@ alex. What we use from the different programs. How this is useful
 is it because of laziness or are the existing solutions good??
 
 \section{Alex}
-Alex is a tool for generating lexical analyzers built in Haskell, given a description of the language
-in form of regular expressions. The result will be Haskell 98 compatible and can easily be used with the
-parser Happy, a parser generator for Haskell.
+Alex is a tool for generating lexical analyzers built in Haskell, given a
+description of the language in the form of regular expressions. The result will
+be Haskell 98 compatible and can easily be used with the parser Happy, a parser
+generator for Haskell.
 \subsection{The DFA design}
+In the incremental lexer Alex was used to create the DFA. The reason for this is
+that Alex generates a DFA which is optimized in data size. Instead of having an
+array for every possible character and state combination 5 arrays are generated
+that takes advantage of the fact that for most characters the same state will be
+used in the majority of time, thus saving a lot of elements that would
+otherwise be the same in the array.
+
+The trade of for using the Alex generated DFA is that some minor arithmetic
+operations are used and some extra lookups are needed, however these operations
+are far less time consuming then the rest of the lexical operations.
+
+\section{Token data structure}
+To keep all the information that might be needed when combining two texts, a data
+structure for the tokens was created. This data structure contains slightly more
+data then what a sequential lexer would save.
+\subsection{Sequences}
+Since this project is about creating a real-time lexing tool, performance is
+important. Therefor there are advantages of using sequences instead of lists.
+The most notable place where this is used is in the measure of the fingertree,
+where the tokens are stored in a sequence rather then a list. Sequences are also
+used elsewhere in the project but this is the most notable place since it is
+frequently updated.
+\subsection{Tokens}
+The internal structure used by the lexer is called $Tokens$. There are three
+constructors in the $Tokens$ data type.
+\lstinputlisting[language=Haskell]{examples/Token.hs}
+$NoTokens$ is a representation of when an empty string has been lexed.
+$InvalidTokens$ represents a lexical error somewhere in the text that was lexed,
+the sequence of characters is the lexical error or last token lexed. the
+$Tokens$ constructor is the case when legal tokens have been found. $currentSeq$
+are all the currently lexed tokens save for the last, $lastToken$ are all the
+possible ways that the last token can be lexed, in this implementation this is
+refered to as the suffix and what it is and why it is needed will be explained
+next.
+
+\subsection{Suffix}
+When the lexer lexes a part that is in the end of the text Three cases can
+arise.
+\begin{description}
+\item[One] The part of the text lexed can end up in a legal state that is not
+accepting.
+\item[Two] The part of the text lexed can end up in an accepting state.
+\item[Three] The part of the texted lexed can end in a legal state that is not
+accepting, but the text can also be a sequence of multiple tokens.
+\end{description}
+To keep track of these cases a data structure that captures this was
+implemented:
+\lstinputlisting[language=Haskell]{examples/Suffix.hs}
+The $Str$ contructor is used to keep track of partially complete tokens, an
+example of this is when a string is started but the end quotation character have
+not yet been found.
+
+The $One$ constructor is used one exactly one token have been found, it may or
+may not be the token that is used in the final result of the lexing. This
+constructor can be omitted since the $Multi$ constructor can do the same job,
+however it makes certain cases easier since not all checks that needs to be done
+for the $Multi$ constructor needs to be checked for the $One$ constructor.
+
+The $Multi$ constructor is used when atleast one token have been found but the
+lexeme that is lexed in to the suffix can not be lexed to exactly one token. The
+entire suffix still need to have a legal out state. This type of suffix can
+typically be found when the begining of comments are lexed. for example the text
+\emph{/*hello world} would be lexed to a sequence of complete tokens, but the
+lexer still needs to keep track of the fact that it may still be a multi-line
+comment. Note that in this case the Tokens data structure would have one out
+state and the suffix would have another.
+
+\section{Transition Map}
+The transition map is a function from an in state to the tokens data type. As
+shown above the tokens data type contains the out state.
+\lstinputlisting[language=Haskell]{examples/Transition.hs}
+This data type is used in the lexical routines since the operations looks like
+functional composition
+\subsection{Array Format}
+\subsection{Function Composition Format}
 
 \section{Monoid (Measure)}
+In order to be a legal measure of a fingertree the measure needs to be a monoid.
+In the lexer the measure is a table of the Tokens data type.
 \subsection{The Base case}
 \subsection{The Conquer Step}
 
 \section{Fingertree}
-The implementation
+The fingertree is built up with the characters of the text being lexed as leafs
+and the transition map as measure. The transition map used is an array where the
+index is the in state for the tokens in that element.
+\lstinputlisting[language=Haskell]{examples/Fingertree.hs}
+in order for the table data type to be a legal measure of the fingertree it has
+to be a monoid.
+\subsection{The Table Monoid}
+The monoid class in Haskell have two different functions, $mempty$ which is the
+identity element and $mappend$ which an associative operator that describes how
+two elements can be combined.
+\lstinputlisting[language=Haskell]{examples/TableMonoid.hs}
+There are two helper functions that convert between the array representation
+that is stored as the measure and the functional representation that is used in
+the lexical routines. The reason for this is that while the array may be fast it
+makes the code more cluttery and while the functional represntation may be neat
+in the lexical routines it is simply not as fast to use when storing the result
+since no intermediate data would be stored, but rather a long sequence of
+functional composition would be stored.
 
-\section{Sequences}
-A sequence in Haskell is a form of sophisticated list. That is a list with better performance than the basic [] list notation. Where a list in Haskell has $\Theta(n)$ for finding, inserting or deleting elements, that is in a list there is only known current element and the rest of the list. Which will result in for example finding the last element of a list, the computer must look at every element until the empty list has been found as the rest of the list. Where in a sequence the last element can be obtained in $\Theta(1)$ time. Adding a element anywhere in the sequence can be done in worst case, $\Theta(log n)$ \cite{fingertree}. 
+As can be seen in the code, $mempty$ creates an array filled
+of empty $Tokens$. In the $mappend$ case, every transition from the two arrays
+are extracted, combined and put into a new array.
 
-Since this project is about creating as real-time lexing tool, performance is very important. String in Haskell are just a list of characters, [Char], and therefor has $\Theta(n)$ in time cost. Lexing is working with strings in a high frequency and there for there is a idea of instead define a string as a sequence of characters instead of a list of character. 
-
-\section{Transition Map}
-\subsection{Array Format}
-\subsection{Function Composition Format}
+\section{Lexical routines}
+\subsection{combineTokens}
+\subsection{combineWithRHS}
+\subsection{mergeTokens}
+\subsection{appendTokens}
+\subsection{mergeSuff}
