@@ -130,8 +130,73 @@ In the $mappend$ case, every transition from the two arrays are extracted,
 combined and put into a new array.
 
 \section{Lexical routines}
-\subsection{combineTokens}
-\subsection{combineWithRHS}
-\subsection{mergeTokens}
-\subsection{appendTokens}
-\subsection{mergeSuff}
+%\subsection{combineTokens}
+The lexical routines are divided into five functions. They each handles
+different parts of the lexical steps that's needed in an incremental divide and
+conquer lexer.
+\lstinputlisting[language=Haskell]{examples/LexicalFunHeads.hs}
+
+$combineTokens$ is the function that is called when two fingertrees are combined.
+\lstinputlisting[language=Haskell]{examples/CombineTokens.hs}
+The function starts by checking if the tokens generated from $in\_state$ from
+the first transition is empty or invalid in which case the output is trivial. If
+it is not the tokens are passed on to $combineWithRHS$ together with the second
+transition.
+
+%\subsection{combineWithRHS}
+The job for $combineWithRHS$ is to check how the tokens from the first
+transition is to be combined with the second transition.
+\lstinputlisting[language=Haskell]{examples/CombineWithRHS.hs}
+$combineWithRHS$ starts by creating tokens from the second transition using the
+out state from the first tokens, this can result in three different cases:
+\begin{description}
+\item[isEmpty]If the tokens are empty the first tokens are returned.
+\item[isValid]If the tokens are valid it means that the last token from the
+first tokens can be combined with the first token in the second tokens into one
+token.
+\item[otherwise]If the tokens are not valid the lexer checks the suffix of the
+first tokens to see if it ends in an accepting state, the $One$ construct, and
+if so appends the tokens. If it is not invalid tokens will be returned.
+\end{description}
+The switch for $Multi$ extracts the tokens from the suffix and recursivly calls
+\emph{combineWithRHS} to see if there is some other possible way to combine the
+transitions.
+
+%\subsection{mergeTokens}
+The function $mergeTokens$ combines the last token from the first tokens with
+the first token of the second tokens.
+\lstinputlisting[language=Haskell]{examples/MergeTokens.hs}
+If there are more then one token in the second tokens the tokens are combined
+into one token and the resto of the tokens in the second tokens are appended and
+returned. If there is exactly one token in the second tokens two suffix is to be
+combined. When two suffixes are combined some extra checks needs to be done.
+If the second tokens has an accpeting out state, the two suffixes can be
+combined into one token. If it is not the work is passed on to $mergeSuff$
+
+%\subsection{mergeSuff}
+$mergeSuff$ checks which pair of suffix it has and takes the appropriate
+actions.
+\lstinputlisting[language=Haskell]{examples/MergeSuff1.hs}
+If the first suffix is of type $Multi$ the function calls $combineWithRHS$. If
+the resulting tokens are invalid a recursive call is made with the suffix from
+the new tokens as first suffix.
+\lstinputlisting[language=Haskell]{examples/MergeSuff2.hs}
+If the first suffix is of type $Str$ the result will always be another $Str$ no
+matter what is in the second suffix so the string is extracted and appended.
+\lstinputlisting[language=Haskell]{examples/MergeSuff3.hs}
+if the first suffix is of type $One$ and the second $Str$ a new $Multi$ suffix
+is created. A new second tokens is created using the start state on the second
+suffix, if this results in a valid $Tokens$ the token from the first suffix is
+prepended. If it is not valid the $Str$ is just added to the end of the new
+suffix.
+\lstinputlisting[language=Haskell]{examples/MergeSuff4.hs}
+When both suffix are $One$ they can be combined into a single token.
+\lstinputlisting[language=Haskell]{examples/MergeSuff5.hs}
+When the first suffix is $One$ and the second is $Multi$ it is passed onto
+$mergeTokens$.
+
+%\subsection{appendTokens}
+The last function just checks if there is a lexical error in the second tokens,
+if it is that error is returned otherwise the second tokens is appended to the
+first.
+\lstinputlisting[language=Haskell]{examples/AppendTokens.hs}

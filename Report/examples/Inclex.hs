@@ -82,7 +82,7 @@ combineWithRHS toks1 trans2 | isEmpty toks2 = toks1
     in appendTokens seq1 toks2'                           
                             | otherwise     = case lastToken toks1 of
     Multi suffToks ->
-      let toks2' = combineWithRHS suffToks trans2 -- try to merge suffix
+      let toks2' = combineWithRHS suffToks trans2 -- try to combine suffix with transition
       in appendTokens seq1 toks2'
     One tok -> appendTokens (seq1 |> tok) (trans2 startState)
     Str s -> invalidTokens s
