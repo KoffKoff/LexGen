@@ -1,2 +1,2 @@
 class (Monoid v) => Measured a v where
-  measure :: a -> v
+  $\parallel$ $\cdot$ $\parallel$ :: a -> v
