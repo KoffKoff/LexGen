@@ -132,15 +132,58 @@ So the solution will be:
 $T(n) = \Theta(n^{log_2 2} \cdot log n) = \Theta(n \cdot log n)$
 \end{center}
 
+\begin{figure}[!htp]
+\centering
+  \begin{tikzpicture}[level/.style={sibling distance=60mm/#1, align=center, text centered}]
+\node [leaf,red] (z){$r'$}
+  child { node[leaf,red] (a) {$c'$}
+    child {node[leaf] (b) {$a$}
+      child {node[leaf] (c) {$-$}} 
+      child {node[leaf] (d) {$-$}}
+    }
+    child {node[leaf,red] (e) {$b'$}
+      child {node[leaf] (f) {$x$}}
+      child {node[leaf,red] (g) {$y'$}}
+    }
+  }
+  child {node[leaf] (i) {$d$}
+    child {node[leaf] (j) {$-$}
+      child {node[leaf] (k) {$-$}}
+      child {node[leaf] (l) {$-$}}
+    }
+    child {node[leaf] (m) {$-$}
+      child {node[leaf] (n) {$-$}}
+      child {node[leaf] (o) {$-$}}
+    }
+  };
+\end{tikzpicture}
+\caption{Incremental Computing, the updated nodes when a leaf changes \label{fig:incUp}}
+\end{figure}
+
+\subsection{Incremental Computing}
+To be incremental means that, whenever some part of the data to the algorithm
+changes the algorithm tries to save time by only recomputing the changed data
+and the parts that depend on this changed data \cite{incrementalDef}.
+
+For a divide and conquer lexer this would mean only recompute the changed token
+and the token to the right of the changed token. This is done recurrsivly until
+the root of the tree is reached. The expected result of this would be that when
+a character is added to the code of 1024 tokens, instead of relex all 1024
+tokens the lexer will only do 10 recalculations for new tokens. Since,
+$log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}. How this is
+calculated for an incremental divide and conquer lexer is described more in
+detail in the next sub-section.              
+
 \section{Fingertree}
-A smart lexer needs smart structures to save its data. This section describes 
-the tree structure of a FingerTree.
+Fingertree is a tree structure which is incremantal in its nature and has good
+preformance. To ensure that an incremental divide and conquer algorithm can
+access the intermediate states a data structure like fingertrees can be used.
+Before describing how the fingertree is defined, an introduction to the fingertrees
+building blocks is given.
 
 \subsection{Fundamental Concepts}
-Before describing the functionality, an introductionto the fingertrees
-buildingblocks is given.
-\paragraph{First,}
-fingertrees uses monoids which in abstract algebra is a set, $S$, and a binary
+
+Fingertrees uses monoids which in abstract algebra is a set, $S$, and a binary
 operation $\bullet$ which fulfills the following
 three properties:
 \begin{description}
@@ -149,8 +192,7 @@ three properties:
 \item[Identity element] $\exists e \in S: \forall a \in S: e \bullet a = a \bullet e = a$
 \end{description}
 
-\paragraph{Second,} 
-fingertrees uses Right and Left Reductions. This is a function which
+Fingertrees uses Right and Left Reductions. This is a function which
 collapses a structure of $f$ $a$ into a single value of type $a$. The base case
 for when the tree is empty is replaced with a constant value, such as 
 $\emptyset$. Intermediate results are combined using a binary operation, like
@@ -166,12 +208,6 @@ lets take a look on the definition on a 2-3 fingertree and how they can
 implement a sequence. Lets start by looking at an ordinary 2-3 tree.
 \begin{figure}[!h]
   \centering
-\tikzset{
-  treenode/.style = {align=center, inner sep=0pt, text centered,
-    font=\sffamily},
-  branch/.style = {treenode, circle, draw=black, minimum size=0.2cm, text width=0.2em},
-  leaf/.style = {treenode, circle, draw=black, font=\sffamily\bfseries, text width=1.5em}
-}
     \begin{tikzpicture}[auto,
                         level 1/.style={sibling distance=7.5cm},
                         level 2/.style={sibling distance=2.5cm}, 
@@ -524,49 +560,7 @@ $\left[\begin{array}{ccc}
 The second case is when the out state for the right token list is $NoState$.
 This means that the two lists of tokens can't be combined. In this case the
 first token in the second list will be viewed as the start of a token and the
-last token in the first list will be viewed as the end of a token.
-
-\begin{figure}[!htp]
-\centering
-\begin{tikzpicture}[level/.style={sibling distance=60mm/#1, align=center, text centered}]
-\node [circle,red,draw, text width = 1.5em, text centered] (z){$r'$}
-  child {node [circle,red,draw, text width = 1.5em] (a) {$c'$}
-    child {node [circle,draw, text width = 1.5em] (b) {$a$}
-      child {node [circle,draw, text width = 1.5em] (c) {$-$}} 
-      child {node [circle,draw, text width = 1.5em] (d) {$-$}}
-    }
-    child {node [circle,red,draw, text width = 1.5em] (e) {$b'$}
-      child {node [circle,draw, text width = 1.5em] (f) {$x$}}
-      child {node [circle,red,draw, text width = 1.5em] (g) {$y'$}}
-    }
-  }
-  child {node [circle,draw, text width = 1.5em] (i) {$d$}
-    child {node [circle,draw, text width = 1.5em] (j) {$-$}
-      child {node [circle,draw, text width = 1.5em] (k) {$-$}}
-      child {node [circle,draw, text width = 1.5em] (l) {$-$}}
-    }
-    child {node [circle,draw, text width = 1.5em] (m) {$-$}
-      child {node [circle,draw, text width = 1.5em] (n) {$-$}}
-      child {node [circle,draw, text width = 1.5em] (o) {$-$}}
-    }
-  };
-\end{tikzpicture}
-\caption{Incremental Computing, the updated nodes when a leaf changes \label{fig:incUp}}
-\end{figure}
-
-\subsection{Incremental Computing}
-To be incremental means that, whenever some part of the data to the algorithm
-changes the algorithm tries to save time by only recomputing the changed data
-and the parts that depend on this changed data. \cite{incrementalDef}
-
-For a divide and conquer lexer this would mean only recompute the changed token
-and the token to the right of the changed token. This is done recurrsivly until
-the root of the tree is reached. The expected result of this would be that when
-a character is added to the code of 1024 tokens, instead of relex all 1024
-tokens the lexer will only do 10 recalculations for new tokens. Since,
-$log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}. How this is
-calculated for an incremental divide and conquer lexer is described more in
-detail in the next sub-section.
+last token in the first list will be viewed as the end of a token.                                                                                               
 
 \subsection{Expected Time Complexity}
 Since incremental computing stated that only content which depends on the new

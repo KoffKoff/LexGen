@@ -14,7 +14,13 @@
     linkcolor=black,%
     urlcolor=black
 }
-
+% Tree Node styles
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered, font=\sffamily},
+  branch/.style = {treenode, circle, draw=black, minimum size=0.2cm, text width=0.2em},
+  blackbranch/.style = {treenode, draw,fill=black!33, minimum size=0.2cm, text width=0.2em},
+  leaf/.style = {treenode, circle, draw=black, font=\sffamily\bfseries, text width=1.5em}
+}
 
 % Dropping initial letter color
 \renewcommand{\LettrineFontHook}{\color[gray]{0.5}}
