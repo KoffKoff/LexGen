@@ -56,13 +56,13 @@ the file since it may be combined with something else. To ensure that all
 possible outcomes will be handled the last token can be one of three different
 forms.
 
-\begin{description}
-\item[One] The part of the text lexed can end up in a legal state that is not
+\begin{itemize}
+\item The part of the text lexed can end up in a legal state that is not
 accepting.
-\item[Two] The part of the text lexed can end up in an accepting state.
-\item[Three] The part of the texted lexed can end in a legal state that is not
+\item The part of the text lexed can end up in an accepting state.
+\item The part of the texted lexed can end in a legal state that is not
 accepting, but the text can also be a sequence of multiple tokens.
-\end{description}
+\end{itemize}
 To keep track of these cases a data structure that captures this was
 implemented:
 \lstinputlisting[language=Haskell]{examples/Suffix.hs}
@@ -136,7 +136,7 @@ different parts of the lexical steps that's needed in an incremental divide and
 conquer lexer.
 \lstinputlisting[language=Haskell]{examples/LexicalFunHeads.hs}
 
-$combineTokens$ is the function that is called when two fingertrees are combined.
+\textbf{combineTokens} is the function called when two fingertrees are combined.
 \lstinputlisting[language=Haskell]{examples/CombineTokens.hs}
 The function starts by checking if the tokens generated from $in\_state$ from
 the first transition is empty or invalid in which case the output is trivial. If
@@ -144,7 +144,7 @@ it is not the tokens are passed on to $combineWithRHS$ together with the second
 transition.
 
 %\subsection{combineWithRHS}
-The job for $combineWithRHS$ is to check how the tokens from the first
+\textbf{combineWithRHS} checks how the tokens from the first
 transition is to be combined with the second transition.
 \lstinputlisting[language=Haskell]{examples/CombineWithRHS.hs}
 $combineWithRHS$ starts by creating tokens from the second transition using the
@@ -163,7 +163,7 @@ The switch for $Multi$ extracts the tokens from the suffix and recursivly calls
 transitions.
 
 %\subsection{mergeTokens}
-The function $mergeTokens$ combines the last token from the first tokens with
+\textbf{mergeTokens} combines the last token from the first tokens with
 the first token of the second tokens.
 \lstinputlisting[language=Haskell]{examples/MergeTokens.hs}
 If there are more then one token in the second tokens the tokens are combined
@@ -174,7 +174,7 @@ If the second tokens has an accpeting out state, the two suffixes can be
 combined into one token. If it is not the work is passed on to $mergeSuff$
 
 %\subsection{mergeSuff}
-$mergeSuff$ checks which pair of suffix it has and takes the appropriate
+\textbf{mergeSuff} checks which pair of suffix it has and takes the appropriate
 actions.
 \lstinputlisting[language=Haskell]{examples/MergeSuff1.hs}
 If the first suffix is of type $Multi$ the function calls $combineWithRHS$. If
@@ -196,7 +196,7 @@ When the first suffix is $One$ and the second is $Multi$ it is passed onto
 $mergeTokens$.
 
 %\subsection{appendTokens}
-The last function just checks if there is a lexical error in the second tokens,
+\textbf{appendTokens} checks if there is a lexical error in the second tokens,
 if it is that error is returned otherwise the second tokens is appended to the
 first.
 \lstinputlisting[language=Haskell]{examples/AppendTokens.hs}
