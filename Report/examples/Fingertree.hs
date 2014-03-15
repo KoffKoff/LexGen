@@ -1,3 +1,3 @@
-type LexTree  = FingerTree (Table State Tokens,Size) Char
+type LexTree  = FingerTree Table Char
 
-type Table a b = Array State b
+type Table = Array State Tokens

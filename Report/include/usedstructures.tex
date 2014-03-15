@@ -1,13 +1,17 @@
 \chapter{Implementation}
-Here we should talk about bnfc and
-alex. What we use from the different programs. How this is useful
-is it because of laziness or are the existing solutions good??
+In this chapter the tools, data structure and implementation of the incremental
+divide and conquer lexer is explained. The implementation can be found in
+\cref{chap:code}.
 
 \section{Alex}
-Alex is a tool for generating lexical analyzers built in Haskell, given a
-description of the language in the form of regular expressions. The result will
-be Haskell 98 compatible and can easily be used with the parser Happy, a parser
-generator for Haskell.
+Alex is a tool for generating lexical analyzers built in Haskell given a
+description of the language in the form of regular expressions, it is similar to
+lex and flex in C and C++. The resulting lexer is Haskell 98 compatible and can
+easily be used with the parser Happy, a parser generator for Haskell\cite{alex}.
+Alex is notably used in BNFC which is a program to generate among other things a
+lexer, parser and abstract syntax from Backus-Naur Form. The modules generated
+by BNFC can easily be used to create a compiler or interpreter\cite{bnfc}.
+
 \subsection{The DFA design}
 In the incremental lexer Alex was used to create the DFA. The reason for this is
 that Alex generates a DFA which is optimized in data size. Instead of having an
@@ -17,13 +21,14 @@ used in the majority of time, thus saving a lot of elements that would
 otherwise be the same in the array.
 
 The trade of for using the Alex generated DFA is that some minor arithmetic
-operations are used and some extra lookups are needed, however these operations
+operations are used and some extra lookups are needed. These operations
 are far less time consuming then the rest of the lexical operations.
 
 \section{Token data structure}
 To keep all the information that might be needed when combining two texts, a data
 structure for the tokens was created. This data structure contains slightly more
 data then what a sequential lexer would save.
+
 \subsection{Sequences}
 Since this project is about creating a real-time lexing tool, performance is
 important. Therefor there are advantages of using sequences instead of lists.
@@ -31,9 +36,10 @@ The most notable place where this is used is in the measure of the fingertree,
 where the tokens are stored in a sequence rather then a list. Sequences are also
 used elsewhere in the project but this is the most notable place since it is
 frequently updated.
+
 \subsection{Tokens}
-The internal structure used by the lexer is called $Tokens$. There are three
-constructors in the $Tokens$ data type.
+The internal structure used to store lexed tokens is called $Tokens$. There are
+three constructors in the $Tokens$ data type.
 \lstinputlisting[language=Haskell]{examples/Token.hs}
 $NoTokens$ is a representation of when an empty string has been lexed.
 $InvalidTokens$ represents a lexical error somewhere in the text that was lexed,
@@ -45,8 +51,11 @@ refered to as the suffix and what it is and why it is needed will be explained
 next.
 
 \subsection{Suffix}
-When the lexer lexes a part that is in the end of the text Three cases can
-arise.
+When a text is lexed it is uncertain that the last token is the actual end of
+the file since it may be combined with something else. To ensure that all
+possible outcomes will be handled the last token can be one of three different
+forms.
+
 \begin{description}
 \item[One] The part of the text lexed can end up in a legal state that is not
 accepting.
@@ -64,8 +73,8 @@ not yet been found.
 The $One$ constructor is used one exactly one token have been found, it may or
 may not be the token that is used in the final result of the lexing. This
 constructor can be omitted since the $Multi$ constructor can do the same job,
-however it makes certain cases easier since not all checks that needs to be done
-for the $Multi$ constructor needs to be checked for the $One$ constructor.
+however it makes certain cases easier since the lexer can make assumptions that
+can not be made for the $Multi$ constructor.
 
 The $Multi$ constructor is used when atleast one token have been found but the
 lexeme that is lexed in to the suffix can not be lexed to exactly one token. The
@@ -73,47 +82,52 @@ entire suffix still need to have a legal out state. This type of suffix can
 typically be found when the begining of comments are lexed. for example the text
 \emph{/*hello world} would be lexed to a sequence of complete tokens, but the
 lexer still needs to keep track of the fact that it may still be a multi-line
-comment. Note that in this case the Tokens data structure would have one out
+comment. Note that in this case the $Tokens$ data structure would have one out
 state and the suffix would have another.
 
 \section{Transition Map}
-The transition map is a function from an in state to the tokens data type. As
-shown above the tokens data type contains the out state.
+The transition map is a function from an in state to $Tokens$. As shown above
+the $Tokens$ data type contains the out state.
 \lstinputlisting[language=Haskell]{examples/Transition.hs}
 This data type is used in the lexical routines since the operations looks like
-functional composition
-\subsection{Array Format}
-\subsection{Function Composition Format}
+functional composition. The reason for using transition maps is that the lexer
+doesn't know what the in state for a lexed text is, hence the tokens for all
+possible in states must be stored. The transition map can be implemented in two
+ways, an array format and a function composition format.
 
-\section{Monoid (Measure)}
-In order to be a legal measure of a fingertree the measure needs to be a monoid.
-In the lexer the measure is a table of the Tokens data type.
-\subsection{The Base case}
-\subsection{The Conquer Step}
+The array format uses an array to store the currently lexed tokens where the
+index of the array represents the in state for that sequence of tokens. This is
+useful when the tokens needs to be stored since it ensures that the tokens are
+computed.
+
+When combining lexed tokens it is useful to use functional composition since it
+ensures that no unnecessary states will be computed. The drawback is that it
+doesn't guarantee that the actual tokens are computed which may result in slow
+performance at a later stage in the lexing.
+
+Both these representations are used in the incremental divide and conquer lexer.
+The array format is used when storing the tokens in the fingertree to allow for
+fast access. The function composition is used when combining tokens to ensure
+that only needed data is computed.
 
 \section{Fingertree}
 The fingertree is built up with the characters of the text being lexed as leafs
-and the transition map as measure. The transition map used is an array where the
-index is the in state for the tokens in that element.
+and the array format transition map as measure.
 \lstinputlisting[language=Haskell]{examples/Fingertree.hs}
-in order for the table data type to be a legal measure of the fingertree it has
+In order for the table data type to be a legal measure of the fingertree it has
 to be a monoid.
 \subsection{The Table Monoid}
 The monoid class in Haskell have two different functions, $mempty$ which is the
-identity element and $mappend$ which an associative operator that describes how
+identity element and $mappend$ which is an associative operator that describes how
 two elements can be combined.
 \lstinputlisting[language=Haskell]{examples/TableMonoid.hs}
-There are two helper functions that convert between the array representation
-that is stored as the measure and the functional representation that is used in
-the lexical routines. The reason for this is that while the array may be fast it
-makes the code more cluttery and while the functional represntation may be neat
-in the lexical routines it is simply not as fast to use when storing the result
-since no intermediate data would be stored, but rather a long sequence of
-functional composition would be stored.
+There are two helper functions that convert between the array format that is
+stored as the measure and the function composition format that is used in the
+lexical routines.
 
-As can be seen in the code, $mempty$ creates an array filled
-of empty $Tokens$. In the $mappend$ case, every transition from the two arrays
-are extracted, combined and put into a new array.
+As can be seen in the code, $mempty$ creates an array filled of empty $Tokens$.
+In the $mappend$ case, every transition from the two arrays are extracted,
+combined and put into a new array.
 
 \section{Lexical routines}
 \subsection{combineTokens}
