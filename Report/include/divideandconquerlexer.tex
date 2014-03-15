@@ -405,6 +405,39 @@ terminates when the bottom of the shallower tree has been reached, with up to
 4 insertions. So the total time complexity is $\Theta(\log min\{n_1, n_2\})$
 where $n_1$ and $n_2$ are the number of elements in the two trees. 
 
+\subsection{Measurements}
+Fingertrees has been showned to work well as catenble double-ended queues. A 
+measurement is a property describing the state of the tree. This section
+presents a modification of the fingertree, which provides positional and
+set-theoretic operations. For example taking or dropping the first $n$ elements.
+These operations involve searching for an element with a certain property.
+To implement additional operations with good performance there must be a way
+to steer this search. A way to measure the tree.
+
+A measuremenet can be viewed as a cached reduction with some monoid. 
+Reductions, possibly cached, are captured by the following class
+declaration.
+\lstinputlisting[language=Haskell, mathescape=true]{examples/ClassMeasure.hs}
+Where $a$ is the type of a tree and $v$ the type of an associated measurement.
+$v$ must be of a monoidal structure so measurements of subtrees easily can be combined independent of the nesting. Take the size of a tree as an example. Measure maps onto the monoid over the set of natural numbers and with the binary operator of addition.
+
+\subsubsection{Caching measurements}
+It should be cheap to obtain a measurement. The fingertree sould ensure that an measurement can be obtian with a bounded number of $\bullet$ operations. Therefore fingertrees cache the measurements in the 2-3 nodes.
+\lstinputlisting[language=Haskell, mathescape=true]{examples/Node2-3Measure.hs}
+The constructors and the instance declaration are completely generic: they
+work for arbitrary annotations.
+
+Digits are measured on the fly.
+\lstinputlisting[language=Haskell, mathescape=true]{examples/DigitMeasure.hs}
+As the length of the buffer Digit is bounded by a constant, the number of $\bullet$ operations is also bounded.
+
+Finger trees are modified in a similar manner to 2-3 nodes.
+The top level of an measured finger tree contains elements of type $a$, the second
+level of type $Node$ $v$ $a$, the third of type $Node$ $v$ ($Node$ $v$ $a$), and so on. Whereas the
+tree type a changes from level to level, the annotation type $v$ remains the same. This means that FingerTree is nested in $a$, but regular in $v$.
+\lstinputlisting[language=Haskell, mathescape=true]{examples/FingerTreeMeasure.hs}
+
+
 \subsection{Sequences}
 A sequence in Haskell is a special case of the fingertree that has no measure.
 The performance is therefor superior to that of standard lists. Where a list in
