@@ -478,16 +478,16 @@ When storing a result of a lexed string it is a good idea to store more then
 just the tokens. In particular the in and out states are needed when combining
 the lexed string with another string. We will henceforth refer to this as a
 $transition$.
-\begin{verbatim}
+\begin{lstlisting}[language=Haskell]
 type Transition = (State,[Token],State)
-\end{verbatim}
+\end{lstlisting}
 Since the lexer doesn't know if the current string is a prefix of the entire
 code or not it can't make any assumptions on the in state. Because of this the
 lexer needs to store a transition for every possible in state, we will henceforth
 refer to this as a \emph{transition map}.
-\begin{verbatim}
+\begin{lstlisting}[language=Haskell]
 type Transition_map = [Transition]
-\end{verbatim}
+\end{lstlisting}
 \paragraph{The Base Case}
 When the lexer tries to lex one character it will create a transition
 map using the DFA for the language. It will for each state create a transition
@@ -524,11 +524,12 @@ can find. When two transitions are combined there are two different outcomes:
 \begin{description} 
   \item[Concat:]If the out state of the first transition is accepting, the
     sequence in the transition that starts in the starting state of the second
-    transition map will be appended to the first.\\
-\#Look over syntax in this example
-\begin{center}
-$NewTOKENS=TOKENS1 >< TOKENS2$
-\end{center}
+    transition map will be appended to the first.
+\begin{lstlisting}[language=Haskell, mathescape=true]
+concat :: Tokens -> Tokens -> Tokens 
+concat tokens1 tokens2 = tokens1 >< tokens2
+\end{lstlisting}
+
 %create two tokens if the
 %    out state of the first list is accepting then the second list will be appended
 %    to the first list.
@@ -537,13 +538,15 @@ $NewTOKENS=TOKENS1 >< TOKENS2$
     state of the first transition will be used. The last token of the sequence
     from the first transition will be combined with the first token in the second
     transition in to one token and put between the two sequences.\\
-\#Look over syntax in this example
-\begin{center}
-$TOKENS1=PREFIX1|>token1$\\
-$TOKENS2=token2<|SUFFIX2$\\
-$newtoken=token1 `combinedWith` token2$\\
-$NewTOKENS=PREFIX1 |> newtoken >< SUFFIX2$\\
-\end{center}
+
+\begin{lstlisting}[language=Haskell, mathescape=true]
+combine :: Tokens -> Tokens -> Tokens 
+combine tokens1 tokens2 = prefix1 |> newToken >< suffix2
+  where prefix1 |> token1'  = tokens1
+        tokens2' <| suffix2 = tokens2
+        newToken            = token1' `combinedWith` tokens2'
+\end{lstlisting}
+
 %The other case is when the first list of tokens does not end
 %    in an accepting state. In this case the lexer will try to find an in state in
 %    the second list that is the same as the out state of the first transition.
