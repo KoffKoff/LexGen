@@ -137,10 +137,11 @@ A smart lexer needs smart structures to save its data. This section describes
 the tree structure of a FingerTree.
 
 \subsection{Fundamental Concepts}
-Before describing the functionality, lets take a look on which building blocks
-the fingertrees uses.
+Before describing the functionality, an introductionto the fingertrees
+buildingblocks is given.
 \paragraph{First,}
-fingertrees uses monoids which in abstract algebra is a set, $S$, and a binary operation $\bullet$ which fulfills the following
+fingertrees uses monoids which in abstract algebra is a set, $S$, and a binary
+operation $\bullet$ which fulfills the following
 three properties:
 \begin{description}
 \item[Closure] $\forall a,b \in S: a \bullet b \in S$
@@ -162,7 +163,7 @@ result will be a skewed reductions, which can be singled out as a type class.
 
 \subsection{Simple Sequence}
 lets take a look on the definition on a 2-3 fingertree and how they can
-implement a sequence. Lets start by looking at an ordinary 2-3 tree like in \cref{fig:2-3tree}.
+implement a sequence. Lets start by looking at an ordinary 2-3 tree.
 \begin{figure}[!h]
   \centering
 \tikzset{
@@ -226,8 +227,8 @@ implement a sequence. Lets start by looking at an ordinary 2-3 tree like in \cre
   \caption{Ordinary 2-3 tree
   \label{fig:2-3tree}}
 \end{figure}
-In this section the tree will store all data in the leafs. This can be expressed
-by defining an non-regular or nested type, as follows:
+The tree showned in the \cref{fig:2-3tree} stores all it's data in the leafs.
+This can be expressed by defining an non-regular or nested type, as follows:
 \lstinputlisting[language=Haskell]{examples/FingerTree2-3Tree.hs}
 Operations on these types of trees usually takes logarithmic time in the size of
 the tree. But for sequence representations a constant time complexity is
@@ -236,8 +237,9 @@ preferable for adding or removing element from the start or end of the sequence.
 A finger is a structure which provides efficient access to nodes near the
 distinguished location. To obtain efficient access to the start and end of the
 sequence represented by the tree, there should be fingers placed at the left and
-right end of the tree. In the example tree, taking hold of the end nodes of and
-lifting them up together. The result should look like in \cref{fig:fingertree}
+right end of the tree. In the example tree, taking hold of the end and start
+nodes of and lifting them up together. The result should look like in
+\cref{fig:fingertree}
 \begin{figure}[!h]
   \centering
   \tikzset{
@@ -285,9 +287,9 @@ spine has the same length. Therefor the left and right spines can be pair up to
 create a single central spine. Branching out from the spine is 2-3 trees. At the
 top level there are two to three elements on each side, while the other levels
 have one or two sub-trees, whose depth increases down the spine. Depending on if
-the root node had 2 or 3 branches in the original 2-3 tree, will the bottom node
-either have a single 2-3 tree or empty. This structure can be described as
-follows:
+the root node had 2 or 3 branches in the original 2-3 tree, The bottom node will
+have either a single 2-3 tree or an empty tree. This structure can be described
+as follows:
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
 Where Digit is a buffer of elements stored left to right, here represented as a
 list for simplicity
@@ -302,7 +304,7 @@ the nearest end is stored at a depth of $\Theta(\log d)$ in the $FingerTree$
 \cite{fingertree}
 
 In fingertrees and nodes the reduce function mentioned in fundamental concepts
-will be generic defined to the following types. 
+is genericly defined to the following types. 
 Reduction for the node:
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceNode.hs}
 Reduction of fingertrees single and double lifting of the binary operation:
@@ -314,14 +316,14 @@ show how fingertrees makes efficient Double-ended Queue, a queue structure which
 can be accessed from both ends, where all operations having the time complexity
 $\Theta(1)$.
 
-Adding a element to the beginning of the sequence is strait forward, except when
+Adding an element to the beginning of the sequence is strait forward, except when
 the initial buffer ($Digit$) already is full. In this case, push all but one of
 the elements in the buffer as a node, leaving behind two elements in the buffer:
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixr.hs}
 Adding to the end of the sequence is a mirror image of the above:
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixl.hs}
 
-A insertion operation the basic 2-3 tree, where the data is stored in the leafs,
+An insertion operation in the basic 2-3 tree, where the data is stored in the leafs,
 is done with a time complexity of $\Theta \log n$. In the fingertree the
 expected time complexity can be argued in the following way. Digits of two or
 three elements (which is isomorphic to elements of type $Node$ $a$) is
@@ -333,37 +335,49 @@ in that at most half of the operations descend one level, at most 1 quarter two
 levels, and so on. This will give that in a sequence of operations the average
 cost is constant.
 
-The same bound hold in a persisted setting if subtrees are suspended using lazy
+The same bound hold in a persistent setting if subtrees are suspended using lazy
 evaluation. Laziness makes sure that changes deep in the spine do not take place
 until a subsequent operation need to go that far. By the above properties
 of safe and dangerous digits, by that time enough cheap shallow operations
 will have been performed to pay for the more expensive operation \cite{fingertree}.
 
 \subsection{Concatenation Operations}
-Concatenation is a simple operation for most cases, except for the case when two $Deep$ trees are being concatenated. Concatenating with a $Empty$ will be an identity and with a $Single$ will reduce to $<|$ or $|>$. For the hard part when there are two $Deep$ trees, the prefix of the first tree will be the final prefix. Suffix of the second tree will be the suffix of the final tree. The recursive function $app3$ combines two trees and a list of $Nodes$ (basically the old prefix and suffixes down the spines of the old trees):
+Concatenation is a simple operation for most cases, except for the case when two
+$Deep$ trees are being concatenated. Concatenating with a $Empty$ will be an 
+dentity and with a $Single$ will reduce to $<|$ or $|>$. For the hard part when
+there are two $Deep$ trees, the prefix of the first tree will be the final
+prefix. Suffix of the second tree will be the suffix of the final tree. The
+recursive function $app3$ combines two trees and a list of $Nodes$ (basically
+the old prefix and suffixes down the spines of the old trees):
 
 \lstinputlisting[language=Haskell]{examples/FingerTreeApp3.hs}
 
-Where $(<|')$ and $(|>')$ are the functions defined in the previous sub-section and $nodes$ groups a list of elements into $Node$s: 
+Where $(<|')$ and $(|>')$ are the functions defined in the previous sub-section
+and $nodes$ groups a list of elements into $Node$s: 
 
 \lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
 
-Now to concatenation of the Fingertrees, just call on $app3$ with an empty list between the two trees.
+The concatenation of the Fingertrees, just call on $app3$ with an empty list
+between the two trees.
 
 \lstinputlisting[language=Haskell]{examples/FingerTreeConcatFunc.hs}
 
-The time spent on concatenation can be reasoned in this way. Each invocation of $app3$ arising from $(><)$ the argument list has a length of at most 4, which means that each of these invocations takes $\Theta(1)$ time. The recursion terminates when the bottom of the shallower tree has been reached, with up to 4 insertions. So the total time complexity id $\Theta(\log min\{n_1, n_2\})$ where $n_1$ and $n_2$ are the number of elements in the two trees. 
+The time spent on concatenation can be reasoned in this way. Each invocation of
+$app3$ arising from $(><)$ the argument list has a length of at most 4, which
+means that each of these invocations takes $\Theta(1)$ time. The recursion
+terminates when the bottom of the shallower tree has been reached, with up to
+4 insertions. So the total time complexity is $\Theta(\log min\{n_1, n_2\})$
+where $n_1$ and $n_2$ are the number of elements in the two trees. 
 
 \subsection{Sequences}
 A sequence in Haskell is a special case of the fingertree that has no measure.
-The performance is therefor superior to that of standard lists. Where a list in Haskell has
-$\Theta(n)$ for finding, inserting or deleting elements, that is in a list there
-is only known current element and the rest of the list. Which will result in for
-example finding the last element of a list, the computer must look at every
-element until the empty list has been found as the rest of the list. Where in a
-sequence the last element can be obtained in $\Theta(1)$ time. Adding an element
-anywhere in the sequence can be done in worst case, $\Theta(log n)$
-\cite{fingertree}.
+The performance is therefor superior to that of standard lists. Where a list in
+Haskell has $\Theta(n)$ for finding, inserting or deleting elements, that is in
+a list there is only known current element and the rest of the list. Results in 
+finding the last element of a list, the computer must look at every element
+until the empty list has been found as the rest of the list. Where in a sequence
+the last element can be obtained in $\Theta(1)$ time. Adding an element anywhere
+in the sequence can be done in worst case, $\Theta(log n)$ \cite{fingertree}.
 
 \section{Divide and Conquer Lexing in General}
 In the last section we covered the general divide and conquer algorithm. This
