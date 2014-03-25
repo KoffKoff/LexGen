@@ -1,4 +1,3 @@
-infixr 5 (<|)
 (<|)                       :: a -> FingerTree a -> FingerTree a
 a (<|) Empty               = Single a 
 a (<|) Single b            = Deep [a] Empty [b]
