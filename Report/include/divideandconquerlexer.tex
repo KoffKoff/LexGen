@@ -132,6 +132,11 @@ So the solution will be:
 $T(n) = \Theta(n^{log_2 2} \cdot log n) = \Theta(n \cdot log n)$
 \end{center}
 
+\subsection{Incremental Computing}
+To be incremental means that, whenever some part of the data to the algorithm
+changes the algorithm tries to save time by only recomputing the changed data
+and the parts that depend on this changed data \cite{incrementalDef}.
+
 \begin{figure}[!htp]
 \centering
   \begin{tikzpicture}[level/.style={sibling distance=60mm/#1, align=center, text centered}]
@@ -159,11 +164,6 @@ $T(n) = \Theta(n^{log_2 2} \cdot log n) = \Theta(n \cdot log n)$
 \end{tikzpicture}
 \caption{Incremental Computing, the updated nodes when a leaf changes \label{fig:incUp}}
 \end{figure}
-
-\subsection{Incremental Computing}
-To be incremental means that, whenever some part of the data to the algorithm
-changes the algorithm tries to save time by only recomputing the changed data
-and the parts that depend on this changed data \cite{incrementalDef}.
 
 For a divide and conquer lexer this would mean only recompute the changed token
 and the token to the right of the changed token. This is done recurrsivly until
@@ -202,13 +202,18 @@ the monoids $\bullet$. Reduction with a monoid always return the same value,
 independent of the argument nesting. But for a reduction with an arbitrary
 constant and binary operation there must be a specified nesting rule. If
 combining operation are only nested to the right, or to the left, the obtained
-result will be a skewed reductions, which can be singled out as a type class
-\cite{fingertree}.
+result will be a skewed reductions, which can be singled out as a type class as 
+in \cref{fig:Reduction} \cite{fingertree}.
+
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceFun.hs}
+\caption{Reduction function in Haskell \label{fig:Reduction}}
+\end{figure}
 
 \subsection{Simple Sequence}
 lets take a look on the definition on a 2-3 fingertree and how they can
 implement a sequence. Lets start by looking at an ordinary 2-3 tree.
+
 \begin{figure}[!h]
 \centering
 \begin{tikzpicture}[auto, level 1/.style={sibling distance=7.5cm},
@@ -265,9 +270,16 @@ implement a sequence. Lets start by looking at an ordinary 2-3 tree.
 \caption{Ordinary 2-3 tree
 \label{fig:2-3tree}}
 \end{figure}
+
 The tree showned in the \cref{fig:2-3tree} stores all it's data in the leafs.
-This can be expressed by defining an non-regular or nested type, as follows:
+This can be expressed by defining an non-regular or nested type, as shown in
+\cref{fig:2-3Fingertree}.
+
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTree2-3Tree.hs}
+\caption{Definition of a 2-3 Fingertree \label{fig:2-3Fingertree}}
+\end{figure}
+
 Operations on these types of trees usually takes logarithmic time in the size of
 the tree. But for sequence representations a constant time complexity is
 preferable for adding or removing element from the start or end of the sequence.
@@ -278,6 +290,7 @@ sequence represented by the tree, there should be fingers placed at the left and
 right end of the tree. In the example tree, taking hold of the end and start
 nodes of and lifting them up together. The result should look like in
 \cref{fig:fingertree}
+
 \begin{figure}[!h]
 \centering
 \begin{tikzpicture}[level distance=2cm, sibling distance = 2cm]
@@ -322,8 +335,13 @@ top level there are two to three elements on each side, while the other levels
 have one or two sub-trees, whose depth increases down the spine. Depending on if
 the root node had 2 or 3 branches in the original 2-3 tree, The bottom node will
 have either a single 2-3 tree or an empty tree. This structure can be described
-as follows:
+as shown in \cref{fig:DataTypeFingertree}.
+
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
+\caption{Definition of the Fingertree data type \label{fig:DataTypeFingertree}}
+\end{figure}
+
 Where Digit is a buffer of elements stored left to right, here represented as a
 list for simplicity
 
@@ -337,11 +355,21 @@ the nearest end is stored at a depth of $\Theta(\log d)$ in the $FingerTree$
 
 In fingertrees and nodes the reduce function mentioned in fundamental concepts
 is genericly defined to the following types. 
-Reduction for the node:
+Reduction for the node which is shown in \cref{fig:reductionNode}.
+
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceNode.hs}
-Reduction of fingertrees single and double lifting of the binary operation:
-\lstinputlisting[language=Haskell]{examples/FingerTreeReduceFingerTree.hs}
+\caption{Reduction of a fingertrees node \label{fig:reductionNode}}
+\end{figure}
+
+Reduction of fingertrees single and double lifting of the binary operation as
+shown in \cref{fig:reductionFingerTree}
 \cite{fingertree}.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeReduceFingerTree.hs}
+\caption{Reduction of a Fingertree \label{fig:reductionFingerTree}}
+\end{figure}
 
 \subsection{Double-ended Queue Operations}
 After showing how the Fingertrees basic structure is defined. It is now time to
@@ -352,10 +380,20 @@ $\Theta(1)$.
 Adding an element to the beginning of the sequence is strait forward, except
 when the initial buffer ($Digit$) already is full. In this case, push all but
 one of the elements in the buffer as a node, leaving behind two elements in the
-buffer:
+buffer, shown in \cref{fig:AddFirst}.
+
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixr.hs}
-Adding to the end of the sequence is a mirror image of the above:
+\caption{Adding an element to the begining of the sequence \label{fig:AddFirst}}
+\end{figure}
+
+Adding to the end of the sequence is a mirror image of the code in
+\cref{fig:AddFirst} and is shown in \cref{fig:AddLast}.
+
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixl.hs}
+\caption{Adding an element to the end of the sequence \label{fig:AddLast}}
+\end{figure}
 
 An insertion operation in the basic 2-3 tree, where the data is stored in the
 leafs, is done with a time complexity of $\Theta \log n$. In the fingertree the
@@ -382,20 +420,31 @@ $Deep$ trees are being concatenated. Concatenating with a $Empty$ will be an
 dentity and with a $Single$ will reduce to $<|$ or $|>$. For the hard part when
 there are two $Deep$ trees, the prefix of the first tree will be the final
 prefix. Suffix of the second tree will be the suffix of the final tree. The
-recursive function $app3$ combines two trees and a list of $Nodes$ (basically
-the old prefix and suffixes down the spines of the old trees):
+recursive function $app3$ shown in \cref{fig:concatHelp} combines two trees and
+a list of $Nodes$ (basically the old prefix and suffixes down the spines of the
+old trees).
 
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeApp3.hs}
+\caption{Help function for concatenating two fingertrees \label{fig:concatHelp}}
+\end{figure}
 
 Where $(<|')$ and $(|>')$ are the functions defined in the previous sub-section
-and $nodes$ groups a list of elements into $Node$s: 
+and $nodes$ groups a list of elements into $Node$s as shown in
+\cref{fig:nodesHelp}. 
 
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
+\caption{Help function for transforming a list of element in to a list of Nodes \label{fig:nodesHelp}}
+\end{figure}
 
 The concatenation of the Fingertrees, just call on $app3$ with an empty list
-between the two trees.
+between the two trees, as shown in \cref{fig:concat}.
 
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeConcatFunc.hs}
+\caption{Concatination function for Fingertree \label{fig:concat}}
+\end{figure}
 
 The time spent on concatenation can be reasoned in this way. Each invocation of
 $app3$ arising from $(><)$ the argument list has a length of at most 4, which
@@ -415,35 +464,51 @@ To implement additional operations with good performance there must be a way
 to steer this search. A way to measure the tree.
 
 A measuremenet can be viewed as a cached reduction with some monoid. 
-Reductions, possibly cached, are captured by the following class
-declaration.
+Reductions, possibly cached, are captured by the class declaration in 
+\cref{fig:measure}. Where $a$ is the type of a tree and $v$ the type of an
+associated measurement. $v$ must be of a monoidal structure so measurements of
+subtrees easily can be combined independent of the nesting. Take the size of a
+tree as an example. Measure maps onto the monoid over the set of natural numbers
+and with the binary operator of addition \cite{fingertree}.
+
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell, mathescape=true]{examples/ClassMeasure.hs}
-Where $a$ is the type of a tree and $v$ the type of an associated measurement.
-$v$ must be of a monoidal structure so measurements of subtrees easily can be
-combined independent of the nesting. Take the size of a tree as an example.
-Measure maps onto the monoid over the set of natural numbers and with the binary
-operator of addition \cite{fingertree}.
+\caption{Definition of the Measure class \label{fig:measure}}
+\end{figure}
 
 \subsubsection{Caching measurements}
-It should be cheap to obtain a measurement. The fingertree sould ensure that an
+It should be cheap to obtain a measurement. The fingertree should ensure that an
 measurement can be obtian with a bounded number of $\bullet$ operations.
-Therefore fingertrees cache the measurements in the 2-3 nodes.
-\lstinputlisting[language=Haskell, mathescape=true]{examples/Node2-3Measure.hs}
+Therefore fingertrees cache the measurements in the 2-3 nodes. In
+\cref{fig:measureNode} the Measure of Node is shown.
 The constructors and the instance declaration are completely generic: they
 work for arbitrary annotations.
 
-Digits are measured on the fly.
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell, mathescape=true]{examples/Node2-3Measure.hs}
+\caption{Measure of the data type Node \label{fig:measureNode}}
+\end{figure}
+
+Digits are measured on the fly. As the length of the buffer Digit is bounded by
+a constant, the number of $\bullet$ operations is also bounded.
+
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell, mathescape=true]{examples/DigitMeasure.hs}
-As the length of the buffer Digit is bounded by a constant, the number of
-$\bullet$ operations is also bounded.
+\caption{Measure of the data type Digit \label{fig:measureDigit}}
+\end{figure}
 
 Fingertrees are modified in a similar manner to 2-3 nodes.
 The top level of a measured fingertree contains elements of type $a$, the second
 level of type $Node$ $v$ $a$, the third of type $Node$ $v$ ($Node$ $v$ $a$), and
-so on. The tree type $a$ changes from level to level, whereas the measure type
-$v$ remains the same. This means that Fingertree is nested in $a$, but regular
-in $v$ \cite{fingertree}.
+so on. The Measure function is shown in \cref{fig:measureFingerTree}. The tree 
+type $a$ changes from level to level, whereas the measure type $v$ remains the 
+same. This means that Fingertree is nested in $a$, but regular in $v$ 
+
+\cite{fingertree}.
+\begin{figure}[h!]
 \lstinputlisting[language=Haskell, mathescape=true]{examples/FingerTreeMeasure.hs}
+\caption{Fingertrees Measure function \label{fig:measureFingerTree}}
+\end{figure}
 
 
 \subsection{Sequences}
