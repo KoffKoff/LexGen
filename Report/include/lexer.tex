@@ -134,6 +134,27 @@ Therefore the lexer often returns not just the token but also an attribute value
 that describes the lexeme found in the source program corresponding to this 
 token \cite{Aho2006}.
 
+\begin{figure}[h!]
+\begin{center}
+\begin{grammar}
+
+<letter>  $\in$ \{`a' - `z'\} $\cup$ \{`A' - `Z'\} $\cup$ \{`_'\}
+
+<digit>  $\in$ \{0 - 9\}
+
+<identifier> ::= <letter> (<letter> | <digit>)* 
+
+<integer> ::= <digit>+
+
+<multi-line comment> ::= `/*' ([$\wedge$ `*'] | `*' [$\wedge$ `/'])* `*/'
+
+<reserved-words> ::= `(' | `)' | `{' | `}' | `;' | `=' | `++' | `<' | `+' | `-' | `*'
+
+\end{grammar}
+\caption{Grammar rules for \cref{codeToToken} \& \cref{longestMatch}\label{fig:grammar}}
+\end{center}
+\end{figure}
+
 A lexer collects chars into logical groups and assigns 
 internal codes to these groups according to their structure, 
 where the groups of chars are lexemes and the internal codes are tokens \cite{sebesta2012}.
@@ -141,25 +162,15 @@ In some cases it is not relevent to return a token for a pattern, in these
 cases the token and lexeme is simply discarded and the lexer continues,
 typical examples of this is whitespaces and comments which have no impact on
 the code \cite{Aho2006}.
+
 An example follows how a small piece of code would be divided given the regular
 language described in \cref{reglang}.
 \begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
 Consider the following text; to be lexed:
-\begin{quote}
 \lstinputlisting[language=c]{examples/token.c}
-\end{quote}
-Given the regular languaged defined in \cref{reglang}, the lexical analyser would use the following rules:
-\begin{quote}
-\begin{tabular}{l c l l}
-Identifier & $\rightarrow$ & $letter$ $ident$*\\
-Integer    & $\rightarrow$ & $digit$+\\
-Reserved   & $\rightarrow$ & \textbackslash( | \textbackslash) | \textbackslash\{
-                         | \textbackslash\} | ; | = | \textbackslash+\textbackslash+
-                         | < | \textbackslash+ | - | \textbackslash* | \/ & Reserved characters\\
-\end{tabular}
-\end{quote}
+Given the regular languaged defined in \cref{reglang}, the lexical analyser would use the rules defined in \cref{fig:grammar}
 In order to produce the following tokens.
-\begin{quote}
+\begin{center}
 \begin{tabular}{l c}
 \underline{Token} & \underline{Lexeme}\\
 Identifier & result\\
@@ -171,7 +182,7 @@ Reserved & $/$\\
 Integer & 100\\
 Reserved & ;
 \end{tabular}
-\end{quote}
+\end{center}
 \end{example}
 
 \section{Recognition of Tokens}
@@ -211,31 +222,18 @@ latest accepting state was. When the lexer reaches a state with no
 legal edge out of it, the lexer returns the token corresponding to the last
 accepting state. The tail of the string, the part that wasn't in the returned
 token, is then lexed from the initial state as part of a new token.\cite{Aho2006}
-\begin{example}[Longest Match]
+
+\begin{example}[Longest Match] \label{longestMatch}
 Consider the following text; to be lexed.
-\begin{quote}
 \lstinputlisting[language=c]{examples/longesttoken.c}
-\end{quote}
 Allthough this text is not legal code, there is no lexical errors in it. Since
 the text starts with a multi line comment sign the lexer will try to lex it as
 a comment. When the lexer encounters the end of the text it will return the
 token corresponding to the last accepting state and begin lexing the rest from
-the initial state. Below follows the rules relevant to this example followed by
-the result to the lexer, the rest of the rules can be found in \cref{reglang}.\\
-The Rules:
-\begin{quote}
-\begin{tabular}{l c l l}
-& & /\textbackslash*) ([\^\textbackslash*] | (\textbackslash*) [\^/])*
-    (\textbackslash*)+ / & Multi line comment\\
-Identifier & $\rightarrow$ & $letter$ $ident$*\\
-Integer    & $\rightarrow$ & $digit$+\\
-Reserved   & $\rightarrow$ & \textbackslash( | \textbackslash) | \textbackslash\{
-                         | \textbackslash\} | ; | = | \textbackslash+\textbackslash+
-                         | < | \textbackslash+ | - | \textbackslash* | \/ & Reserved characters\\
-\end{tabular}
-\end{quote}
+the initial state. The rules relevant to this example are defined in 
+\cref{fig:grammar} the rest of the rules can be found in \cref{reglang}.\\
 The result:
-\begin{quote}
+\begin{center}
 \begin{tabular}{l c}
 \underline{Token} & \underline{Lexeme}\\
 Reserved & $/$\\
@@ -249,7 +247,7 @@ Reserved & $/$\\
 Integer & 100\\
 Reserved & ;
 \end{tabular}
-\end{quote}
+\end{center}
 \end{example}
 
 \subsection{Finite Automata}
@@ -303,8 +301,9 @@ the transition diagram and transition table representation will look like for a
 given regular expression.
 
 \begin{example}[RegExp to Transition Diagram \cite{Aho2006}] \label{regexp2td}
-Given this regular expression: $(a | b)* abb$ \\
-the transition diagram in \cref{fig:td} representing this regular expression.
+Given this regular expression:
+\begin{center} $(a | b)* abb$ \end{center}
+the transition diagram in \cref{fig:td} is representing this regular expression.
 \end{example}
 \begin{figure}[h!]
   \centering
