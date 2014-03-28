@@ -723,20 +723,33 @@ amortized time \cite{fingertree}.
 
 \section{Lexical Errors}
 Since the lexer has to be able to handle any kind of possible not "complete"
-tokens, error handling can be done in different ways. One approach is to simply
-return as many tokens as possible from the code and where there might be lexical
-errors the lexer returns the error in as small parts as possible.
+tokens, error handling has to take this into account. for instance if an illegal
+character would be found somewhere in the code the lexer can't return a lexical
+error right away since said character could be part of a comment. One way to
+handle this is to tie the lexical errors to transitions. in doing so the
+transition map can have one transition that is valid and another that produces a
+lexical error. to include this the transition data type can be modified as
+follows:
+\begin{lstlisting}[language=Haskell]
+type Transition = (State,Maybe ([Token],State))
+\end{lstlisting}
+If the transition is $(State_i,Nothing)$ there is a lexical error for the string
+lexed if the incoming state is $State_i$.
 
-\begin{example}[A lexer that only lexes letters] When the lexer encounters the
-string "what @ day" it would return:
-\begin{center}
-\begin{tabular}{ll}
-String & Type\\
-What & $Word$\\
-'\_' & $Space$\\
-'@' & $No\_Token$\\
-'\_' & $Space$\\
-day & $Word$\\
-\end{tabular}
-\end{center}
-\end{example}
+%can be done in different ways. One approach is to simply
+%return as many tokens as possible from the code and where there might be lexical
+%errors the lexer returns the error in as small parts as possible.
+
+%\begin{example}[A lexer that only lexes letters] When the lexer encounters the
+%string "what @ day" it would return:
+%\begin{center}
+%\begin{tabular}{ll}
+%String & Type\\
+%What & $Word$\\
+%'\_' & $Space$\\
+%'@' & $No\_Token$\\
+%'\_' & $Space$\\
+%day & $Word$\\
+%\end{tabular}
+%\end{center}
+%\end{example}
