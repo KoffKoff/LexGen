@@ -1,15 +1,16 @@
 \chapter{Divide-and-Conquer Lexer}
-An incremental divide and conquer lexer works by dividing the sequence, to be lexicaly analysed,
-into small parts and analyse them; and then combining them. In the base
-case the lexical analysis is done on a single character. The conquer step
-then combines the smaller tokens into as large tokens as possible. The end
-result is a sequence of token that represent the code. How this is done
-will be described below.
+An incremental divide and conquer lexer works by dividing the sequence, to be
+lexicaly analysed, into small parts and analyse them; and then combining them.
+In the base case the lexical analysis is done on a single character. The
+conquer step then combines the smaller tokens into as large tokens as possible.
+The end result is a sequence of token that represent the code. How this is done
+is described in this chapter.
 
 \section{Divide and Conquer in General}
 This section gives an idea of how the Divide and Conquer algorithm
-works in general, before adressing in detail how to apply it to lexing.
-% So when talking about the incremental lexer there is an understanding about the underlying techniques.
+works in general, before addressing in detail how to apply it to lexing. It
+describes the power of divide and conquer in terms of executing time and how
+laziness can be applied to these algorithms.
 
 \subsection{The Three Steps}
 The general idea of a divide and conquer algorithm is to divide a problem into
@@ -53,10 +54,11 @@ Assume a function $T_n$ constrained by the recurrence
 \begin{center}
 $T_n = {\alpha}T_{\frac{n}{\beta}}+ f(n)$
 \end{center}
-(This is typically the equation for the running time of a divide and conquer algorithm, where $\alpha$
-is the number of sub-problems at each recursive step, $n/\beta$ is the size of
-each sub-problem, and $f(n)$ is the running time of dividing up the problem
-space into $\alpha$ parts, and combining the sub-results together.)\\
+(This is typically the equation for the running time of a divide and conquer
+algorithm, where $\alpha$ is the number of sub-problems at each recursive step,
+$n/\beta$ is the size of each sub-problem, and $f(n)$ is the running time of
+dividing up the problem space into $\alpha$ parts, and combining the sub-results
+together.)\\
 If we let $e = log_\beta \alpha$, then
 \begin{center}
 \begin{tabular}{r c l l}
@@ -73,13 +75,13 @@ If we let $e = log_\beta \alpha$, then
 \end{theorem}
 
 \subsection{Hands on Example}
-The divide and conquer pattern can be preformed on different sorts of algorithm
-that solves different problems. A general problem is sorting, or more precisely
-sorting a sequence of integers. This example shows merge-sort.
+The divide and conquer pattern can be preformed on algorithm that solves
+different problems. A general problem is sorting, or more precisely sorting a
+sequence of integers. This example shows merge-sort.
 
 \begin{description}
-\item[divide:] The algorthim starts with the divide step. Given the input $S$ the algorithm
-will check if the length of $S$ is less then or equal to 1.
+\item[divide:] The algorthim starts with the divide step. Given the input $S$
+the algorithm will check if the length of $S$ is less then or equal to 1.
 \begin{itemize}
 \item If this is true, the sequence is returned. A sequence of one or zero
 elements is always sorted.
@@ -87,9 +89,9 @@ elements is always sorted.
 $S_1$ and $S_2$. $S_1$ will be the first half of $S$ while $S_2$ will be the
 second half.
 \end{itemize}
-\item[Recur:] The next step is to sort the subsequences $S_1$ and $S_2$. The sorting
-function sorts the subsequences by recursivly calling itself twice with $S_1$ and
-$S_2$ as arguments respectivly.
+\item[Recur:] The next step is to sort the subsequences $S_1$ and $S_2$. The
+sorting function sorts the subsequences by recursivly calling itself twice with
+$S_1$ and $S_2$ as arguments respectivly.
 \item[Conquer:] Since $S_1$ and $S_2$ are sorted combining them into one sorted
 sequence is trivial. This process is what's refered to as merge in merge-sort.
 The resulting sequence of the merge is returned.
@@ -165,14 +167,12 @@ and the parts that depend on this changed data \cite{incrementalDef}.
 \caption{Incremental Computing, the updated nodes when a leaf changes \label{fig:incUp}}
 \end{figure}
 
-For a divide and conquer lexer this would mean only recompute the changed token
+For a divide and conquer lexer this means to only recompute the changed token
 and the token to the right of the changed token. This is done recurrsivly until
 the root of the tree is reached. The expected result of this would be that when
-a character is added to the code of 1024 tokens, instead of relex all 1024
-tokens the lexer will only do 10 recalculations for new tokens. Since,
-$log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}. How this is
-calculated for an incremental divide and conquer lexer is described more in
-detail in the next sub-section.              
+a character is added to the code of 1024 tokens, instead of recalculate all the 
+1024 tokens the lexer only needs to do 10 recalculations. Since,
+$log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}.        
 
 \section{Fingertree}
 Fingertree is a tree structure which is incremantal in its nature and has good
@@ -202,8 +202,8 @@ the monoids $\bullet$. Reduction with a monoid always return the same value,
 independent of the argument nesting. But for a reduction with an arbitrary
 constant and binary operation there must be a specified nesting rule. If
 combining operation are only nested to the right, or to the left, the obtained
-result will be a skewed reductions, which can be singled out as a type class as 
-in \cref{fig:Reduction} \cite{fingertree}.
+result will be a skewed reductions, which can be singled out as a type class
+described in \cref{fig:Reduction} \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceFun.hs}
@@ -211,8 +211,10 @@ in \cref{fig:Reduction} \cite{fingertree}.
 \end{figure}
 
 \subsection{Simple Sequence}
-lets take a look on the definition on a 2-3 fingertree and how they can
-implement a sequence. Lets start by looking at an ordinary 2-3 tree.
+The defenition of the fingertrees can be described by comparing it to an already
+known datastructure and how that datastructer represent data. Lets take a look
+at the definition on a 2-3 fingertree and how they can implement a sequence.
+Lets start by looking at an ordinary 2-3 tree.
 
 \begin{figure}[!h]
 \centering
@@ -271,7 +273,7 @@ implement a sequence. Lets start by looking at an ordinary 2-3 tree.
 \label{fig:2-3tree}}
 \end{figure}
 
-The tree showned in the \cref{fig:2-3tree} stores all it's data in the leafs.
+The tree shown in the \cref{fig:2-3tree} stores all it's data in the leafs.
 This can be expressed by defining an non-regular or nested type, as shown in
 \cref{fig:2-3Fingertree}.
 
@@ -328,7 +330,7 @@ nodes of and lifting them up together. The result should look like in
 \label{fig:fingertree}}
 \end{figure}
 
-Since all leafs in the 2-3 tree where at the same level, the left and right
+Since all leafs in the 2-3 tree is at the same level, the left and right
 spine has the same length. Therefor the left and right spines can be pair up to
 create a single central spine. Branching out from the spine is 2-3 trees. At the
 top level there are two to three elements on each side, while the other levels
@@ -349,8 +351,8 @@ The non-regular definition of the $FingerTree$ type determines the unusual shape
 of these trees, which is the key to there performance. The top level of the tree
 contains elements of type $a$. Next level contains elements of type $Node$ $a$.
 At the $n$th level, elements are of type $Node^n$ $a$. which are 2-3 trees with
-a depth of $n$. This will give that a sequence of $n$ elements is represented by
-a $FingerTree$ of depth $\Theta(\log n)$. Also an element at position $d$ from
+a depth of $n$. This gives that a sequence of $n$ elements is represented by
+a $FingerTree$ of depth $\Theta(\log n)$. An element at position $d$ from
 the nearest end is stored at a depth of $\Theta(\log d)$ in the $FingerTree$
 
 In fingertrees and nodes the reduce function mentioned in fundamental concepts
@@ -372,9 +374,9 @@ shown in \cref{fig:reductionFingerTree}
 \end{figure}
 
 \subsection{Double-ended Queue Operations}
-After showing how the Fingertrees basic structure is defined. It is now time to
-show how fingertrees makes efficient Double-ended Queue, a queue structure which
-can be accessed from both ends, where all operations having the time complexity
+After showing how the Fingertrees basic structure is defined. Lets take a look
+on how fingertrees makes efficient Double-ended Queue, a queue which can be
+accessed from both ends, where both the operations having the time complexity
 $\Theta(1)$.
 
 Adding an element to the beginning of the sequence is strait forward, except
@@ -416,29 +418,35 @@ will have been performed to pay for the more expensive operation
 
 \subsection{Concatenation Operations}
 Concatenation is a simple operation for most cases, except for the case when two
-$Deep$ trees are being concatenated. Concatenating with a $Empty$ will be an 
-dentity and with a $Single$ will reduce to $<|$ or $|>$. For the hard part when
-there are two $Deep$ trees, the prefix of the first tree will be the final
-prefix. Suffix of the second tree will be the suffix of the final tree. The
-recursive function $app3$ shown in \cref{fig:concatHelp} combines two trees and
-a list of $Nodes$ (basically the old prefix and suffixes down the spines of the
-old trees).
+$Deep$ trees are being concatenated. Since $Empty$ is the identity element,
+concatenation with an $Empty$ yields the other tree. Concatination with a
+$Single$ will reduce to $<|$ or $|>$. For the hard part when there are two
+$Deep$ trees, the prefix of the first tree will be the final prefix. Suffix of
+the second tree will be the suffix of the final tree. The recursive function
+$app3$ shown in \cref{fig:concatHelp} combines two trees and a list of $Nodes$
+(basically the old prefix and suffixes down the spines of the old trees).
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeApp3.hs}
 \caption{Help function for concatenating two fingertrees \label{fig:concatHelp}}
 \end{figure}
 
-Where $(<|')$ and $(|>')$ are the functions defined in the previous sub-section
+Where $(<|')$ and $(|>')$ are the functions defined in \cref{fig:reduceAppend}
 and $nodes$ groups a list of elements into $Node$s as shown in
 \cref{fig:nodesHelp}. 
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/ReduceAppend.hs}
+\caption{Help function for transforming a list of element in to a list of Nodes \label{fig:reduceAppend}}
+\end{figure}
+
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
 \caption{Help function for transforming a list of element in to a list of Nodes \label{fig:nodesHelp}}
 \end{figure}
 
-The concatenation of the Fingertrees, just call on $app3$ with an empty list
+The concatenation of the Fingertrees calls on $app3$ with an empty list
 between the two trees, as shown in \cref{fig:concat}.
 
 \begin{figure}[h!]
@@ -455,7 +463,7 @@ where $n_1$ and $n_2$ are the number of elements in the two trees
 \cite{fingertree}.
 
 \subsection{Measurements}
-Fingertrees has been showned to work well as catenble double-ended queues. A 
+Fingertrees has been shown to work well as catenble double-ended queues. A 
 measurement is a property describing the state of the tree. This section
 presents a modification of the fingertree, which provides positional and
 set-theoretic operations. For example taking or dropping the first $n$ elements.
@@ -685,7 +693,8 @@ algorithm will have a time complexity of
 $\Theta(n^0 \cdot log n) = \Theta(log n)$
 
 \subsubsection{The Bankers Method}
-The bankers method accounts for accumulated debt. Each debit represents
+The bankers method is a technique used to calculate the practical time
+assumption where it accounts for accumulated debt. Each debit represents
 a constant amount of suspended work. When a computation initially suspends, it
 create a number of debits proportional to it's shared cost and
 associate each debit with a location in the object. The choice of location for
@@ -717,7 +726,7 @@ as many debits as the node has safe digits. (0,1 or 2) A double-ended queue
 operation which descends $k$ levels turns $k$ dangerous digits into safe digits.
 By doing so creates $k$ debits to pay for the work done.
 Applying the bankers method of debit passing to any debits already attached to
-these $k$ nodes. It can be showed that each operation must discharge at most
+these $k$ nodes. It can be shown that each operation must discharge at most
 one debit. Therefore the double-ended queue operations run in $\Theta(1)$
 amortized time \cite{fingertree}.
 
