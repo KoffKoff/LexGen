@@ -1,3 +1,4 @@
+mergeTokens :: Suffix -> Tokens -> Transition -> Tokens
 mergeTokens suff1 toks2 trans2 = case viewl (currentSeq toks2) of
   token2 :< seq2' -> let newToken = mergeToken suff1 token2
                      in toks2 {currentSeq = newToken <| seq2'}

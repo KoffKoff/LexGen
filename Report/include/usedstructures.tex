@@ -1,20 +1,26 @@
 \chapter{Implementation}
 In this chapter the tools, data structure and implementation of the incremental
-divide and conquer lexer is explained. The implementation can be found in
-\cref{chap:code}.
+divide and conquer lexer is explained. The implementation of the incremental
+divide and conquer lexer uses fingertrees for storing the intermediate tokens
+and the lexed text. It has an internal representation of the tokens to keep
+track of the data needed when two fingertrees are combined. The lexical routines
+for combining the internal token data type take advantage of functional
+composition in order to get lazy updating of the tokens when two fingertrees are
+combined. The complete implementation can be found in \cref{chap:code}.
 
-\section{Alex}
-Alex is a Haskell tool for generating lexical analyzers given a
+%\section{Alex}
+\section{The DFA Design}
+The DFA used in the incremental lexer was created using Alex. Alex is a Haskell
+tool for generating lexical analyzers given a
 description of the language in the form of regular expressions, it is similar to
 lex and flex in C and C++. The resulting lexer is Haskell 98 compatible and can
 easily be used with the parser Happy, a parser generator for Haskell \cite{alex}.
 Alex is notably used in BNFC which is a program to generate among other things a
 lexer, parser and abstract syntax from Backus-Naur Form \cite{bnfc}.
 
-\subsection{The DFA design}
-The DFA used in the incremental lexer was created using Alex. The reason for
-this is that Alex generates a DFA which is optimized in data size. Instead of
-having an array for every possible character and state combination 5 arrays are
+The reason for using Alex to generate the DFA is that it optimizes the number of
+elements in the transition table. Instead of
+having an array for every possible character and state combination, 5 arrays are
 generated that takes advantage of the fact that for most characters the same
 state will be used the majority of time. This saves a lot of elements that
 would otherwise be the same in the array.
@@ -34,12 +40,12 @@ Since this project is about creating a real-time lexing tool, performance is
 important. Therefor there are advantages of using sequences instead of lists.
 The most notable place where this is used is in the measure of the fingertree,
 where the tokens are stored in a sequence rather then a list. Sequences are also
-used elsewhere in the project but this is the most notable place since it is
+used elsewhere in the project but the measure is the most notable place since it is
 frequently updated.
 
 \subsection{Tokens}
 The internal structure used to store lexed tokens is called $Tokens$. There are
-three constructors in the $Tokens$ data type.
+three constructors in the $Tokens$ data type, see \cref{fig:tokens}.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/Token.hs}
@@ -58,15 +64,13 @@ next.
 \subsection{Suffix}\label{sub:suff}
 When a text is lexed it is uncertain that the last token is the actual end of
 the file since it may be combined with something else. To ensure that all
-possible outcomes will be handled the last token can be on one of three different
-forms.
-
+possible outcomes will be handled the last token can be on one of three
+different forms. The part of the text lexed can end in:
 \begin{itemize}
-\item The part of the text lexed can end up in a legal state that is not
-accepting.
-\item The part of the text lexed can end up in an accepting state.
-\item The part of the text lexed can end in a legal state that is not
-accepting, but the text can also be a sequence of multiple tokens.
+\item a legal state that is not accepting.
+\item an accepting state.
+\item a legal state that is not accepting, but the text can also be a sequence
+  of multiple tokens.
 \end{itemize}
 To keep track of these cases a data structure that captures this was
 implemented, see \cref{fig:suff}.
@@ -125,9 +129,13 @@ fast access. The function composition is used when combining tokens to ensure
 that only needed data is computed.
 
 \section{Fingertree}
-The fingertree is built up with the characters of the text being the leafs
-and the table format transition map as measure. In order for the table data type
-to be a legal measure of the fingertree it has to be a monoid.
+The fingertree is constructed with the characters of a text being the leafs and
+with the table format transition map as it's measure. The $Table$ data type has
+to be a monoid in order to be a legal measure of the fingertree.
+
+In order for the table
+data type to be a legal measure of the fingertree the table data type has to be
+a monoid.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/Fingertree.hs}
@@ -156,24 +164,25 @@ The lexical routines are divided into five functions. They each handles
 different parts of the lexical steps that is needed in an incremental divide and
 conquer lexer.
 
-\begin{figure}[h!]
-  \lstinputlisting[language=Haskell]{examples/LexicalFunHeads.hs}
-  \caption{Function definitions of the lexical routines \label{fig:funheads}}
-\end{figure}
+%\begin{figure}[h!]
+%  \lstinputlisting[language=Haskell]{examples/LexicalFunHeads.hs}
+%  \caption{Function definitions of the lexical routines \label{fig:funheads}}
+%\end{figure}
 
+\subsection{combineTokens}
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/CombineTokens.hs}
   \caption{The $combineTokens$ function \label{fig:combinetoks}}
 \end{figure}
 
-\textbf{combineTokens} is the function called when two fingertrees are combined.
+$combineTokens$ is the function called when two fingertrees are combined.
 The function starts by checking if the tokens generated from $in\_state$ from
 the first transition is empty or invalid in which case the output is trivial. If
-it is not the tokens are passed on to $combineWithRHS$ together with the second
-transition.
+the tokens generatd are valid, the tokens are passed on to $combineWithRHS$
+together with the second transition.
 
-%\subsection{combineWithRHS}
-\textbf{combineWithRHS} checks how the tokens from the first
+\subsection{combineWithRHS}
+$combineWithRHS$ checks how the tokens from the first
 transition is to be combined with the second transition.
 
 \begin{figure}[h!]
@@ -181,85 +190,75 @@ transition is to be combined with the second transition.
   \caption{$CombineWithRHS$ function\label{fig:cwrhs}}
 \end{figure}
 
-$combineWithRHS$ starts by creating tokens from the second transition using the
-out state from the first tokens, this can result in three different cases:
+$combineWithRHS$ starts by creating tokens from the second transition, $toks2$,
+using the out state from the first tokens, this can result in three different
+cases, the definition of the variable names can be found in \cref{fig:cwrhs}.
 \begin{description}
-\item[isEmpty]If the tokens are empty the first tokens are returned.
-\item[isValid]If the tokens are valid it means that the last token from the
-first tokens can be combined with the first token in the second tokens into one
-token.
-\item[otherwise]If the tokens are not valid the lexer checks the suffix of the
-first tokens to see if it ends in an accepting state, the $One$ construct, and
-if so appends the tokens. If it is not invalid tokens will be returned.
+\item[isEmpty]If $toks2$ is empty $toks1$ is returned.
+\item[isValid]If $toks2$ is valid it means that the last token from the
+  $toks1$ can be combined into one token with the first token in $toks2$.
+\item[otherwise]If $toks2$ is not valid the lexer checks the suffix of $toks1$
+  to see if it ends in an accepting state or a valid state.
+  \begin{itemize}
+  \item if the $One$ constructor is found the suffix ends in an accepting state
+    which means that tokens created from the start state can be appended to
+    $toks1$.
+  \item If the $Multi$ constructor is found the tokens from the suffix,
+    $suffToks$, is extracted and a recursive call to $combineWithRHS$ is made
+    with $suffToks$ as argument instead.
+  \item If the $Str$ constructor is found the suffix doesn't end in a valid
+    state and $InvalidTokens$ will be returned.
+  \end{itemize}
 \end{description}
-The switch for $Multi$ extracts the tokens from the suffix and recursively calls
-\emph{combineWithRHS} to see if there is some other possible way to combine the
-transitions.
+%The switch case for $Multi$ extracts the tokens from the suffix and recursively
+%calls \emph{combineWithRHS} to see if there is some other possible way to
+%combine the transitions.
 
-%\subsection{mergeTokens}
-\textbf{mergeTokens} combines the last token from the first tokens with
-the first token of the second tokens.
+\subsection{mergeTokens}
+$mergeTokens$ combines the last token from the first tokens with
+the first token of the second tokens, for variable references see
+\cref{fig:mergetokens}.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/MergeTokens.hs}
   \caption{$MergeTokens$ function \label{fig:mergetokens}}
 \end{figure}
-If there are more then one token in the second tokens the tokens are combined
-into one token and the rest of the tokens in the second tokens are appended and
-returned. If there is exactly one token in the second tokens two suffix is to be
-combined. When two suffixes are combined some extra checks needs to be done.
-If the second tokens has an accepting out state, the two suffixes can be
-combined into one token. If it is not the work is passed on to $mergeSuff$
+\begin{itemize}
+\item If there are more then one token in $toks2$, $suff1$ is combined into one
+  token with the first token in $toks2$ and the rest of the tokens in $toks2$
+  is appended and returned.
+\item If there is exactly one token in $toks2$, the suffix from $toks1$ is
+  combined with $suff1$. When two suffixes are combined some extra checks needs
+  to be done. If $toks2$ has an accepting out state, the two suffixes
+  can be combined into one token. If $toks2$ does not have an accepting out
+  state the work is passed on to $mergeSuff$.
+\end{itemize}
 
-%\subsection{mergeSuff}
-\textbf{mergeSuff} checks which pair of suffix it has and takes the appropriate
+\subsection{mergeSuff}
+$mergeSuff$ checks which pair of suffix it has and takes the appropriate
 actions.
 
 \begin{figure}[h!]
-  \lstinputlisting[language=Haskell]{examples/MergeSuff1.hs}
-  \caption{$MergeSuff$ for $Multi$ \label{fig:msmulti}}
+  \lstinputlisting[language=Haskell]{examples/MergeSuff.hs}
+  \caption{$MergeSuff$ function \label{fig:msuff}}
 \end{figure}
-
-If the first suffix is of type $Multi$ the function calls $combineWithRHS$. If
-the resulting tokens are invalid a recursive call is made with the suffix from
-the new tokens as first suffix.
-
-\begin{figure}[h!]
-  \lstinputlisting[language=Haskell]{examples/MergeSuff2.hs}
-  \caption{$MergeSuff$ for $Str$ \label{fig:msstr}}
-\end{figure}
-
-If the first suffix is of type $Str$ the result will always be another $Str$ no
-matter what is in the second suffix so the string is extracted and appended.
-
-\begin{figure}[h!]
-  \lstinputlisting[language=Haskell]{examples/MergeSuff3.hs}
-  \caption{$MergeSuff$ for $One$ and $Str$ \label{fig:msonestr}}
-\end{figure}
-
-if the first suffix is of type $One$ and the second $Str$ a new $Multi$ suffix
-is created. A new second tokens is created using the start state on the second
-suffix, if this results in a valid $Tokens$ the token from the first suffix is
-prepended. If it is not valid the $Str$ is just added to the end of the new
-suffix.
-
-\begin{figure}[h!]
-  \lstinputlisting[language=Haskell]{examples/MergeSuff4.hs}
-  \caption{$MergeSuff$ for $One$ and $One$ \label{fig:msoneone}}
-\end{figure}
-
-When both suffix are $One$ they can be combined into a single token.
-
-\begin{figure}[h!]
-  \lstinputlisting[language=Haskell]{examples/MergeSuff5.hs}
-  \caption{$MergeSuff$ for $One$ and $Multi$ \label{fig:msonemulti}}
-\end{figure}
-
-When the first suffix is $One$ and the second is $Multi$ it is passed onto
-$mergeTokens$.
-
-%\subsection{appendTokens}
-\textbf{appendTokens} checks if there is a lexical error in the second tokens,
-if it is that error is returned otherwise the second tokens is appended to the
-first.
+\begin{itemize}
+\item If the first suffix is of type $Multi$ the function calls
+  $combineWithRHS$. If the resulting tokens is invalid a recursive call is made
+  with the suffix from the new tokens as first suffix.
+\item If the first suffix is of type $Str$ the result will always be another
+  $Str$ no matter what is in the second suffix so the string is extracted and
+  appended.
+\item if the first suffix is of type $One$ and the second $Str$ a new $Multi$
+  suffix is created. A new second tokens is created using the start state on the
+  second suffix, if this results in a valid $Tokens$, the token from the first
+  suffix is prepended. If it is not valid the $Str$ is just added to the end of
+  the new suffix.
+\item When both suffix are $One$ they can be combined into a single token.
+\item When the first suffix is $One$ and the second is $Multi$ it is passed onto
+  $mergeTokens$.
+\end{itemize}
+\subsection{appendTokens}
+$appendTokens$ checks if there is a lexical error in $toks2$. if there is
+an error, that error is returned, otherwise $toks2$ is appended to $toks1$.
 \lstinputlisting[language=Haskell]{examples/AppendTokens.hs}
