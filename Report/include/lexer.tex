@@ -104,7 +104,7 @@ definitions avoid recursive definitions \cite{Aho2006}.
 
 \section{Tokens, Patterns and Lexemes}
 When rules have been defined for a language, the lexer needs structures to
-represent rules and the result from lexing the code-string. 
+represent the rules and the result from lexing the text. 
 This section describe the structures which the lexical analyser use
 for representing the abstract data; what these structures are for and what is 
 forwarded to the syntactical analyser. 
@@ -118,9 +118,9 @@ token name is an abstract symbol corresponding to a lexical unit \cite{Aho2006}.
 For example, a particular keyword, data-type or identifier.
   \item[Pattern]
     is a description of what form a lexeme may take \cite{Aho2006}. 
-For example, a keyword is just the sequence of characters that forms the 
-keyword, an int is just a sequence consisting of just numbers. Can be described 
-by a regular expression.
+For example, a keyword is the sequence of characters that forms the 
+keyword, an int is a sequence consisting of integers from 0 to 9. This can
+be described by a regular expression.
   \item[Lexemes]
     is a sequence of characters in the code being analysed which 
 matches the pattern for a token and is identified by the lexical analyser as an 
@@ -159,7 +159,7 @@ A lexer collects chars into logical groups and assigns
 internal codes to these groups according to their structure, 
 where the groups of chars are lexemes and the internal codes are tokens \cite{sebesta2012}.
 In some cases it is not relevent to return a token for a pattern, in these
-cases the token and lexeme is simply discarded and the lexer continues,
+cases the token and lexeme is discarded and the lexer continues,
 typical examples of this is whitespaces and comments which have no impact on
 the code \cite{Aho2006}.
 
@@ -186,29 +186,24 @@ Reserved & ;
 \end{example}
 
 \section{Recognition of Tokens}
-In previous section the topic have been, how to represent a pattern using 
-regular expressions and how these expressions relates to tokens. This section 
-will highlight how to transform a sequence of characters into a sequence of 
-abstract tokens. First giving some basic understanding with transition diagrams.  
+The topic in the previous section covers how to represent a pattern using 
+regular expressions and how these expressions relates to tokens. A pattern is
+used to determine if a string matches a token. This section is highlighting how
+to transform a sequence of characters into a sequence of abstract tokens using
+patterns. 
 
 \subsection{Transition Diagrams}
-A state transition diagram, or just transition diagram is a directed graph,
-where the nodes are labelled with state names. Each node 
-represents a state which could occur during the process of scanning the input, 
-looking for a lexeme that matches one of several patterns \cite{Aho2006}. The 
-edges are labelled with the input characters that causes transitions among 
-the states. An edge may also contain actions that the lexer must perform when the
-transition is a token \cite{sebesta2012}.
+A state transition diagram, or transition diagram is a directed graph, where the
+nodes are labelled with state names. Each node represents a state which could
+occur during the process of scanning the input, looking for a lexeme that
+matches one of several patterns \cite{Aho2006}. The edges are labelled with the
+input characters that causes transitions among the states. An edge may also
+contain actions that the lexer must perform when the transition is a token 
+\cite{sebesta2012}.
 
-Some properties of transition diagrams
-follow. One state is said to be initial state. The transition 
-diagram always begins at this state, before any input symbols have been read. 
-Some states are said to be accepting (final). They indicate that a lexeme has 
-been found. If the found token is the longest match (see \cref{longmatch}) then the token will be 
-returned with any additional optional values, mentioned in previous section, 
-and the transition is reset to the initial state \cite{Aho2006}.
+There are different type of states in the the diagram where one state state is said to be initial. The transition diagram always begins at this state, before any input symbols have been read. Some states are said to be accepting (final). They indicate that a lexeme has been found. If the found token is the longest match (see \cref{sub:longmatch}) then the token will be returned with any additional optional values, mentioned in previous section, and the transition is reset to the initial state \cite{Aho2006}.
 
-\subsection{Longest Match}\label{longmatch}
+\subsection{Longest Match}\label{sub:longmatch}
 If there are multiple feasible solutions when performing the lexical
 analysis, the lexer will return the token that is the longest. To manage this
 the lexer will continue in the transition diagram if there are any legal edges
@@ -251,14 +246,14 @@ Reserved & ;
 \end{example}
 
 \subsection{Finite Automata}
-Transition diagrams of the formed used in lexers are representations of a class 
+Transition diagrams of the form used in lexers are representations of a class 
 of mathematical machines called finite automata. Finite automata can be 
 designed to recognise members of a class of languages called regular languages, 
 mentioned above \cite{sebesta2012}.
 A finite automaton is essentially a graph, like transitions diagrams, with some 
 differences:
 \begin{itemize}
-  \item Finite automata are recognizers; they simply say "YES" or "NO" about 
+  \item Finite automata are recognizers; they say "YES" or "NO" about 
 each possible input string.
   \item Finite automata comes in two different forms:
     \begin{description}
@@ -300,19 +295,17 @@ transitions for these states given the input. The following examples shows how
 the transition diagram and transition table representation will look like for a 
 given regular expression.
 
-\begin{example}[RegExp to Transition Diagram \cite{Aho2006}] \label{regexp2td}
+\begin{example}[RegExp to Transition Diagram \& Transision Table \cite{Aho2006}] \label{regexp2td}
 Given this regular expression:
-\begin{center} $(a | b)* abb$ \end{center}
-the transition diagram in \cref{fig:td} is representing this regular expression.
-\end{example}
+\begin{center}
+    $(a | b)* abb$ 
+\end{center}
+
 \begin{figure}[h!]
   \centering
   \begin{tikzpicture}[
-    % Default arrow tip
     ->,>=stealth',shorten >=1pt,auto,
-    % Default node distance
     node distance=2cm,
-    % Edge stroke thickness: semithick, thick, thin
     semithick
     ]
 
@@ -327,13 +320,12 @@ the transition diagram in \cref{fig:td} is representing this regular expression.
     \newTransition{1}{2}{b}{}
     \newTransition{2}{3}{b}{}
   \end{tikzpicture}
-  \caption{Transition Diagram, accepting the pattern  $(a | b)* abb$ 
+  \caption{Transition Diagram, accepting the pattern $(a | b)* abb$
   \label{fig:td}}
-  \end{figure}
+\end{figure}
 
-\begin{example}[RegExp to Transition Table \cite{Aho2006}] \label{regexp2tt}
-Given the regular expression from \cref{regexp2td} it can be converted into the transition table shown in \cref{fig:tt}
-\end{example}
+The transition diagram in \cref{fig:td} is representing this regular expression.
+
 \begin{figure}[h!]
   \centering
   \begin{tabular}{| c | c c c |}
@@ -347,9 +339,13 @@ Given the regular expression from \cref{regexp2td} it can be converted into the 
     3 & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
     \hline
   \end{tabular}
-  \caption{Transition Table representation of regular expression in 
-        \cref{regexp2td} \label{fig:tt}}
+  \caption{Transition Table, accepting the pattern $(a | b)* abb$
+  \label{fig:tt}}
 \end{figure}
+
+It could also be converted into the transition table shown in \cref{fig:tt}
+\end{example}
+
 Transition tables have the advantage that they have an quick lookup time. But 
 instead it will take a lot of data space, when the alphabet is large. Most 
 states do not have any move on most of the input symbols \cite{Aho2006}.
@@ -360,9 +356,9 @@ DFA is a special case of an NFA where,
   \item for each state $s$ and input symbol $a$, there is exactly one edge out
         of $s$ labelled with $a$.
 \end{enumerate}
-While a NFA is an abstract representation of an algorithm to recognise the string 
-of a language, the DFA is a simple concrete algorithm for recognising strings. 
-Every regular expression can be converted in to a NFA and every NFA can be 
+A NFA is one abstract representation of an algorithm to recognise a string 
+in one language, the DFA is a simple concrete algorithm for recognising strings. 
+Every regular expression can be converted in to a NFA. Also every NFA can be 
 converted in to a DFA and then converted back to a regular expression \cite{Aho2006}. 
 It is the DFA that is implemented and used when building lexical analysers.
 The formal definition of a deterministic finite automaton follows:
@@ -376,6 +372,7 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
   \item $F \subseteq Q$ is the set of accept states.
 \end{enumerate} 
 \end{definition}
+
 \begin{example}[DFA representation of RegExp \cite{Aho2006}] \label{regexp2dfa}
 A DFA representation of same regular expression from \cref{regexp2td} is shown in \cref{fig:dfa}
 \end{example}
