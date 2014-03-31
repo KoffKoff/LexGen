@@ -52,7 +52,7 @@ the sequence of characters is the lexical error or last token lexed. the
 $Tokens$ constructor is the case when legal tokens have been found. $currentSeq$
 are all the currently lexed tokens save for the last, $lastToken$ are all the
 possible ways that the last token can be lexed, in this implementation this is
-refered to as the suffix and what it is and why it is needed will be explained
+referred to as the suffix and what it is and why it is needed will be explained
 next.
 
 \subsection{Suffix}\label{sub:suff}
@@ -65,7 +65,7 @@ forms.
 \item The part of the text lexed can end up in a legal state that is not
 accepting.
 \item The part of the text lexed can end up in an accepting state.
-\item The part of the texted lexed can end in a legal state that is not
+\item The part of the text lexed can end in a legal state that is not
 accepting, but the text can also be a sequence of multiple tokens.
 \end{itemize}
 To keep track of these cases a data structure that captures this was
@@ -76,20 +76,20 @@ implemented, see \cref{fig:suff}.
   \caption{Suffix Data Type\label{fig:suff}}
 \end{figure}
 
-The $Str$ contructor is used to keep track of partially complete tokens, an
+The $Str$ constructor is used to keep track of partially complete tokens, an
 example of this is when a string is started but the end quotation character have
 not yet been found.
 
 The $One$ constructor is used one exactly one token have been found, it may or
 may not be the token that is used in the final result of the lexing. Since this
-constructor is a special case of the $Multi$ constructor it can be ommited.
+constructor is a special case of the $Multi$ constructor it can be omitted.
 However the $One$ constructor makes certain cases redundant since the lexer
 makes assumptions that can not be made for the $Multi$ constructor.
 
-The $Multi$ constructor is used when atleast one token have been found but the
+The $Multi$ constructor is used when at least one token have been found but the
 lexeme for the suffix does not match exactly one token. The entire suffix still
 need to have a legal out state. This type of suffix can typically be found when
-the begining of a comment are lexed. for example the text
+the beginning of a comment are lexed. for example the text
 \emph{/*hello world} would be lexed to a sequence of complete tokens, but the
 lexer still needs to keep track of the fact that it may be a multi-line
 comment. Note that in this case the $Tokens$ data structure would have one out
@@ -131,7 +131,7 @@ to be a legal measure of the fingertree it has to be a monoid.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/Fingertree.hs}
-  \caption{The data type ofr storing the tokens and text \label{fig:fingertreedt}}
+  \caption{The data type for storing the tokens and text \label{fig:fingertreedt}}
 \end{figure}
 
 The monoid class in Haskell have two different functions, $mempty$ which is the
@@ -143,7 +143,7 @@ a new table filled with the combination.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/TableMonoid.hs}
-  \caption{The tabulate fucntions and monoid implementation \label{fig:tablemonoid}}
+  \caption{The tabulate functions and monoid implementation \label{fig:tablemonoid}}
 \end{figure}
 
 There are two helper functions that convert between the table format that is
@@ -163,7 +163,7 @@ conquer lexer.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/CombineTokens.hs}
-  \caption{The combineTokens function \label{fig:combinetoks}}
+  \caption{The $combineTokens$ function \label{fig:combinetoks}}
 \end{figure}
 
 \textbf{combineTokens} is the function called when two fingertrees are combined.
@@ -178,7 +178,7 @@ transition is to be combined with the second transition.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/CombineWithRHS.hs}
-  \caption{CombineWithRHS function\label{fig:cwrhs}}
+  \caption{$CombineWithRHS$ function\label{fig:cwrhs}}
 \end{figure}
 
 $combineWithRHS$ starts by creating tokens from the second transition using the
@@ -192,7 +192,7 @@ token.
 first tokens to see if it ends in an accepting state, the $One$ construct, and
 if so appends the tokens. If it is not invalid tokens will be returned.
 \end{description}
-The switch for $Multi$ extracts the tokens from the suffix and recursivly calls
+The switch for $Multi$ extracts the tokens from the suffix and recursively calls
 \emph{combineWithRHS} to see if there is some other possible way to combine the
 transitions.
 
@@ -202,13 +202,13 @@ the first token of the second tokens.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/MergeTokens.hs}
-  \caption{MergeTokens function \label{fig:mergetokens}}
+  \caption{$MergeTokens$ function \label{fig:mergetokens}}
 \end{figure}
 If there are more then one token in the second tokens the tokens are combined
-into one token and the resto of the tokens in the second tokens are appended and
+into one token and the rest of the tokens in the second tokens are appended and
 returned. If there is exactly one token in the second tokens two suffix is to be
 combined. When two suffixes are combined some extra checks needs to be done.
-If the second tokens has an accpeting out state, the two suffixes can be
+If the second tokens has an accepting out state, the two suffixes can be
 combined into one token. If it is not the work is passed on to $mergeSuff$
 
 %\subsection{mergeSuff}
@@ -217,7 +217,7 @@ actions.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/MergeSuff1.hs}
-  \caption{MergeSuff for Multi \label{fig:msmulti}}
+  \caption{$MergeSuff$ for $Multi$ \label{fig:msmulti}}
 \end{figure}
 
 If the first suffix is of type $Multi$ the function calls $combineWithRHS$. If
@@ -226,7 +226,7 @@ the new tokens as first suffix.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/MergeSuff2.hs}
-  \caption{MergeSuff for Str \label{fig:msstr}}
+  \caption{$MergeSuff$ for $Str$ \label{fig:msstr}}
 \end{figure}
 
 If the first suffix is of type $Str$ the result will always be another $Str$ no
@@ -234,7 +234,7 @@ matter what is in the second suffix so the string is extracted and appended.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/MergeSuff3.hs}
-  \caption{MergeSuff for One and Str \label{fig:msonestr}}
+  \caption{$MergeSuff$ for $One$ and $Str$ \label{fig:msonestr}}
 \end{figure}
 
 if the first suffix is of type $One$ and the second $Str$ a new $Multi$ suffix
@@ -245,14 +245,14 @@ suffix.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/MergeSuff4.hs}
-  \caption{MergeSuff for One and One \label{fig:msoneone}}
+  \caption{$MergeSuff$ for $One$ and $One$ \label{fig:msoneone}}
 \end{figure}
 
 When both suffix are $One$ they can be combined into a single token.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/MergeSuff5.hs}
-  \caption{MergeSuff for One and Multi \label{fig:msonemulti}}
+  \caption{$MergeSuff$ for $One$ and $Multi$ \label{fig:msonemulti}}
 \end{figure}
 
 When the first suffix is $One$ and the second is $Multi$ it is passed onto
