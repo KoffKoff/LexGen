@@ -34,7 +34,7 @@ since it has the propert in \cref{assprop}.
 In divide and conquer algorithms this is essential. In the divide step of the
 divide and conquer algorithm, there is no certain order of how the subproblems
 are going to be divided. This means that the order the subproblems are being
-conquered can't have an impact on the algorithm, hence the conquer step must be
+conquered can not have an impact on the algorithm, hence the conquer step must be
 associative.
 
 \begin{example}[Associativity of the conquer step]\label{assprop}
@@ -94,7 +94,7 @@ second half.
 sorting function sorts the subsequences by recursivly calling itself twice with
 $S_1$ and $S_2$ as arguments respectivly.
 \item[Conquer:] Since $S_1$ and $S_2$ are sorted combining them into one sorted
-sequence is trivial. This process is what's refered to as merge in merge-sort.
+sequence is trivial. This process is what is refered to as merge in merge-sort.
 The resulting sequence of the merge is returned.
 \end{description}
 Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
@@ -289,7 +289,7 @@ Lets start by looking at an ordinary 2-3 tree.
 \label{fig:2-3tree}}
 \end{figure}
 
-The tree shown in the \cref{fig:2-3tree} stores all it's data in the leafs.
+The tree shown in the \cref{fig:2-3tree} stores all it is data in the leafs.
 This can be expressed by defining an non-regular or nested type, as shown in
 \cref{fig:2-3Fingertree}.
 
@@ -664,7 +664,7 @@ accepting state. The rule for creating a new token will instead be when the
 combination of two transitions yields $NoState$ the lists will be appended. That
 is, when there is an out state from the first transition that corresponds to an
 in state of the second transition and the out state of the second transition
-isn't $NoState$, the last token of the first transition and the first token of
+is not $NoState$, the last token of the first transition and the first token of
 the second transition will become one token, otherwise append the second list to
 the first list.
 %When two list of tokens are combined there are two cases that can emerge. The
@@ -709,7 +709,7 @@ $\Theta(n^0 \cdot log n) = \Theta(log n)$
 The bankers method is a technique used to calculate the practical time
 assumption where it accounts for accumulated debt. Each debit represents
 a constant amount of suspended work. When a computation initially suspends, it
-create a number of debits proportional to it's shared cost and
+create a number of debits proportional to it is shared cost and
 associate each debit with a location in the object. The choice of location for
 each debit depends on the nature of the computation. If the computation is
 monolithic (i.e., once begun, it runs to completion), then all debits are
