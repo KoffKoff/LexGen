@@ -15,7 +15,8 @@ laziness can be applied to these algorithms.
 \subsection{The Three Steps}
 The general idea of a divide and conquer algorithm is to divide a problem into
 smaller parts, solve them indepently and then combine the results. A Divide
-and Conquer algorithm always consists of a pattern with these three steps \cite{Goodrich}.
+and Conquer algorithm always consists of a pattern with these three steps
+\cite{Goodrich}.
 \begin{description}
 \item[Divide:] If the input size is bigger than the base case then divide the
 input into subproblems. Otherwise solve the problem using a straightforward
@@ -26,7 +27,7 @@ solve the original problem.
 \end{description}
 
 \subsection{Associative Function}
-An associative function, or operator, is a function that doesn't care in what
+An associative function, or operator, is a function that does not care in what
 order it is applied. An example of such a function is $+$, which is associative
 since it has the propert in \cref{assprop}.
 
@@ -59,12 +60,12 @@ algorithm, where $\alpha$ is the number of sub-problems at each recursive step,
 $n/\beta$ is the size of each sub-problem, and $f(n)$ is the running time of
 dividing up the problem space into $\alpha$ parts, and combining the sub-results
 together.)\\
-If we let $e = log_\beta \alpha$, then
+If we let $e = \log_\beta \alpha$, then
 \begin{center}
 \begin{tabular}{r c l l}
-1. $Tn$ & $=$ & $\Theta(n^{e})$ &  if $f(n) = O(n^{e - \epsilon})$ and $\epsilon > 0$\\
-2. $Tn$ & $=$ & $\Theta(n^{e} log n)$ & if $f(n) = \Theta(n^e)$\\
-3. $Tn$ & $=$ & $\Theta(f(n))$ & \begin{minipage}[t]{0.6 \columnwidth}
+1. $T_n$ & $=$ & $\Theta(n^{e})$ &  if $f(n) = O(n^{e - \epsilon})$ and $\epsilon > 0$\\
+2. $T_n$ & $=$ & $\Theta(n^{e} \log n)$ & if $f(n) = \Theta(n^e)$\\
+3. $T_n$ & $=$ & $\Theta(f(n))$ & \begin{minipage}[t]{0.6 \columnwidth}
   if $f(n) = \Omega(n^{e+\epsilon})$ and $\epsilon > 0$
   and $\alpha \cdot f(n/\beta) \leq c \cdot f(n)$
   where $c < 1$ and all sufficiently large $n$
@@ -123,7 +124,7 @@ two sorted subproblems the worst case is to check every element in the two list,
 $f(n) = 2 \cdot n/2 = n$.
 \begin{center}
 $T(n) = 2T(n/2) + n$\\
-$e=log_\beta\alpha=log_22=1$
+$e=\log_\beta\alpha=\log_2 2=1$
 \end{center}
 Case 2 of the master theorem applies, since
 \begin{center}
@@ -131,7 +132,7 @@ $f(n) = O(n)$
 \end{center}
 So the solution will be:
 \begin{center}
-$T(n) = \Theta(n^{log_2 2} \cdot log n) = \Theta(n \cdot log n)$
+$T(n) = \Theta(n^{\log_2 2} \cdot \log n) = \Theta(n \cdot \log n)$
 \end{center}
 
 \subsection{Incremental Computing}
@@ -164,7 +165,7 @@ and the parts that depend on this changed data \cite{incrementalDef}.
     }
   };
 \end{tikzpicture}
-\caption{Incremental Computing, the updated nodes when a leaf changes \label{fig:incUp}}
+\caption{When the node $y$ changed recomputed nodes are marked with a $'$. \label{fig:incUp}}
 \end{figure}
 
 For a divide and conquer lexer this means to only recompute the changed token
@@ -172,14 +173,29 @@ and the token to the right of the changed token. This is done recurrsivly until
 the root of the tree is reached. The expected result of this would be that when
 a character is added to the code of 1024 tokens, instead of recalculate all the 
 1024 tokens the lexer only needs to do 10 recalculations. Since,
-$log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}.        
+$log_2 1024 = 10$. This can be explained by the \cref{MasterTheo}.
+
+Only one branch in the tree will be followed at every level and the problem is
+already divided. Therefore the parameters will be set to:
+\begin{center}
+$\alpha = 1$, $\beta = 2$ and $f(n) = 1$.
+$e=log_\beta\alpha=\log_2 1=0$
+\end{center}
+Case 2 of the master theorem applies, since
+\begin{center}
+$f(n) = O(n^e)$
+\end{center}
+The complexity is therefore:
+\begin{center}
+$T(n) = \Theta(n^e \cdot \log n) = \Theta(\log n)$
+\end{center}
 
 \section{Fingertree}
 Fingertree is a tree structure which is incremantal in its nature and has good
 preformance. To ensure that an incremental divide and conquer algorithm can
 access the intermediate states a data structure like fingertrees can be used.
 Before describing how the fingertree is defined, an introduction to the
-fingertrees building blocks is given.
+fingertrees building blocks is given \cite{fingertree}.
 
 \subsection{Fundamental Concepts}
 
@@ -198,10 +214,10 @@ Fingertrees uses Right and Left Reductions. This is a function which
 collapses a structure of $f$ $a$ into a single value of type $a$. The base case
 for when the tree is empty is replaced with a constant value, such as 
 $\emptyset$. Intermediate results are combined using a binary operation, like
-the monoids $\bullet$. Reduction with a monoid always return the same value,
-independent of the argument nesting. But for a reduction with an arbitrary
+$\bullet$. Reduction with a monoid always returns the same value,
+independently of the argument nesting. But for a reduction with an arbitrary
 constant and binary operation there must be a specified nesting rule. If
-combining operation are only nested to the right, or to the left, the obtained
+combining operations are only nested to the right, or to the left, the obtained
 result will be a skewed reductions, which can be singled out as a type class
 described in \cref{fig:Reduction} \cite{fingertree}.
 
@@ -211,7 +227,7 @@ described in \cref{fig:Reduction} \cite{fingertree}.
 \end{figure}
 
 \subsection{Simple Sequence}
-The defenition of the fingertrees can be described by comparing it to an already
+The fingertrees can be described by comparing it to an already
 known datastructure and how that datastructer represent data. Lets take a look
 at the definition on a 2-3 fingertree and how they can implement a sequence.
 Lets start by looking at an ordinary 2-3 tree.
@@ -330,14 +346,14 @@ nodes of and lifting them up together. The result should look like in
 \label{fig:fingertree}}
 \end{figure}
 
-Since all leafs in the 2-3 tree is at the same level, the left and right
-spine has the same length. Therefor the left and right spines can be pair up to
-create a single central spine. Branching out from the spine is 2-3 trees. At the
-top level there are two to three elements on each side, while the other levels
-have one or two sub-trees, whose depth increases down the spine. Depending on if
-the root node had 2 or 3 branches in the original 2-3 tree, The bottom node will
-have either a single 2-3 tree or an empty tree. This structure can be described
-as shown in \cref{fig:DataTypeFingertree}.
+Since all leafs in the 2-3 tree are at the same level, the left and right
+spine has the same length. Therefore the left and right spines can be paired up
+to create a single central spine. Branching out from the spine are 2-3 trees. At
+the top level there are two to three elements on each side, while the other
+levels have one or two sub-trees, whose depth increases down the spine.
+Depending on if the root node had 2 or 3 branches in the original 2-3 tree, The
+bottom node will have either a single 2-3 tree or an empty tree. This structure
+can be described as shown in \cref{fig:DataTypeFingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
@@ -374,12 +390,12 @@ shown in \cref{fig:reductionFingerTree}
 \end{figure}
 
 \subsection{Double-ended Queue Operations}
-After showing how the Fingertrees basic structure is defined. Lets take a look
+After showing how the Fingertrees basic structure is defined, lets take a look
 on how fingertrees makes efficient Double-ended Queue, a queue which can be
 accessed from both ends, where both the operations having the time complexity
 $\Theta(1)$.
 
-Adding an element to the beginning of the sequence is strait forward, except
+Adding an element to the beginning of the sequence is trivial, except
 when the initial buffer ($Digit$) already is full. In this case, push all but
 one of the elements in the buffer as a node, leaving behind two elements in the
 buffer, shown in \cref{fig:AddFirst}.
@@ -398,10 +414,10 @@ Adding to the end of the sequence is a mirror image of the code in
 \end{figure}
 
 An insertion operation in the basic 2-3 tree, where the data is stored in the
-leafs, is done with a time complexity of $\Theta \log n$. In the fingertree the
-expected time complexity can be argued in the following way. Digits of two or
-three elements (which is isomorphic to elements of type $Node$ $a$) is
-classified as safe and those of one or four elements is classified as dangerous.
+leaves, is done with a time complexity of $\Theta (\log n)$. In the fingertree
+the expected time complexity can be argued in the following way. Digits of two
+or three elements (which is isomorphic to elements of type $Node$ $a$) are
+classified as safe and those of one or four elements are classified as dangerous.
 A double-ended queue operation can only propagate to the next level from a
 dangerous element. By doing so making that dangerous element safe, which means
 that the next operation reaching that digit will not propagate. This will result
@@ -475,7 +491,7 @@ A measuremenet can be viewed as a cached reduction with some monoid.
 Reductions, possibly cached, are captured by the class declaration in 
 \cref{fig:measure}. Where $a$ is the type of a tree and $v$ the type of an
 associated measurement. $v$ must be of a monoidal structure so measurements of
-subtrees easily can be combined independent of the nesting. Take the size of a
+subtrees easily can be combined independently of the nesting. Take the size of a
 tree as an example. Measure maps onto the monoid over the set of natural numbers
 and with the binary operator of addition \cite{fingertree}.
 
@@ -521,7 +537,7 @@ same. This means that Fingertree is nested in $a$, but regular in $v$
 
 \subsection{Sequences}
 A sequence in Haskell is a special case of the fingertree that has no measure.
-The performance is therefor superior to that of standard lists. Where a list in
+The performance is therefore superior to that of standard lists. Where a list in
 Haskell has $\Theta(n)$ for finding, inserting or deleting elements, that is in
 a list there is only known current element and the rest of the list. Results in 
 finding the last element of a list, the computer must look at every element
@@ -534,19 +550,16 @@ In the last section we covered the general divide and conquer algorithm. This
 section covers the general data structures and algorithms for an incremental
 divide and conquer lexer.
 
-\subsection{Treestructure} % work in progress.
-The incremental divide and conquer lexer should use a structuer where the
-code-lexemes can be related to its tokens, current result can be saved and easy
-recalculated. A divide and conquer lexer should therefore use a tree structure
-to save the lexed result in. Since every problem can be divided in to several
-subproblems, until the basecase is reached. This is cleraly a tree structure of
-solutions, where a leaf is a token for a single character. and the root
-is a sequence of all tokens in the code.  
+\subsection{Treestructure}
+The incremental divide and conquer lexer should use a structure where the
+code-lexemes can be related to its tokens, current result can be saved and
+easily recalculated. A divide and conquer lexer should therefore use a tree
+structure to save the lexed result in. Since every problem can be divided in to
+several subproblems, until the base case is reached. This is cleraly a tree
+structure of solutions, where a leaf is a token for a single character, and the
+root is a sequence of all tokens in the code.  
 
-
-%TODO master thereom
-
-\subsection{Transition map} % before treestructure?
+\subsection{Transition map}
 When storing a result of a lexed string it is a good idea to store more then
 just the tokens. In particular the in and out states are needed when combining
 the lexed string with another string. We will henceforth refer to this as a
@@ -554,8 +567,8 @@ $transition$.
 \begin{lstlisting}[language=Haskell]
 type Transition = (State,[Token],State)
 \end{lstlisting}
-Since the lexer doesn't know if the current string is a prefix of the entire
-code or not it can't make any assumptions on the in state. Because of this the
+Since the lexer does not know if the current string is a prefix of the entire
+code or not it can not make any assumptions on the in state. Because of this the
 lexer needs to store a transition for every possible in state, we will henceforth
 refer to this as a \emph{transition map}.
 \begin{lstlisting}[language=Haskell]
@@ -580,13 +593,13 @@ $\left[\begin{array}{ccc}
 \end{center}
 $NoState$ transition is used to tell the lexer that using that particular 
 transition will result in a lexical error. For reasons being covered in
-\cref{longmatch}, they can't be discarded.
+\cref{longmatch}, they can not be discarded.
 
 \paragraph{Conquer Step}
 The conquer step of the algorithm is to combine two transition maps in to one
 transition map. This is done by, for every transtion in the left transition map, combining
 the transition with the transition in the right transition map that has the same in state as the
-left transitions out state. This can be described byt the following logical statement where $T_1$ and $T_2$ refers to the first and second transition map.
+left transitions out state. This can be described by the following logical statement where $T_1$ and $T_2$ refers to the first and second transition map.
 \begin{center}
 $\forall.t_1\in T_1\;\exists.t_2\in T_2\;o_1=i_2,o_1=outState(t_1),i_2=inState(t_2)
 \vdash t_{new}=merge(t_1,t_2)$
@@ -610,7 +623,7 @@ concat tokens1 tokens2 = tokens1 >< tokens2
     transition in the second transition map with the same in state as the out
     state of the first transition will be used. The last token of the sequence
     from the first transition will be combined with the first token in the second
-    transition in to one token and put between the two sequences.\\
+    transition into one token and put between the two sequences.\\
 
 \begin{lstlisting}[language=Haskell, mathescape=true]
 combine :: Tokens -> Tokens -> Tokens 
@@ -640,14 +653,14 @@ $\left[\begin{array}{ccc}
 1&Multiple '/' [] '/'&Accepting 1\\
 \end{array}\right]$
 \end{center}
-This won't work as a lexer for most languages since it will lex a variable to
-variables where the length is a single character, for example ``os'' will be
-lexed as two tokens, ``o'' and ``s''. To solve this some more work is needed to
-be done.
+This will not work as a lexer for most languages since the longest-match rule is
+not implemented. For example, it will lex a variable to variables where the
+length is a single character, for example ``os'' will be lexed as two tokens,
+``o'' and ``s''. To solve this some more work is needed.
 
 \paragraph{Longest Match}\label{longmatch}
-Instead of taking the naive aproach where a token is created if the lexer finds an
-accepting state, the rule for creating a new token will instead be when the
+Instead of taking the naive aproach, where a token is created if the lexer finds an
+accepting state. The rule for creating a new token will instead be when the
 combination of two transitions yields $NoState$ the lists will be appended. That
 is, when there is an out state from the first transition that corresponds to an
 in state of the second transition and the out state of the second transition
@@ -675,12 +688,12 @@ $\left[\begin{array}{ccc}
 \end{array}\right]$
 \end{center}
 The second case is when the out state for the right token list is $NoState$.
-This means that the two lists of tokens can't be combined. In this case the
+This means that the two lists of tokens can not be combined. In this case the
 first token in the second list will be viewed as the start of a token and the
 last token in the first list will be viewed as the end of a token.                                                                                               
 
 \subsection{Expected Time Complexity}
-Since incremental computing stated that only content which depends on the new
+Incremental computing stated that only content which depends on the new
 data will be recalculated. That is, follow the branch of the tree from the new
 leaf to the root and recalculated every node on this path. 
 As shown by \cref{fig:incUp}. Only one subproblem is updated in every level of
@@ -733,7 +746,7 @@ amortized time \cite{fingertree}.
 \section{Lexical Errors}
 Since the lexer has to be able to handle any kind of possible not "complete"
 tokens, error handling has to take this into account. for instance if an illegal
-character would be found somewhere in the code the lexer can't return a lexical
+character would be found somewhere in the code the lexer can not return a lexical
 error right away since said character could be part of a comment. One way to
 handle this is to tie the lexical errors to transitions. in doing so the
 transition map can have one transition that is valid and another that produces a
@@ -749,16 +762,18 @@ lexed if the incoming state is $State_i$.
 %return as many tokens as possible from the code and where there might be lexical
 %errors the lexer returns the error in as small parts as possible.
 
-%\begin{example}[A lexer that only lexes letters] When the lexer encounters the
-%string "what @ day" it would return:
-%\begin{center}
-%\begin{tabular}{ll}
-%String & Type\\
-%What & $Word$\\
-%'\_' & $Space$\\
-%'@' & $No\_Token$\\
-%'\_' & $Space$\\
-%day & $Word$\\
-%\end{tabular}
-%\end{center}
-%\end{example}
+\begin{example}[A lexer that only lexes letters]
+\#This needs to be rewritten!\\
+ When the lexer encounters the
+string "what @ day" it would return:
+\begin{center}
+\begin{tabular}{ll}
+String & Type\\
+What & $Word$\\
+'\_' & $Space$\\
+'@' & $No\_Token$\\
+'\_' & $Space$\\
+day & $Word$\\
+\end{tabular}
+\end{center}
+\end{example}
