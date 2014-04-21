@@ -54,7 +54,7 @@ three constructors in the $Tokens$ data type, see \cref{fig:tokens}.
 
 $NoTokens$ is a representation of when an empty string has been lexed.
 $InvalidTokens$ represents a lexical error somewhere in the text that was lexed,
-the sequence of characters is the lexical error or last token lexed. the
+the sequence of characters is the lexical error or last token lexed. The
 $Tokens$ constructor is the case when legal tokens have been found. $currentSeq$
 are all the currently lexed tokens save for the last, $lastToken$ are all the
 possible ways that the last token can be lexed, in this implementation this is
@@ -93,11 +93,12 @@ makes assumptions that can not be made for the $Multi$ constructor.
 The $Multi$ constructor is used when at least one token have been found but the
 lexeme for the suffix does not match exactly one token. The entire suffix still
 need to have a legal out state. This type of suffix can typically be found when
-the beginning of a comment are lexed. for example the text
-\emph{/*hello world} would be lexed to a sequence of complete tokens, but the
-lexer still needs to keep track of the fact that it may be a multi-line
-comment. Note that in this case the $Tokens$ data structure would have one out
-state and the suffix would have another.
+the beginning of a comment are lexed. for example the text \emph{/*hello world}
+would be lexed to a sequence of complete tokens, ``/'', ``*'', ``hello'' and
+``world'', but the lexer still needs to keep track of the fact that it may be in
+the middle of a multi-line comment. Note that in this case the $Tokens$ data
+structure would have one out state, the state for the middle of a comment, and
+the suffix would have another, the end of an ident.
 
 \section{Transition Map}
 The transition map is a function from an in state to $Tokens$. As shown in
@@ -109,7 +110,7 @@ The transition map is a function from an in state to $Tokens$. As shown in
 \end{figure}
 
 This data type is used in the lexical routines. The reason for using transition
-maps is that the lexer doesn't know what the in state for a lexed text is, hence
+maps is that the lexer does not know what the in state for a lexed text is, hence
 the tokens for all possible in states must be stored. The transition map can be
 implemented in two ways, a table format and a function composition format.
 
@@ -120,7 +121,7 @@ computed.
 
 When combining lexed tokens it is useful to use functional composition since it
 ensures that no unnecessary states will be computed. The drawback is that it
-doesn't guarantee that the actual tokens are computed which may result in slow
+does not guarantee that the actual tokens are computed which may result in slow
 performance at a later stage in the lexing.
 
 Both these representations are used in the incremental divide and conquer lexer.
@@ -129,13 +130,9 @@ fast access. The function composition is used when combining tokens to ensure
 that only needed data is computed.
 
 \section{Fingertree}
-The fingertree is constructed with the characters of a text being the leafs and
-with the table format transition map as it's measure. The $Table$ data type has
+The fingertree is constructed with the characters of a text being the leaves and
+with the table format transition map as it is measure. The $Table$ data type has
 to be a monoid in order to be a legal measure of the fingertree.
-
-In order for the table
-data type to be a legal measure of the fingertree the table data type has to be
-a monoid.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/Fingertree.hs}
@@ -160,8 +157,8 @@ lexical routines.
 
 \section{Lexical routines}
 %\subsection{combineTokens}
-The lexical routines are divided into five functions. They each handles
-different parts of the lexical steps that is needed in an incremental divide and
+The lexical routines are divided into five functions. They each handle
+different parts of the lexical steps that are needed in an incremental divide and
 conquer lexer.
 
 %\begin{figure}[h!]
@@ -178,12 +175,12 @@ conquer lexer.
 $combineTokens$ is the function called when two fingertrees are combined.
 The function starts by checking if the tokens generated from $in\_state$ from
 the first transition is empty or invalid in which case the output is trivial. If
-the tokens generatd are valid, the tokens are passed on to $combineWithRHS$
+the tokens generated are valid, the tokens are passed on to $combineWithRHS$
 together with the second transition.
 
 \subsection{combineWithRHS}
 $combineWithRHS$ checks how the tokens from the first
-transition is to be combined with the second transition.
+transition are to be combined with the second transition.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/CombineWithRHS.hs}
@@ -206,7 +203,7 @@ cases, the definition of the variable names can be found in \cref{fig:cwrhs}.
   \item If the $Multi$ constructor is found the tokens from the suffix,
     $suffToks$, is extracted and a recursive call to $combineWithRHS$ is made
     with $suffToks$ as argument instead.
-  \item If the $Str$ constructor is found the suffix doesn't end in a valid
+  \item If the $Str$ constructor is found the suffix does not end in a valid
     state and $InvalidTokens$ will be returned.
   \end{itemize}
 \end{description}
@@ -216,8 +213,7 @@ cases, the definition of the variable names can be found in \cref{fig:cwrhs}.
 
 \subsection{mergeTokens}
 $mergeTokens$ combines the last token from the first tokens with
-the first token of the second tokens, for variable references see
-\cref{fig:mergetokens}.
+the first token of the second tokens, for the code see \cref{fig:mergetokens}.
 
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/MergeTokens.hs}
@@ -228,14 +224,14 @@ the first token of the second tokens, for variable references see
   token with the first token in $toks2$ and the rest of the tokens in $toks2$
   is appended and returned.
 \item If there is exactly one token in $toks2$, the suffix from $toks1$ is
-  combined with $suff1$. When two suffixes are combined some extra checks needs
-  to be done. If $toks2$ has an accepting out state, the two suffixes
+  combined with $suff1$. When two suffixes are combined some extra checks are
+  needed. If $toks2$ has an accepting out state, the two suffixes
   can be combined into one token. If $toks2$ does not have an accepting out
   state the work is passed on to $mergeSuff$.
 \end{itemize}
 
 \subsection{mergeSuff}
-$mergeSuff$ checks which pair of suffix it has and takes the appropriate
+$mergeSuff$ checks which pairs of suffixes it has and takes the appropriate
 actions.
 
 \begin{figure}[h!]
