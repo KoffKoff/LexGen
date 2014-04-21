@@ -4,14 +4,15 @@ simple operators. The language includes $while$ loops but the lexical analyser
 will read ``while'' as an identifier, The syntactical analyser will later
 determine if it is a loop. The expressions that matches rules without a name
 are discarded since they aren't needed for the syntactical analyzer.
-\begin{tabular}{l c l l}
+
 Character sets\\
+\begin{tabular}{l c l l}
 $capital$ & $\rightarrow$ & [A-Z]\\
 $lower$   & $\rightarrow$ & [a-z]\\
 $letter$  & $\rightarrow$ & [a-zA-Z]\\
 $digit$   & $\rightarrow$ & [0-9]\\
 $ident$   & $\rightarrow$ & $letter$ | $digit$ | [\_'] & Identifier Characters\\
-$white$   & $\rightarrow$ & [ \textbackslash{t}\textbackslash{r}\textbackslash{n}\textbackslash{v}\textbackslash{f}] & The white space characters\\
+$white$   & $\rightarrow$ & [ \textbackslash{t}\textbackslash{r}\textbackslash{n}\textbackslash{v}\textbackslash{f}] & White space characters\\
 Rules\\
 & & $whie$+\\
 & & // [.]* & Single line comment\\
@@ -22,5 +23,5 @@ Integer    & $\rightarrow$ & $digit$+\\
 Double     & $\rightarrow$ & $digit$+ \textbackslash. $digit$+\\
 Reserved   & $\rightarrow$ & \textbackslash( | \textbackslash) | \textbackslash\{
                          | \textbackslash\} | ; | = | \textbackslash+\textbackslash+
-                         | < | \textbackslash+ | - | \textbackslash* | \/ & Reserved characters\\
+                         | < | \textbackslash+ | - | \textbackslash* | \/ \\ %& Reserved characters\\
 \end{tabular}
