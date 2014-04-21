@@ -7,7 +7,7 @@ instead stores the error and lexes the rest of the possible input states since
 the current string might not be at the start of the code.
 
 For it to be efficient
-the feedback to the user must be instant, or more formaly the combination of two
+the feedback to the user must be instant, or more formally the combination of two
 strings should be handled in $O(log(n))$ time.
 
 Finally to be precise the lexer
@@ -23,18 +23,18 @@ lexical routines differs.
 
 \section{Preciseness}
 For an incremental lexer to work, the lexer must be able to do lexical analysis
-of any subtext of a text and be able to combine two subtexts. If the lexical
-analysis of one subtext does not result in any legal tokens it must be able to be
-combined with other subtexts that makes it legal tokens. The lexical analysis of
-a subtext might not always result in the same tokens that the combination of the
-subtext with another text would give.
+of any sub text of a text and be able to combine two sub texts. If the lexical
+analysis of one sub text does not result in any legal tokens it must be able to be
+combined with other sub texts that makes it legal tokens. The lexical analysis of
+a sub text might not always result in the same tokens that the combination of the
+sub text with another text would give.
 
 To test these cases a test was constructed that does a lexical analysis on two
-subtexts using the incremental lexer and then combining the results into one
+sub texts using the incremental lexer and then combining the results into one
 text. The result of the combination should be the same as the lexical analysis
 of the text using the incremental lexer and the result using a sequential lexer.
 
-It is not enough to test if the combination of two subtexts yields the
+It is not enough to test if the combination of two sub texts yields the
 same sequence of tokens as the text. To test that the result of the
 incremental lexer is the correct sequence of tokens generated, it is compared to
 what a sequential lexer generates. This comparison is an equality test of
@@ -52,7 +52,7 @@ have the same lexeme.
 
 %\section{Efficiency}
 \section{Performance}
-To measure the perfomance of the incremental step we created the fingertree for
+To measure the performance of the incremental step we created the fingertree for
 two pieces of code. By creating the two fingertrees the transition map for the
 code in those trees are created as well. The benchmarking was then done on the
 combination of the two trees. The results of the incremental lexer benchmarking
@@ -125,5 +125,5 @@ n    alex   upd
 \end{tikzpicture}
 \end{center}
 The space complexity for the fingertree structure is O(n). According to our
-tests 100 characters of code translates to roughly 1MB of datastructure.
+tests 100 characters of code translates to roughly 1MB of data structure.
 \end{example}
