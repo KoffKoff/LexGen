@@ -168,8 +168,12 @@ type LexTree  = FingerTree (Table State Tokens,Size) Char
 data IntToken = Token { lexeme   :: !(Seq Char)
 --                      , prev     :: Char
                       , token_id :: Accepts}
+                deriving Show
 --Wrapper template
 type Accepts   = [AlexAcc (Posn -> Seq Char -> Token) ()]
+
+instance Show (AlexAcc a b) where
+  show _ = "AlexAccSkip"
 
 tabulate :: (State,State) -> (State -> b) -> Table State b
 access :: Table State b -> (State -> b)
@@ -190,14 +194,14 @@ access a x = a ! x
 --}
 
 -- debug stuffs
-instance Show IntToken where
+{-instance Show IntToken where
   show token = case map showAcc (token_id token) of
       [] -> "No Token:" ++ show (lexeme token) ++ "\n"
       toks -> unlines toks
     where showAcc acc = case acc of 
             AlexAcc f -> show $ f (Pn 0 0 0) (lexeme token)
             AlexAccSkip -> "Skip:" ++ show (lexeme token)
-
+-}
 -- Generic template
 instance Monoid (Table State Tokens) where
   mempty = tabulate stateRange (\_ -> emptyTokens)
