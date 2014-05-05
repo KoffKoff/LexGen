@@ -60,6 +60,12 @@ suggests a running time of $O(log(n))$.
 
 To get a reference point the same text was lexed using a sequential lexer.
 
+Since the incremental lexer uses a tree to store the data, where the plain chars
+of the text is kept in the lowest level. An increased usage of data-space than
+what is used in a sequential lexer is expected. The expected space complexity is
+$\Theta(n \log n)$ since the every level of the tree contains $n$ elements and
+there are $\log n$ levels in the tree.
+
 \#Lägga till nåt om minnes utrymmet som krävs.
 
 \#Bättre förklaring till graferna.
