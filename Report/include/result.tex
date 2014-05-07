@@ -63,8 +63,10 @@ To get a reference point the same text was lexed using a sequential lexer.
 Since the incremental lexer uses a tree to store the data, where the plain chars
 of the text is kept in the lowest level. An increased usage of data-space than
 what is used in a sequential lexer is expected. The expected space complexity is
-$\Theta(n \log n)$ since the every level of the tree contains $n$ elements and
+$\Theta(mn \log n)$ since the every level of the tree contains $n$ elements and $m$ states and
 there are $\log n$ levels in the tree.
+
+\#Each level has token data structure for n characters, 1 character roughly 100 Byte for a DFA with 90 states according in token data structure according to our estimates.
 
 \#Lägga till nåt om minnes utrymmet som krävs.
 
@@ -130,6 +132,4 @@ n    alex   upd
     \end{axis}
 \end{tikzpicture}
 \end{center}
-The space complexity for the fingertree structure is O(n). According to our
-tests 100 characters of code translates to roughly 1MB of data structure.
 \end{example}
