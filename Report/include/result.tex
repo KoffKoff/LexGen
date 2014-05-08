@@ -56,80 +56,147 @@ To measure the performance of the incremental step we created the fingertree for
 two pieces of code. By creating the two fingertrees the transition map for the
 code in those trees are created as well. The benchmarking was then done on the
 combination of the two trees. The results of the incremental lexer benchmarking
-suggests a running time of $O(log(n))$.
+suggests a running time of $O(log(n))$. To get a reference point the same text
+was lexed using a sequential lexer. The benchmarks can be found in
+\cref{fig:IncSeqTime} and \cref{fig:IncTime}.
 
-To get a reference point the same text was lexed using a sequential lexer.
-
-Since the incremental lexer uses a tree to store the data, where the plain chars
-of the text is kept in the lowest level. An increased usage of data-space than
-what is used in a sequential lexer is expected. The expected space complexity is
-$\Theta(mn \log n)$ since the every level of the tree contains $n$ elements and $m$ states and
-there are $\log n$ levels in the tree.
-
-\#Each level has token data structure for n characters, 1 character roughly 100 Byte for a DFA with 90 states according in token data structure according to our estimates.
-
-\#Lägga till nåt om minnes utrymmet som krävs.
-
-\#Bättre förklaring till graferna.
-
-\#Tester för nybyggning av träd?
-
-\begin{filecontents*}{data.csv}
-%characters*1000, time in microsecs
-n    alex   upd
-1    210    150
-10   1901   251
-20   3910   329
-30   5303   361
-40   7079   361
-50   8933   367
-60   12140  460
-70   14860  469
-80   16850  523
-90   17170  424
-100  20920  554
-110  24960  486
-120  26430  503
-130  28420  649
-140  37890  575
-150  33790  570
-160  36850  624
-170  39860  468
-180  42570  496
-190  42410  513
-\end{filecontents*}
-\begin{example}[Benchmarking times of the incremental and sequential lexer]\label{bench}
-\begin{center}
+%Tester för nybyggning av träd?
+\begin{figure}[!htp]
+%\begin{center}
 \begin{tikzpicture}
     \begin{axis}[
     width=0.7\textwidth,
     height=0.4\textwidth,
     ymajorgrids,
-    title = {Comparison},
-    scaled y ticks=real:1e3,
-    x tick label style={/pgf/number format/1000 sep=},
-    ytick scale label code/.code={$ms$},
-    legend pos=outer north east
-    ]
-        \addplot table[x=n,y=upd] {data.csv};\addlegendentry{Incremental update}
-        \addplot table[x=n,y=alex] {data.csv};\addlegendentry{Sequential}
-    \end{axis}
-\end{tikzpicture}
-\end{center}
-\begin{center}
-\begin{tikzpicture}
-    \begin{axis}[
-    width=0.7\textwidth,
-    height=0.4\textwidth,
-    ymajorgrids,
+    xmajorgrids,
     title = {Incremental lexer},
     scaled y ticks=real:1,
-    x tick label style={/pgf/number format/1000 sep=},
-    ytick scale label code/.code={$\mu s$},
+    scaled x ticks=real:1e3,
+    ymin=0,
+    xmin=0,
+%    x tick label style={/pgf/number format/1000 sep=},
+    ytick scale label code/.code={},
+    xtick scale label code/.code={},
+    ylabel={$\mu s$},
+    xlabel={$*1000$ characters},
     legend pos=outer north east
     ]
-        \addplot table[x=n,y=upd] {data.csv};\addlegendentry{Incremental update}
+        \addplot table[x=n,y=upd] {time.csv};\addlegendentry{Incremental update}
     \end{axis}
 \end{tikzpicture}
-\end{center}
-\end{example}
+%\end{center}
+\caption{Benchmarking times of the incremental lexer\label{fig:IncTime}}
+\end{figure}
+\begin{figure}[!htp]
+%\begin{center}
+\begin{tikzpicture}
+    \begin{axis}[
+    width=0.7\textwidth,
+    height=0.4\textwidth,
+    ymajorgrids,
+    xmajorgrids,
+    title = {Comparison},
+    scaled y ticks=real:1e3,
+    scaled x ticks=real:1e3,
+    ymin=0,
+    xmin=0,
+%    x tick label style={/pgf/number format/1000 sep=},
+    ytick scale label code/.code={},
+    xtick scale label code/.code={},
+    ylabel={$ms$},
+    xlabel={$*1000$ characters},
+    legend pos=outer north east
+    ]
+        \addplot table[x=n,y=upd] {time.csv};\addlegendentry{Incremental update}
+        \addplot table[x=n,y=alex] {time.csv};\addlegendentry{Sequential lexing}
+    \end{axis}
+\end{tikzpicture}
+%\end{center}
+\caption{Comparison between the incremental and sequential lexer\label{fig:IncSeqTime}}
+\end{figure}
+
+Since the incremental lexer uses a tree structure there will be an increase in
+data-space used compared to a sequential lexer. Since the root of every subtree
+stores the completed tokens for that tree, every level of the tree will store
+aproximatly the size of the complete tokens for the entire text. A lexer that
+uses a DFA with $m$ states will produce token data structure that grows with
+$\theta(mn)$ since each in state will have the tokens for that state. The depth
+of the tree is $\log(n)$, this suggest a space complexity of
+$\theta(mn\log(n))$.
+
+To test the space complexity we used a DFA for an early java version that has
+90 states. To see how much the data structure grows the transition map was
+serialized and stored to the disc using the haskell library $Data.Binary$. The
+test suggests that the size of the transition map grows linearly with the size
+of text being lexed, the results can be found in \cref{fig:IncSpace}.
+
+\begin{figure}[!htp]
+%\begin{center}
+\begin{tikzpicture}
+    \begin{axis}[
+    width=0.7\textwidth,
+    height=0.4\textwidth,
+    ymajorgrids,
+    xmajorgrids,
+    title = {Space for transition map},
+    ymode = log,
+    xmode = log,
+%    scaled y ticks=real:1,
+%    scaled x ticks=real:1,
+    x tick label style={/pgf/number format/1000 sep=},
+%    ytick scale label code/.code={Bytes},
+%    xtick scale label code/.code={Characters},
+    ylabel={KB},
+    xlabel={Characters},
+    legend pos=outer north east
+    ]
+        \addplot table[x=n,y=size] {space.csv};\addlegendentry{Incremental update}
+    \end{axis}
+\end{tikzpicture}
+%\end{center}
+\caption{Space usage of the transition map using a DFA with 90 states\label{fig:IncSpace}}
+\end{figure}
+
+\begin{filecontents*}{time.csv}
+%characters*1000, time in microsecs
+n      alex   upd
+1000   210    150
+10000  1901   251
+20000  3910   329
+30000  5303   361
+40000  7079   361
+50000  8933   367
+60000  12140  460
+70000  14860  469
+80000  16850  523
+90000  17170  424
+100000 20920  554
+110000 24960  486
+120000 26430  503
+130000 28420  649
+140000 37890  575
+150000 33790  570
+160000 36850  624
+170000 39860  468
+180000 42570  496
+190000 42410  513
+\end{filecontents*}
+
+\begin{filecontents*}{space.csv}
+n       size
+100     11
+200     21
+400     40
+800     77
+1600    259
+3200    387
+6400    643
+12800   1283
+25600   2436
+51200   4870
+102400  9737
+204800  19346
+409600  38688
+819200  77244
+1638400 154486
+\end{filecontents*}
