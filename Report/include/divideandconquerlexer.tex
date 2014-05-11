@@ -1,6 +1,6 @@
 \chapter{Divide-and-Conquer Lexer}
 An incremental divide and conquer lexer works by dividing the sequence, to be
-lexicaly analysed, into small parts and analyse them; and then combining them.
+lexically analyzed, into small parts and analyzes them; and then combining them.
 In the base case the lexical analysis is done on a single character. The
 conquer step then combines the smaller tokens into as large tokens as possible.
 The end result is a sequence of token that represent the code. How this is done
@@ -14,7 +14,7 @@ laziness can be applied to these algorithms.
 
 \subsection{The Three Steps}
 The general idea of a divide and conquer algorithm is to divide a problem into
-smaller parts, solve them indepently and then combine the results. A Divide
+smaller parts, solve them independently and then combine the results. A Divide
 and Conquer algorithm always consists of a pattern with these three steps
 \cite{Goodrich}.
 \begin{description}
@@ -29,7 +29,7 @@ solve the original problem.
 \subsection{Associative Function}
 An associative function, or operator, is a function that does not care in what
 order it is applied. An example of such a function is $+$, which is associative
-since it has the propert in \cref{assprop}.
+since it has the property in \cref{assprop}.
 
 In divide and conquer algorithms this is essential. In the divide step of the
 divide and conquer algorithm, there is no certain order of how the subproblems
@@ -76,28 +76,28 @@ If we let $e = \log_\beta \alpha$, then
 \end{theorem}
 
 \subsection{Hands on Example}
-The divide and conquer pattern can be preformed on algorithm that solves
+The divide and conquer pattern can be performed on algorithm that solves
 different problems. A general problem is sorting, or more precisely sorting a
 sequence of integers. This example shows merge-sort.
 
 \begin{description}
-\item[divide:] The algorthim starts with the divide step. Given the input $S$
+\item[divide:] The algorithm starts with the divide step. Given the input $S$
 the algorithm will check if the length of $S$ is less then or equal to 1.
 \begin{itemize}
 \item If this is true, the sequence is returned. A sequence of one or zero
 elements is always sorted.
-\item If this is false, the sequence is split into two equaly big sequences,
+\item If this is false, the sequence is split into two equally big sequences,
 $S_1$ and $S_2$. $S_1$ will be the first half of $S$ while $S_2$ will be the
 second half.
 \end{itemize}
 \item[Recur:] The next step is to sort the subsequences $S_1$ and $S_2$. The
-sorting function sorts the subsequences by recursivly calling itself twice with
-$S_1$ and $S_2$ as arguments respectivly.
+sorting function sorts the subsequences by recursively calling itself twice with
+$S_1$ and $S_2$ as arguments respectively.
 \item[Conquer:] Since $S_1$ and $S_2$ are sorted combining them into one sorted
-sequence is trivial. This process is what is refered to as merge in merge-sort.
+sequence is trivial. This process is what is referred to as merge in merge-sort.
 The resulting sequence of the merge is returned.
 \end{description}
-Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
+Algorithm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
 
 \begin{algorithm}
 \DontPrintSemicolon
@@ -117,7 +117,7 @@ Algortihm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
 \label{Alg:MergSort}
 \end{algorithm}
 
-Given the mergesort algorithm, time complexity can be calculated as follows
+Given the merge-sort algorithm, time complexity can be calculated as follows
 using the master method. There are $2$ recursive calls and the subproblems are
 $1/2$ of the original problem size, so $\alpha=2$ and $\beta=2$. To merge the
 two sorted subproblems the worst case is to check every element in the two list,
@@ -169,7 +169,7 @@ and the parts that depend on this changed data \cite{incrementalDef}.
 \end{figure}
 
 For a divide and conquer lexer this means to only recompute the changed token
-and the token to the right of the changed token. This is done recurrsivly until
+and the token to the right of the changed token. This is done recursively until
 the root of the tree is reached. The expected result of this would be that when
 a character is added to the code of 1024 tokens, instead of recalculate all the 
 1024 tokens the lexer only needs to do 10 recalculations. Since,
@@ -191,8 +191,8 @@ $T(n) = \Theta(n^e \cdot \log n) = \Theta(\log n)$
 \end{center}
 
 \section{Fingertree}
-Fingertree is a tree structure which is incremantal in its nature and has good
-preformance. To ensure that an incremental divide and conquer algorithm can
+Fingertree is a tree structure which is incremental in its nature and has good
+performance. To ensure that an incremental divide and conquer algorithm can
 access the intermediate states a data structure like fingertrees can be used.
 Before describing how the fingertree is defined, an introduction to the
 fingertrees building blocks is given \cite{fingertree}.
@@ -228,7 +228,7 @@ described in \cref{fig:Reduction} \cite{fingertree}.
 
 \subsection{Simple Sequence}
 The fingertrees can be described by comparing it to an already
-known datastructure and how that datastructer represent data. Lets take a look
+known data structure and how that data structure represent data. Lets take a look
 at the definition on a 2-3 fingertree and how they can implement a sequence.
 Lets start by looking at an ordinary 2-3 tree.
 
@@ -402,7 +402,7 @@ buffer, shown in \cref{fig:AddFirst}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixr.hs}
-\caption{Adding an element to the begining of the sequence \label{fig:AddFirst}}
+\caption{Adding an element to the beginning of the sequence \label{fig:AddFirst}}
 \end{figure}
 
 Adding to the end of the sequence is a mirror image of the code in
@@ -435,7 +435,7 @@ will have been performed to pay for the more expensive operation
 \subsection{Concatenation Operations}
 Concatenation is a simple operation for most cases, except for the case when two
 $Deep$ trees are being concatenated. Since $Empty$ is the identity element,
-concatenation with an $Empty$ yields the other tree. Concatination with a
+concatenation with an $Empty$ yields the other tree. Concatenation with a
 $Single$ will reduce to $<|$ or $|>$. For the hard part when there are two
 $Deep$ trees, the prefix of the first tree will be the final prefix. Suffix of
 the second tree will be the suffix of the final tree. The recursive function
@@ -467,7 +467,7 @@ between the two trees, as shown in \cref{fig:concat}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeConcatFunc.hs}
-\caption{Concatination function for Fingertree \label{fig:concat}}
+\caption{Concatenation function for Fingertree \label{fig:concat}}
 \end{figure}
 
 The time spent on concatenation can be reasoned in this way. Each invocation of
@@ -479,7 +479,7 @@ where $n_1$ and $n_2$ are the number of elements in the two trees
 \cite{fingertree}.
 
 \subsection{Measurements}
-Fingertrees has been shown to work well as catenble double-ended queues. A 
+Fingertrees has been shown to work well as catenable double-ended queues. A 
 measurement is a property describing the state of the tree. This section
 presents a modification of the fingertree, which provides positional and
 set-theoretic operations. For example taking or dropping the first $n$ elements.
@@ -487,7 +487,7 @@ These operations involve searching for an element with a certain property.
 To implement additional operations with good performance there must be a way
 to steer this search. A way to measure the tree.
 
-A measuremenet can be viewed as a cached reduction with some monoid. 
+A measurement can be viewed as a cached reduction with some monoid. 
 Reductions, possibly cached, are captured by the class declaration in 
 \cref{fig:measure}. Where $a$ is the type of a tree and $v$ the type of an
 associated measurement. $v$ must be of a monoidal structure so measurements of
@@ -502,7 +502,7 @@ and with the binary operator of addition \cite{fingertree}.
 
 \subsubsection{Caching measurements}
 It should be cheap to obtain a measurement. The fingertree should ensure that an
-measurement can be obtian with a bounded number of $\bullet$ operations.
+measurement can be obtain with a bounded number of $\bullet$ operations.
 Therefore fingertrees cache the measurements in the 2-3 nodes. In
 \cref{fig:measureNode} the Measure of Node is shown.
 The constructors and the instance declaration are completely generic: they
@@ -550,7 +550,7 @@ In the last section we covered the general divide and conquer algorithm. This
 section covers the general data structures and algorithms for an incremental
 divide and conquer lexer.
 
-\subsection{Treestructure}
+\subsection{Tree structure}
 The incremental divide and conquer lexer should use a structure where the
 code-lexemes can be related to its tokens, current result can be saved and
 easily recalculated. A divide and conquer lexer should therefore use a tree
@@ -598,7 +598,7 @@ this section, they can not be discarded.
 
 \paragraph{Conquer Step}
 The conquer step of the algorithm is to combine two transition maps in to one
-transition map. This is done by, for every transtion in the left transition map, combining
+transition map. This is done by, for every transition in the left transition map, combining
 the transition with the transition in the right transition map that has the same in state as the
 left transitions out state. This can be described by the following logical statement where $T_1$ and $T_2$ refers to the first and second transition map.
 \begin{center}
@@ -660,7 +660,7 @@ length is a single character, for example ``os'' will be lexed as two tokens,
 ``o'' and ``s''. To solve this some more work is needed.
 
 \paragraph{Longest Match}\label{longmatch}
-Instead of taking the naive aproach, where a token is created if the lexer finds an
+Instead of taking the naive approach, where a token is created if the lexer finds an
 accepting state. The rule for creating a new token will instead be when the
 combination of two transitions yields $NoState$ the lists will be appended. That
 is, when there is an out state from the first transition that corresponds to an
@@ -671,7 +671,7 @@ the first list.
 %When two list of tokens are combined there are two cases that can emerge. The
 %first being that a transition from the first list has an out state that
 %corresponds to an in state with a valid out state, i.e. not $NoState$, in the
-%second list of transitions. In this case the sufix of the first transition will
+%second list of transitions. In this case the suffix of the first transition will
 %be paired with the prefix of the second and seen as a complete token.
 \begin{center}
 $\left[\begin{array}{ccc}

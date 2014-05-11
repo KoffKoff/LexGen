@@ -164,15 +164,15 @@ performance benchmarks can be found in \cref{preformanceAppendix}.
 Since the incremental lexer uses a tree structure there will be an increase in
 data-space used compared to a sequential lexer. Since the root of every subtree
 stores the completed tokens for that tree, every level of the tree will store
-aproximatly the size of the complete tokens for the entire text. A lexer that
+approximately the size of the complete tokens for the entire text. A lexer that
 uses a DFA with $m$ states will produce token data structure that grows with
 $\theta(mn)$ since each in state will have the tokens for that state. The depth
 of the tree is $\log(n)$, this suggest a space complexity of
 $\theta(mn\log(n))$.
 
-To test the space complexity a DFA for an early java version that has 90 states
+To test the space complexity a DFA for an early Java version that has 90 states
 is used. To see how much the data structure grows the transition map was
-serialized and stored to the disc using the haskell library $Data.Binary$. The
+serialized and stored to the disc using the Haskell library $Data.Binary$. The
 test suggests that the size of the transition map grows linearly with the size
 of text being lexed, the results can be found in \cref{fig:IncSpace}.
 
