@@ -1,21 +1,52 @@
 \chapter{Introduction}
-This master-thesis is carried out at Chalmers, on the department of computer science. 
-
-\section{Background}
-Editors normally have regular-expression based parsers, which are efficient and robust,
-but lack in precision: they are unable to recognize complex structures. Parsers used in
-compilers are precise, but typically not robust: they fail to recover after an error. They are
-also not efficient for editing purposes, because they have to parse files from the beginning,
-even if the user makes incremental changes to the input. More modern IDEs use compilerstrength
+Editors normally have regular-expression based parsers, which are efficient and
+robust, but lack in precision: they are unable to recognize complex structures.
+Parsers used in compilers are precise, but typically not robust: they fail to
+recover after an error. They are also not efficient for editing purposes,
+because they have to parse files from the beginning, even if the user makes
+incremental changes to the input. More modern IDEs use compiler strength
 parsers, but they give delayed feedback to the user. Building a parser with good
-characteristics is challenging: no system offers such a combination of properties
-\newpage
+characteristics is challenging: no system offers such a combination of
+properties.
+
+In order to implement a parser with the characteristcs described above; robust,
+precise and efficient; a lexer that has the same properties is needed. This
+project aims to implement such a lexer.
 
 \section{Scope of work}
-Dan Piponi has writen a blogpost on how to determend in a incremental way if a string furfills a regular expression. This is done by using Monoids, Fingertrees and tabulate functions. \cite{blog}
+Existing lexical analysers are sequential. When the text is updated the lexer
+must start the lexical analysis from the beginning. The goal of this project is
+to create an algorithm that, after an update to the text, only needs to
+recalculate the updated and the part of the result effected by the update. The
+recalculation should have time complexity $\theta log(n)$ in order to be run in
+real time, for example in a text editor with immediate update.
 
-This blogpost is the fundamental idea behind the project. To build one same general idea, but instead build a tool that generates a lexical analyser given a bnf file specification of a language. Where the core algorithm in the tool follows the blogposts idea. The project will use Alex \cite{alex} as mutch as possible, that is this algorithm will be used as a wrapper to the Alex lexing tool.  
+The report gives a general understanding of how lexical analysers work and what
+tools are needed for a divide and conquer implementation to work. An overview of
+the ideas behind a divide and conquer lexer is explained in order to give enough
+understanding for the algorithm this report purposes. A robust implementation of
+the algorithm is presented with explanations on how different cases are handled.
+Tests for preciseness, time performance and space performance are explained and
+their corresponding result are presented. The report will present a discussion
+on where a divide and conquer lexer is useful.
 
-The coal of the project is to create an algorithm that can do a lexical analysis on a update to an already lexed code with a sufficent fast time cost. With a sufficent fast time means that the lexical analysier can be runed in real time.
+\section{Related Work}
+This project revolves around the idea of using incremental regular expressions.
+There is a blog post about how to implement incremental regular expressions
+using finger trees in order to achieve incrementality. The solution to matching
+regular expressions incrementaly in the blog post gives a good starting point to
+this project, however a lexer do not match a string against one expression. A
+lexer matches a string against a set of regular expressions and returns which
+expressions where matched and in what order rather then answering if the string
+matched the epressions \cite{blog}.
 
-The report will start by give a more general knowledge about lexical analysis. Then start to give a overviewing image of what is needed of the algorithm to work correctly. Which building blocks needed to create the algorithm. This will lead up to the implementation of the algorithm and specific recvierments on the algorithm for it to be fully correct. The report will also describe how the testing has been done. That is test for correctness, rubustness and efficiency. Also pressent the result for the benchmarking on different computer systemts. The last part of the report will give a more fomal preformance of the algorithm, discussion of the result, some conclussions and futher work.
+Bernardy and Claessen \cite{bernardyefficient2013} wrote a paper titled 
+``Efficient Divide-and-Conquer Parsing of Practical Context-Free Languages''
+that describes and effiecent parallell parser built on Valiant's algorithm
+\cite{valiantgeneral1975}. The paper proves that for a defined set of input
+the complexity for the parser will be $\theta log^3(n)$.
+Since the implementation of the parser is done in BNFC \cite{bnfc} it uses a
+sequential lexer generated by alex \cite{alex}. The lexical analyser this
+project purposes is a divide and conquer solution which could be integrated to
+the parser purposed by Bernardy and Claessen to get a divide and conquer
+solution from the programming code to the result of the parser.
