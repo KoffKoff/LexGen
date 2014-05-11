@@ -46,7 +46,7 @@ of two finger trees are fast. The main reason to not use any other type of tree
 is that another tree would not keep track of measure for sub trees. In the case
 of splitting a tree the tokens would have to be recalculated.
 
-\section{Development Stages}
+\section{Trials and Errors}
 The first version of the lexical routines only had the goal to get an idea of
 how a divide and conquer lexer could be implemented. As a result a lot of
 unnecessary information was stored and computed and some necessary information
@@ -60,9 +60,10 @@ of the projects data structure was made. The result is close to the structure
 used in the final result. This solution still had some problem with the running
 time. The main reason was that the lexical result wasn't explicitly stored in
 the finger trees. That is, the functional composition was stored in the finger
-trees.
+trees and since Haskell is lazy in nature the result wasn't computed resulting
+in slow running time when combining trees.
 
-The last stage of the development was to make the lexer run fast and to make
+The final version of the project ensured that the lexer ran fast and made
 sure that fringe cases were computed correctly. The solution to this was to use
 arrays in the measure of the finger trees since arrays are always explicitly
 evaluated to normal form and that they have quick lookup time $O(1)$. Since the
