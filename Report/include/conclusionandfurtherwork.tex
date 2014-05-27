@@ -1,6 +1,6 @@
 \chapter{Conclusion and Future Work}
 As mentioned in the result chapter the incremental lexer is both robust and
-precise. The incremental lexer is effiecent in the sense that updates are done
+precise. The incremental lexer is efficient in the sense that updates are done
 in $\Theta \log(n)$ time. However when a tree is built up from scratch the
 incremental lexer takes $\Theta n\log(n)$ time compared to the sequential lexer
 that takes $\Theta n$ time. This means that the incremental lexer is not suited
@@ -32,7 +32,7 @@ combination of the tree is calculated on the fly. This will result in smaller
 trees at the expense of run time when the trees needs to be combined.
 
 In general a lot of in states will have the same sequence of tokens. The
-implementation suggested by this report will store all such sequences separetly.
+implementation suggested by this report will store all such sequences separately.
 An improvement would be if somehow the sequences of tokens that are identical
 could be stored in a separate table and the in state in the transition map points
 to the corresponding sequence. This would not improve the space complexity, but
