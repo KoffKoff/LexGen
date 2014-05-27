@@ -23,8 +23,8 @@ instance NFData A.Token where
 instance (NFData v,NFData a,Measured v a) => NFData (FingerTree v a) where
   rnf tree = foldl1 (seq . rnf) tree `seq` rnf (measure tree)
 
---instance NFData a => NFData (Seq a) where
---  rnf = flip seq () . foldl1 (seq . rnf)
+instance NFData a => NFData (Seq a) where
+  rnf = flip seq () . foldl1 (seq . rnf)
    
 instance NFData a => NFData (Sum a) where
   rnf (Sum a) = rnf a
@@ -45,7 +45,7 @@ allTest :: [String]
 allTest = ["Alex","Update"]
 
 testSizes :: [Int]
-testSizes = 10:[100,200..1900]
+testSizes = 10:[100,200..1500]
 
 main = do
   args <- getArgs
@@ -69,7 +69,7 @@ main = do
         , ("IncLex",map (benchStuff (J.lexCode)) codes)
         , ("Update",map (benchStuff (getOutState . measure . uncurry mappend)) trees)
         ]
---      testBig = map (\i -> bgroup (show i) [bgroup tests | (name,tests) <- testFuns])
+--      testBig = map (\i -> bgroup (show i) [bgroup name tests | (name,tests) <- testFuns])
   withArgs (tests ++ arg) $
     defaultMain [ bgroup name tests | (name,tests) <- testFuns ]
 

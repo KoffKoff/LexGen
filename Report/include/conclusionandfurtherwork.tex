@@ -1,4 +1,39 @@
-\chapter{Conclusion and Futher Work}
-\#what will our Minions do????
+\chapter{Conclusion and Future Work}
+As mentioned in the result chapter the incremental lexer is both robust and
+precise. The incremental lexer is effiecent in the sense that updates are done
+in $\Theta \log(n)$ time. However when a tree is built up from scratch the
+incremental lexer takes $\Theta n\log(n)$ time compared to the sequential lexer
+that takes $\Theta n$ time. This means that the incremental lexer is not suited
+when an entire text needs to be lexed, for example in a stand alone compiler. It
+is however suited in an environment where updates are likely to happen, for
+example to give lexical feedback in a text editor where each key stroke would be
+an update.
 
-\#implementation of ropes
+The space requirements for the incremental lexer grows with the tree. There is
+information for the entire text in all levels of the tree and each level has
+information for all possible in states. The space of a tree grows with
+$\Theta mn\log(n)$, where $m$ is the number of states in the DFA. This means
+that the memory usage will be big for bigger files.
+
+\section{Future Work}
+To solve the problem with the space requirements for this implementation an
+implementation using ropes could be used instead. That is, instead of using a
+character as the base case, a string is used which is sequentially lexed, an
+example of a string is one line of code. This
+would shrink the tree from $\log(n)$ to $\log(n/x)$ where x is the mean length
+of a line. Since lines in the code is roughly of the same length there will be
+no impact on the worst case scenario time: lexing 10 characters always takes the
+same amount of time. Since the lines in general are short updating a line will
+not take a long time.
+
+Another solution which could be used is to limit how big a tree can be. When
+that text is bigger then what fits in a tree a new tree is constructed and the
+combination of the tree is calculated on the fly. This will result in smaller
+trees at the expense of run time when the trees needs to be combined.
+
+In general a lot of in states will have the same sequence of tokens. The
+implementation suggested by this report will store all such sequences separetly.
+An improvement would be if somehow the sequences of tokens that are identical
+could be stored in a separate table and the in state in the transition map points
+to the corresponding sequence. This would not improve the space complexity, but
+the practical space needed would shrink.
