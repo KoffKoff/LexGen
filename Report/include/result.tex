@@ -122,6 +122,20 @@ token as the sequential lexer.
 
 %\section{Efficiency}
 \section{Performance}
+All tests, where time performance has been measured, are done with the help of
+Criterion, a Haskell library. Criterion has tools to ensure that the functions
+being tested is evaluated to normal form. Criterion runs the tests 100 times
+with a warm up run by default. The warm up run makes sure that all inputs to the
+functions being tested are evaluated before the actual testing begins,
+this ensures that nothing but the function being tested is measured
+\cite{criterion}.
+
+To make sure that the time performance tests were not skewed under a certain
+system we tested them on different hardware and operating systems. The results
+are similiar on all the systems we tested them on. The results presented below
+are done on an intel i5 quad core at 2900MHz with 8GB memory under the linux Red
+Hat operating system.
+
 To measure the performance of the incremental step two fingertrees are created,
 each representing one half of a code. By creating the two fingertrees the
 transition map for the code in those trees are created as well. The benchmarking
@@ -156,7 +170,7 @@ performance benchmarks can be found in \cref{preformanceAppendix}.
     \end{axis}
 \end{tikzpicture}
 %\end{center}
-\caption{Benchmarking times of the incremental lexer\label{fig:IncTime}}
+\caption{Benchmarking times of an incremental update\label{fig:IncTime}}
 \end{figure}
 
 \begin{figure}[!h]
@@ -217,7 +231,8 @@ updates for every character. The result can be seen in \cref{fig:IncNewTime}.
     \end{axis}
 \end{tikzpicture}
 %\end{center}
-\caption{Comparison between the incremental and sequential lexer\label{fig:IncNewTime}}
+\caption{Comparison between the sequential lexer and the incremental lexer when
+         lexing an entire file\label{fig:IncNewTime}}
 \end{figure}
 
 Since the incremental lexer uses a tree structure there will be an increase in

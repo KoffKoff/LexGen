@@ -86,7 +86,14 @@ Göteborg, Sweden \mydate\today
 \thispagestyle{empty}
 
 \begin{abstract}
-A text that is a crash.course of the project. What will the report talk about, what obstacles had to be conquered. talk talk talk.
+This report aims to provide a lexer that is incremental as an alternative to
+todays sequential lexers. The results of the implementation described shows that
+an incremental lexer can do an update in $\theta \log n$ time which makes it
+suitable when updates are common. Because of this an incremental lexer together
+with an incremental parser could be used to give a user parsing feedback in a
+text editor or IDE. The incremental lexer is divide and conquer and uses
+fingertrees to store the intermediate results. \#NEEDS MORE!!
+
 \end{abstract}
 
 \newpage
@@ -97,8 +104,11 @@ A text that is a crash.course of the project. What will the report talk about, w
 \clearpage
 \thispagestyle{empty}
 \section*{Acknowledgments}
-We would like to take the chance of thanking our supervisor at department of computer science, Jean-Philippe Bernardy. 
-Also thank our parents, and last but not least. We like to thank our self!\\[1cm]
+We would like to take the chance of thanking our supervisor at department of
+computer science, Jean-Philippe Bernardy, with which we have had a lot of
+constructive discussions. We would also like to thank our examinator at the
+department of computer science Bengt Nordström. lastly we would like to thank
+everyone that has helped proof read this report.\\[1cm]
 
 \hfill Jonas Hugo \& Kristofer Hansson, Göteborg \mydate\today
 %\newpage
