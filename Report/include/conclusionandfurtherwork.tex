@@ -17,19 +17,19 @@ that the memory usage will be big for bigger files.
 
 \section{Future Work}
 To solve the problem with the space requirements for this implementation an
-implementation using ropes could be used instead. That is, instead of using a
-character as the base case, a string is used which is sequentially lexed, an
-example of a string is one line of code. This
+implementation using sequence of characters could be used instead. That is,
+instead of using a character as the base case, a sequence of characters is used
+which is sequentially lexed, an example of a sequence is one line of code. This
 would shrink the tree from $\log(n)$ to $\log(n/x)$ where x is the mean length
 of a line. Since lines in the code is roughly of the same length there will be
-no impact on the worst case scenario time: lexing 10 characters always takes the
-same amount of time. Since the lines in general are short updating a line will
-not take a long time.
+no impact on the worst case scenario time, for instance lexing 10 characters
+always takes the same amount of time. Since the lines in general are short
+updating a line will not take long time.
 
 Another solution which could be used is to limit how big a tree can be. When
-that text is bigger then what fits in a tree a new tree is constructed and the
-combination of the tree is calculated on the fly. This will result in smaller
-trees at the expense of run time when the trees needs to be combined.
+that text is bigger then what fits in a tree, the tree is split into two trees.
+This will result in smaller trees at the expense of run time since the
+combination of the trees needs to be calculated on the fly.
 
 In general a lot of in states will have the same sequence of tokens. The
 implementation suggested by this report will store all such sequences separately.
