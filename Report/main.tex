@@ -18,8 +18,11 @@
 
 % Settings (Metadata)
 \input{include/settings}
+\makeglossaries
+\input{include/glossarylist}
 
 \begin{document}
+
 \input{include/livesettings}
 
 % Title page and abstract
@@ -29,8 +32,13 @@
 \newpage
 \pagenumbering{roman}
 \setcounter{page}{1}
+
+\newpage
 \tableofcontents
 
+\glsaddall
+\printglossary
+\clearpage
 % Main area
 \newpage
 \pagenumbering{arabic}	

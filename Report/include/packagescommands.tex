@@ -2,6 +2,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 \usepackage[parfill]{parskip}
+\usepackage{savesym}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
@@ -34,6 +35,9 @@
 \usepackage{pgfplots}
 \usepackage{syntax}
 \usepackage{pdfpages}
+\savesymbol{AtBeginEnvironment}
+\usepackage[nonumberlist,acronym]{glossaries}
+\restoresymbol{Glossary}{AtBeginEnvironment}
 
 \usetikzlibrary{arrows,automata,positioning,shadows}
 
