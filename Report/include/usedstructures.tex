@@ -166,7 +166,7 @@ conquer lexer.
 %  \caption{Function definitions of the lexical routines \label{fig:funheads}}
 %\end{figure}
 
-\subsection{combineTokens}
+\subsection{Combination of Tokens}
 \begin{figure}[h!]
   \lstinputlisting[language=Haskell]{examples/CombineTokens.hs}
   \caption{The $combineTokens$ function \label{fig:combinetoks}}
@@ -178,7 +178,7 @@ the first transition is empty or invalid in which case the output is trivial. If
 the tokens generated are valid, the tokens are passed on to $combineWithRHS$
 together with the second transition.
 
-\subsection{combineWithRHS}
+\subsection{Combine Tokens With Right Hand Side}
 $combineWithRHS$ checks how the tokens from the first
 transition are to be combined with the second transition.
 
@@ -211,7 +211,7 @@ cases, the definition of the variable names can be found in \cref{fig:cwrhs}.
 %calls \emph{combineWithRHS} to see if there is some other possible way to
 %combine the transitions.
 
-\subsection{mergeTokens}
+\subsection{Merge Two Tokens}
 $mergeTokens$ combines the last token from the first tokens with
 the first token of the second tokens, for the code see \cref{fig:mergetokens}.
 
@@ -230,7 +230,7 @@ the first token of the second tokens, for the code see \cref{fig:mergetokens}.
   state the work is passed on to $mergeSuff$.
 \end{itemize}
 
-\subsection{mergeSuff}
+\subsection{Merging Suffixes}
 $mergeSuff$ checks which pairs of suffixes it has and takes the appropriate
 actions.
 
@@ -254,7 +254,7 @@ actions.
 \item When the first suffix is $One$ and the second is $Multi$ it is passed onto
   $mergeTokens$.
 \end{itemize}
-\subsection{appendTokens}
+\subsection{Append to Sequence of Tokens}
 $appendTokens$ checks if there is a lexical error in $toks2$. if there is
 an error, that error is returned, otherwise $toks2$ is appended to $toks1$.
 \lstinputlisting[language=Haskell]{examples/AppendTokens.hs}
