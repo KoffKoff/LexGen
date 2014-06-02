@@ -56,10 +56,10 @@ Assume a function $T_n$ constrained by the recurrence
 $T_n = {\alpha}T_{\frac{n}{\beta}}+ f(n)$
 \end{center}
 (This is typically the equation for the running time of a divide and conquer
-algorithm, where $\alpha$ is the number of sub-problems at each recursive step,
-$n/\beta$ is the size of each sub-problem, and $f(n)$ is the running time of
-dividing up the problem space into $\alpha$ parts, and combining the sub-results
-together.)\\
+algorithm, where $\alpha$ is the number of subproblems at each recursive step,
+$n/\beta$ is the size of each subproblem, and $f(n)$ is the running time of
+dividing up the problem space into $\alpha$ parts, and combining the results
+of the subproblems together.)\\
 If we let $e = \log_\beta \alpha$, then
 \begin{center}
 \begin{tabular}{r c l l}
@@ -350,7 +350,7 @@ Since all leafs in the 2-3 tree are at the same level, the left and right
 spine has the same length. Therefore the left and right spines can be paired up
 to create a single central spine. Branching out from the spine are 2-3 trees. At
 the top level there are two to three elements on each side, while the other
-levels have one or two sub-trees, whose depth increases down the spine.
+levels have one or two subtrees, whose depth increases down the spine.
 Depending on if the root node had 2 or 3 branches in the original 2-3 tree, The
 bottom node will have either a single 2-3 tree or an empty tree. This structure
 can be described as shown in \cref{fig:DataTypeFingertree}.

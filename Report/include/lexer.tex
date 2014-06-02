@@ -14,10 +14,10 @@ analyzer. There are several reasons why a compiler should be separated in to a
 lexical analyzer and a parser (syntax analyzer).
 
 First, simplicity of design is the most important reason. When dividing the task
-into these two sub tasks, it allows the programmer to simplify each of these
-sub-tasks. For example, a parser that has to deal with white-spaces and comments
+into these two subtasks, it allows the programmer to simplify each of these
+subtasks. For example, a parser that has to deal with white-spaces and comments
 would be more complex than one that can assume these have already been removed
-by a lexer. When the two tasks have been separated into sub-tasks it can lead to 
+by a lexer. When the two tasks have been separated into subtasks it can lead to 
 cleaner overall design when designing a new language. The only thing the syntax
 analyzer will see is the output from the lexer, tokens (and lexemes). The lexer
 usually skips comments and white-spaces, since these are often not relevant for

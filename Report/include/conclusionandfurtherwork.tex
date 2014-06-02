@@ -1,19 +1,35 @@
 \chapter{Conclusion and Future Work}
-As mentioned in the result chapter the incremental lexer is both robust and
-precise. The incremental lexer is efficient in the sense that updates are done
-in $\Theta \log(n)$ time. However when a tree is built up from scratch the
-incremental lexer takes $\Theta n\log(n)$ time compared to the sequential lexer
-that takes $\Theta n$ time. This means that the incremental lexer is not suited
-when an entire text needs to be lexed, for example in a stand alone compiler. It
-is however suited in an environment where updates are likely to happen, for
+As mentioned in the result chapter the incremental lexer was both robust and
+precise. This means that without considering the time and space effiency an
+incremental lexer will produce the same result as a sequential lexer with the
+difference being how lexical errors are handled. The incremental lexer is
+efficient in the sense that updates are done in $\Theta \log(n)$ time. However
+when a tree is built up from scratch the incremental lexer takes
+$\Theta n\log(n)$ time compared to the sequential lexer that takes $\Theta n$
+time.
+
+\section{Conclusions}
+Incremental lexers is not suited to be used in a stand alone lexer since a
+sequential lexer is more effiecent then an incremental lexer when an entire text
+is being lexed. If a development environment that uses an incremental lexer was
+used, the stand alone lexer can be omitted since the tokens are already
+generated, saving one step in the compilation process.
+
+It is however suited in an environment where updates are likely to happen, for
 example to give lexical feedback in a text editor where each key stroke would be
-an update.
+an update. Insertion of a character in the text will be faster with an
+incremental lexer compared to a sequential lexer since the lexical analysis does
+not need to be done on the entire text. This means that the lexer could be run
+in real time without a user noticing it. The result from an incremental lexer
+can be passed to an incremental parser, giving parsing feedback to the user
+instead. However, loading times when opening files will be longer if the tree
+containing the tokens are not stored.
 
 The space requirements for the incremental lexer grows with the tree. There is
 information for the entire text in all levels of the tree and each level has
 information for all possible in states. The space of a tree grows with
 $\Theta mn\log(n)$, where $m$ is the number of states in the DFA. This means
-that the memory usage will be big for bigger files.
+that the memory usage will be big for large files and complex languages.
 
 \section{Future Work}
 To solve the problem with the space requirements for this implementation an
@@ -32,8 +48,8 @@ This will result in smaller trees at the expense of run time since the
 combination of the trees needs to be calculated on the fly.
 
 In general a lot of in states will have the same sequence of tokens. The
-implementation suggested by this report will store all such sequences separately.
-An improvement would be if somehow the sequences of tokens that are identical
-could be stored in a separate table and the in state in the transition map points
-to the corresponding sequence. This would not improve the space complexity, but
-the practical space needed would shrink.
+implementation suggested by this report will store all such sequences
+separately. An improvement would be if somehow the sequences of tokens that are
+identical could be stored in a separate table and the in state in the transition
+map points to the corresponding sequence for that in state. This would not
+improve the space complexity, but he practical space needed would shrink.
