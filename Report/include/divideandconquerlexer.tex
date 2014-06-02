@@ -545,6 +545,44 @@ until the empty list has been found as the rest of the list. Where in a sequence
 the last element can be obtained in $\Theta(1)$ time. Adding an element anywhere
 in the sequence can be done in worst case, $\Theta(log n)$ \cite{fingertree}.
 
+\subsection{The Bankers Method}
+The bankers method is a technique used to calculate the practical time
+assumption where it accounts for accumulated debt. Each debit represents
+a constant amount of suspended work. When a computation initially suspends, it
+create a number of debits proportional to it is shared cost and
+associate each debit with a location in the object. The choice of location for
+each debit depends on the nature of the computation. If the computation is
+monolithic (i.e., once begun, it runs to completion), then all debits are
+usually assigned to the root of the result, which the incremental lexer is not.
+But if the computation is like the lexer a incremental, then the debits may be
+distributed among the roots of the partial results.
+
+The amortized cost of an operation is the unshared cost of the operation
+plus the number of debits discharged by the operation. Note that the number
+of debits created by an operation is not included in its amortized cost. The
+order in which debits should be discharged depends on how the object will
+be accessed; debits on nodes likely to be accessed soon should be discharged
+first.
+
+Incremental functions play an important role in the bankers method because
+they allow debits to be dispersed to different locations in a data structure,
+each corresponding to a nested suspension. Then, each location can be accessed
+as soon as its debits are discharged, without waiting for the debits at other
+locations to be discharged. This means that the initial partial results of
+an incremental computation can be paid for very quickly, and that subsequent
+partial results may be paid for as they are needed \cite{Okasaki1999}.
+
+\subsubsection{Banker Method on the Fingertree}
+The argument for the amortized time can be expressed using the Banker method.
+This is done by assigning the suspension of the middle tree in each Deep node
+as many debits as the node has safe digits. (0,1 or 2) A double-ended queue
+operation which descends $k$ levels turns $k$ dangerous digits into safe digits.
+By doing so creates $k$ debits to pay for the work done.
+Applying the bankers method of debit passing to any debits already attached to
+these $k$ nodes. It can be shown that each operation must discharge at most
+one debit. Therefore the double-ended queue operations run in $\Theta(1)$
+amortized time \cite{fingertree}.
+
 \section{Divide and Conquer Lexing in General}
 In the last section we covered the general divide and conquer algorithm. This
 section covers the general data structures and algorithms for an incremental
@@ -706,43 +744,11 @@ This will give $e = log_2 1 = 0$. Thus the update function of the incremental
 algorithm will have a time complexity of
 $\Theta(n^0 \cdot log n) = \Theta(log n)$
 
-\subsubsection{The Bankers Method}
-The bankers method is a technique used to calculate the practical time
-assumption where it accounts for accumulated debt. Each debit represents
-a constant amount of suspended work. When a computation initially suspends, it
-create a number of debits proportional to it is shared cost and
-associate each debit with a location in the object. The choice of location for
-each debit depends on the nature of the computation. If the computation is
-monolithic (i.e., once begun, it runs to completion), then all debits are
-usually assigned to the root of the result, which the incremental lexer is not. 
-But if the computation is like the lexer a incremental, then the debits may be 
-distributed among the roots of the partial results.
-
-The amortized cost of an operation is the unshared cost of the operation
-plus the number of debits discharged by the operation. Note that the number
-of debits created by an operation is not included in its amortized cost. The
-order in which debits should be discharged depends on how the object will
-be accessed; debits on nodes likely to be accessed soon should be discharged
-first.
-
-Incremental functions play an important role in the bankers method because
-they allow debits to be dispersed to different locations in a data structure,
-each corresponding to a nested suspension. Then, each location can be accessed
-as soon as its debits are discharged, without waiting for the debits at other
-locations to be discharged. This means that the initial partial results of
-an incremental computation can be paid for very quickly, and that subsequent
-partial results may be paid for as they are needed \cite{Okasaki1999}.
-
-\subsubsection{Banker Method on the Fingertree}
-The argument for the amortized time can be expressed using the Banker method.
-This is done by assigning the suspension of the middle tree in each Deep node
-as many debits as the node has safe digits. (0,1 or 2) A double-ended queue
-operation which descends $k$ levels turns $k$ dangerous digits into safe digits.
-By doing so creates $k$ debits to pay for the work done.
-Applying the bankers method of debit passing to any debits already attached to
-these $k$ nodes. It can be shown that each operation must discharge at most
-one debit. Therefore the double-ended queue operations run in $\Theta(1)$
-amortized time \cite{fingertree}.
+Since the fingertree is lazy, when an element is added to the root level of the
+tree, root elements might be pushed down in the tree. The measure of the
+lower levels does not need to be immediately recalculated. Instead they
+are recalculated when they are used. Paying for this expensive operation like
+described in the section about bankers method.
 
 \section{Lexical Errors}
 Since the lexer has to be able to handle any kind of possible not "complete"
