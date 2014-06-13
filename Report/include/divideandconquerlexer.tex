@@ -624,9 +624,9 @@ examples below the first number refers to the in state, the middle part is the
 sequence of tokens and the second number is the out state, that can be accepting.
 \begin{center}
 $\left[\begin{array}{ccc}
-10&Single '/'&10\\
-11&Single '/'&NoState\\
-12&Single '/'&10\\
+10&['/']&10\\
+11& &NoState\\
+12&['/']&10\\
 \end{array}\right]$
 \end{center}
 $NoState$ transition is used to tell the lexer that using that particular 
@@ -680,19 +680,19 @@ For both the cases the in state of the first transition will be the new in state
 and the out state of the second transition will be the new out state.
 \begin{center}
 $\left[\begin{array}{ccc}
-0&Single '/'&1\\
-1&Single '/'&Accepting 5\\
+0&['/']&1\\
+1&['/']&Accepting 5\\
 \end{array}\right] `combineTokens`
 \left[\begin{array}{ccc}
-0&Single '/'&1\\
-1&Single '/'&Accepting 5\\
+0&['/']&1\\
+1&['/']&Accepting 5\\
 \end{array}\right] =
 \left[\begin{array}{ccc}
-0&Single '//'&Accepting 5\\
-1&Multiple '/' [] '/'&Accepting 1\\
+0&['//']&Accepting 5\\
+1&['/','/']&Accepting 1\\
 \end{array}\right]$
 \end{center}
-This will not work as a lexer for most languages since the longest-match rule is
+This will not work as a lexer for most languages since the longest match rule is
 not implemented. For example, it will lex a variable to variables where the
 length is a single character, for example ``os'' will be lexed as two tokens,
 ``o'' and ``s''. To solve this some more work is needed.
@@ -713,17 +713,17 @@ the first list.
 %be paired with the prefix of the second and seen as a complete token.
 \begin{center}
 $\left[\begin{array}{ccc}
-0&Single '//'& Accepting 5\\
-1&Multiple '/' [] '/' &1\\
+0&['//']& Accepting 5\\
+1&['/', '/'] &1\\
 \end{array}\right] `combineTokens` 
 \left[\begin{array}{ccc}
-0&Single '\textbackslash n'&Accepting 6\\
-1&Single '\textbackslash n'&1\\
-5&Single '\textbackslash n'&NoState\\
+0&['\textbackslash n']&Accepting 6\\
+1&['\textbackslash n']&1\\
+5&['\textbackslash n']&NoState\\
 \end{array}\right] =
 \left[\begin{array}{ccc}
-0&Multiple '//' [] '\textbackslash n'&Accepting 6\\
-1&Multiple '/' [] '/\textbackslash n'&1\\
+0&['//','\textbackslash n']&Accepting 6\\
+1&['/','/\textbackslash n']&1\\
 \end{array}\right]$
 \end{center}
 The second case is when the out state for the right token list is $NoState$.
