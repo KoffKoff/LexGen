@@ -14,7 +14,7 @@ $digit$   & $\rightarrow$ & [0-9]\\
 $ident$   & $\rightarrow$ & $letter$ | $digit$ | [\_'] & Identifier Characters\\
 $white$   & $\rightarrow$ & [ \textbackslash{t}\textbackslash{r}\textbackslash{n}\textbackslash{v}\textbackslash{f}] & White space characters\\
 Rules\\
-& & $whie$+\\
+& & $white$+\\
 & & // [.]* & Single line comment\\
 & & /\textbackslash*) ([\^\textbackslash*] | (\textbackslash*) [\^/])*
     (\textbackslash*)+ / & Multi line comment\\
