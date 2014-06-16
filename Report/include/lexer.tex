@@ -10,10 +10,10 @@ lexer in detail.
 
 \section{Lexing vs Parsing}
 Lexers usually work as a pass before parser; giving their result to the syntax
-analyzer. There are several reasons why a compiler should be separated in to a
+analyzer. There are several reasons why a compiler should be separated into a
 lexical analyzer and a parser (syntax analyzer).
 
-First, simplicity of design is the most important reason. When dividing the task
+Firstly, simplicity of design is the most important reason. When dividing the task
 into these two subtasks, it allows the programmer to simplify each of these
 subtasks. For example, a parser that has to deal with white-spaces and comments
 would be more complex than one that can assume these have already been removed
@@ -23,11 +23,11 @@ analyzer will see is the output from the lexer, tokens (and lexemes). The lexer
 usually skips comments and white-spaces, since these are often not relevant for
 the syntax analyzer.
 
-Second, overall efficiency of the compiler can be improved. When separating the 
+Secondly, overall efficiency of the compiler can be improved. When separating the 
 lexical analyzer it allows for use of specialized techniques that can be used 
 only in the lexical task.
 
-Third and last, compiler portability can be enhanced. That is
+Thirdly and last, compiler portability can be enhanced. This means that
 Input-device-specific peculiarities can be restricted to the lexical analysis
 \cite{Aho2006}. Therefore the lexer can detect syntactical errors in tokens,
 such as ill-formed floating-points literals, and report these errors to the user
@@ -41,17 +41,14 @@ lexer can use when finding the abstract tokens representing a text. This section
 describes the techniques used when writing rules for the tokens patterns.
 
 \subsection{Regular Expressions}
-\begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
-Using regular expressions to express a set of valid C identifiers is easy.
-Given an element $letter \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup 
-\{$\_$\}$ and another element $digit \in \{0 \dots 9\}$ then using a regular
-expression, the definition of all valid C identifiers 
-could look like this: $letter (letter | digit)*$. 
-\end{example}
+Regular expressions is a key part in describing patterns of a text. However,
+they cannot express all possible patterns on which a text can follow, but they
+can describing those type of pattern which are used in a lexer, the pattern of
+tokens.
 
 \begin{definition}[Regular Expressions \cite{Aho1990}]\label{regexp} $ $\\
 \begin{enumerate}
-  \item The following characters are meta characters $meta = \{ '|', '(', ')', '*' \}$.
+  \item The following characters are meta characters $meta = \{ '|', ~~ '(', ~~ ')', ~~ '*' \}$.
   \item A character $a \notin meta$ is a regular expression that matches the 
       string $a$.
   \item If $r_1$ and $r_2$ are regular expressions then $(r_1 | r_2)$ is a 
@@ -60,7 +57,7 @@ could look like this: $letter (letter | digit)*$.
       expression that matches the string $xy$ iff $x$ matches $r_1$
       and $y$ matches $r_2$.
   \item If $r$ is a regular expression $r*$ is a regular expression that
-      matches any string of the form $x_1, x_2, \dots , x_n, n \geq 0$;
+      matches any string of the form $(x_1)(x_2) \dots  (x_n), n \geq 0$;
       where $r$ matches $x_i$ for $1 \leq i \leq n$, in particular $(r)*$ 
       matches the empty string, $\varepsilon$.
   \item If $r$ is a regular expression, then $(r)$ is a regular expression that
@@ -72,7 +69,15 @@ could look like this: $letter (letter | digit)*$.
 Many parentheses can be omitted by adopting the convention that the \emph{Kleene
 closure} operator $*$ has the highest precedence, the \emph{concat} operator
 $(r_1)(r_2)$ the second highest and last the \emph{or} operator $|$. The two
-binary operators, \emph{concat} and \emph{or} are left-associative.
+binary operators, \emph{concat} and \emph{or} are left-associative \cite{Aho1990}.
+
+\begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
+Using regular expressions to express a set of valid C identifiers is easy.
+Given an element $letter \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup 
+\{$\_$\}$ and another element $digit \in \{0 \dots 9\}$ then using a regular
+expression, the definition of all valid C identifiers 
+could look like this: $letter (letter | digit)*$. 
+\end{example}
 
 \subsection{Languages}
 An alphabet is a finite set of symbols. For example Unicode includes 
@@ -112,7 +117,7 @@ definitions avoid recursive definitions \cite{Aho2006}.
 When rules have been defined for a language, the lexer needs structures to
 represent the rules and the result from lexing the text. 
 This section describe the structures which the lexical analyzer use
-for representing the abstract data; what these structures are for and what is 
+for representing the abstract data; what these structures are used for and what is 
 forwarded to the syntactical analyzer. 
 
 A lexical analyzer uses three different concepts. The concepts are described 
@@ -124,8 +129,8 @@ token name is an abstract symbol corresponding to a lexical unit \cite{Aho2006}.
 For example, a particular keyword, data-type or identifier.
   \item[Pattern]
     is a description of what form a lexeme may take \cite{Aho2006}. 
-For example, a keyword is the sequence of characters that forms the 
-keyword, an integer is a sequence consisting of integers from 0 to 9. This can
+For example, a variable or identifier is formed by a sequence of characters, an
+integer is a sequence consisting of digits from 0 to 9. This can
 be described by a regular expression.
   \item[Lexemes]
     is a sequence of characters in the code being analyzed which 
@@ -139,6 +144,14 @@ but it is important for the code generator to know which lexeme was found.
 Therefore the lexer often returns not just the token but also an attribute value 
 that describes the lexeme found in the source program corresponding to this 
 token \cite{Aho2006}.
+
+A lexer collects chars into logical groups and assigns 
+internal codes to these groups according to their structure, 
+where the groups of chars are lexemes and the internal codes are tokens \cite{sebesta2012}.
+In some cases it is not relevant to return a token for a pattern, in these
+cases the token and lexeme is discarded and the lexer continues,
+typical examples are whitespaces and comments which have no impact on
+the code \cite{Aho2006}.
 
 \begin{figure}[h!]
 \begin{center}
@@ -161,21 +174,16 @@ token \cite{Aho2006}.
 \end{center}
 \end{figure}
 
-A lexer collects chars into logical groups and assigns 
-internal codes to these groups according to their structure, 
-where the groups of chars are lexemes and the internal codes are tokens \cite{sebesta2012}.
-In some cases it is not relevant to return a token for a pattern, in these
-cases the token and lexeme is discarded and the lexer continues,
-typical examples are whitespaces and comments which have no impact on
-the code \cite{Aho2006}.
-
 An example follows how a small piece of code would be divided given the regular
 language described in \cref{reglang}.
+
 \begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
 Consider the following text; to be lexed:
 \lstinputlisting[language=c]{examples/token.c}
 Given the regular language defined in \cref{reglang}, the lexical analyzer would use the rules defined in \cref{fig:grammar}
-In order to produce the following tokens.
+In order to produce the resulting tokens shown in \cref{fig:codeToToken}.
+
+\begin{figure}[h!]
 \begin{center}
 \begin{tabular}{l c}
 \underline{Token} & \underline{Lexeme}\\
@@ -189,6 +197,8 @@ Integer & 100\\
 Reserved & ;
 \end{tabular}
 \end{center}
+\caption{Result of lexing the code in \cref{codeToToken} \label{fig:codeToToken}}
+\end{figure}
 \end{example}
 
 \section{Recognition of Tokens}
@@ -234,7 +244,10 @@ a comment. When the lexer encounters the end of the text it will return the
 token corresponding to the last accepting state and begin lexing the rest from
 the initial state. The rules relevant to this example are defined in 
 \cref{fig:grammar} the rest of the rules can be found in \cref{reglang}.\\
-The result:
+The result can be found in \cref{fig:longestmatch}.
+\end{example}
+
+\begin{figure}[h!]
 \begin{center}
 \begin{tabular}{l c}
 \underline{Token} & \underline{Lexeme}\\
@@ -250,7 +263,9 @@ Integer & 100\\
 Reserved & ;
 \end{tabular}
 \end{center}
-\end{example}
+\caption{Result of lexing the code in \cref{longestMatch} \label{fig:longestmatch}}
+\end{figure}
+
 
 \subsection{Finite Automata}
 Transition diagrams of the form used in lexers are representations of a class 
@@ -266,7 +281,7 @@ each possible input string.
     \begin{description}
       \item [Non-deterministic Finite Automata (NFA)] which have no restriction 
 of the edges, several edges can be labeled by the same symbol out from the 
-same state. Further $\epsilon$, the empty string, is a possible label. 
+same state. Further the empty string $\epsilon$ is a possible label. 
       \item [Deterministic Finite Automata (DFA)] for each state and for each 
 symbol of its input alphabet exactly one edge with that symbol leaving that 
 state. The empty string $\epsilon$ is not a valid label.
@@ -287,7 +302,7 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
   \item $\Sigma$ is a finite set called alphabet,
   \item $\delta: Q \times \Sigma \to P(Q)$ is a transition function,
   \item $q_0 \in Q$ is the start state, and
-  \item $F \subseteq Q$ is the accept state.
+  \item $F \subseteq Q$ is the accepting states.
 \end{enumerate} 
 \end{definition}
 The transition function does not map to one particular state from a
@@ -376,7 +391,7 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
   \item $\Sigma$ is a finite set called alphabet,
   \item $\delta: Q \times \Sigma \to Q$ is a transition function,
   \item $q_0 \in Q$ is the start state, and
-  \item $F \subseteq Q$ is the set of accept states.
+  \item $F \subseteq Q$ is the set of accepting states.
 \end{enumerate} 
 \end{definition}
 

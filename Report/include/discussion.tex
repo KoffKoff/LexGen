@@ -50,7 +50,7 @@ the case of splitting a tree the tokens would have to be recalculated.
 The first version of the lexical routines only had the goal to get an idea of
 how a divide and conquer lexer could be implemented. As a result a lot of
 unnecessary information was stored and computed and some necessary information
-was stored and computed more then once. The solution was to calculate
+was stored and computed more than once. The solution was to calculate
 uncertain tokens until a satisfactory result was found or all possibilities was
 exhausted. This meant that for each combination the worst case was $O(2^n)$.
 
