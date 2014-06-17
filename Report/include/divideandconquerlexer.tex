@@ -217,7 +217,7 @@ for when the tree is empty is replaced with a constant value, such as
 $\emptyset$. Intermediate results are combined using a binary operation, like
 $\bullet$. Reduction with a monoid always returns the same value,
 independently of the argument nesting. For a reduction with an arbitrary
-constant and binary operation there must be a specified nesting rule. If
+constant and a binary operation there must be a specified nesting rule. If
 combining operations are only nested to the right, or to the left, the obtained
 result will be a skewed reductions, which can be singled out as a type class
 described in \cref{fig:Reduction} \cite{fingertree}.
@@ -226,6 +226,8 @@ described in \cref{fig:Reduction} \cite{fingertree}.
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceFun.hs}
 \caption{Reduction function in Haskell \label{fig:Reduction}}
 \end{figure}
+
+In the case for lists, left and right reductions are equivalent to foldl and foldr.
 
 \subsection{Simple Sequence}
 The fingertrees can be described by comparing it to an already
@@ -381,9 +383,8 @@ Reduction for the node which is shown in \cref{fig:reductionNode}.
 \caption{Reduction of a fingertrees node \label{fig:reductionNode}}
 \end{figure}
 
-Reduction of fingertrees single and double lifting of the binary operation as
-shown in \cref{fig:reductionFingerTree}
-\cite{fingertree}.
+For the fingertrees reduction instance both single and double lifting of the binary
+operation is used as shown in \cref{fig:reductionFingerTree} \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceFingerTree.hs}
