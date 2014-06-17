@@ -742,7 +742,7 @@ leaf to the root and recalculate every node on this path. As shown by
 \cref{fig:incUp}. Only one subproblem is updated in every level of the tree.
 Using the master method to calculate the expected time complexity gives:
 $e = log_b a$ where $a$ is number of recursive calls and $n/b$ is size of the
-subproblem where $n$ is the size of the original problem. As shown by the
+subproblem where $n$ is the size of the original problem. As shown by
 \cref{fig:incUp}, the number of needed update calls at every level of the tree
 is $1$, therefore $a = 1$. The constant $b$ is still $2$. This will give
 $e = log_2 1 = 0$. Thus the update function of the incremental algorithm will
