@@ -438,30 +438,31 @@ expensive operation. This can be expressed more in detail by the bankers method
 
 \subsubsection{The Bankers Method}
 The bankers method is a technique used to calculate the practical time
-assumption where it accounts for accumulated debt. Each debit represents
-a constant amount of suspended work. When a computation initially suspends, it
-create a number of debits proportional to it is shared cost and
-associate each debit with a location in the object. The choice of location for
-each debit depends on the nature of the computation. If the computation is
-monolithic (i.e., once begun, it runs to completion), then all debits are
-usually assigned to the root of the result, which the fingertree is not.
-But if the computation is lazy, like the fingertree, then the debits may be
-distributed among the roots of the partial results.
+assumption where it accounts for accumulated debt. A form of currency called
+debit is used. Where each debit correspond to an constant amount of suspended
+work. When a computation initially suspends, it create a number of debits
+proportional to it is shared cost and associate each debit with a location
+in the object. The selection of location for every debit depends on the type
+of the computation. If the computation is monolithic (i.e., once begun, it
+runs to completion), then all debits are usually assigned to the root of the
+result, which the fingertree is not. But if the computation is lazy, like for
+the fingertree, then the debits may be distributed among the roots of the partial
+results.
 
 The amortized cost of an operation is the unshared cost of the operation
-plus the number of debits discharged by the operation. Note that the number
-of debits created by an operation is not included in its amortized cost. The
-order in which debits should be discharged depends on how the object will
-be accessed; debits on nodes likely to be accessed soon should be discharged
-first.
+plus the number of debits discharged by the operation. Where an unshared cost
+for an operation does not include the number of debits created by an operation.
+The ordering of how debits should be discharged depends on the probable ordering
+of accesses to objects; debits on nodes with the highest likelihood to be accessed
+first should also be discharged first.
 
-Incremental functions play an important role in the bankers method because
+Incremental functions play an important part in the bankers method since
 they allow debits to be dispersed to different locations in a data structure,
-each corresponding to a nested suspension. Then, each location can be accessed
-as soon as its debits are discharged, without waiting for the debits at other
-locations to be discharged. This means that the initial partial results of
-an incremental computation can be paid for very quickly, and that subsequent
-partial results may be paid for as they are needed \cite{Okasaki1999}.
+each corresponding to a nested suspension. This means that each location can be
+accessed as soon as its debits are discharged, without waiting for other
+locations debits to be discharged. This results in that the initial partial
+results of an incremental computation can be paid for quickly, and that
+subsequent partial results may be paid for as they are needed \cite{Okasaki1999}.
 
 \subsubsection{Banker Method on the Fingertree}
 The amortized time can be argued for by using the Banker method.
