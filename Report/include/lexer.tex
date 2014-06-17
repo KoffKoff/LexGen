@@ -202,22 +202,28 @@ Reserved & ;
 \end{example}
 
 \section{Recognition of Tokens}
-The topic in the previous section covers how to represent a pattern using 
+The topic in the previous section covers how to represent a pattern using
 regular expressions and how these expressions relate to tokens. A pattern is
 used to determine if a string matches a token. This section is highlighting how
 to transform a sequence of characters into a sequence of abstract tokens using
-patterns. 
+patterns.
 
 \subsection{Transition Diagrams}
-A state transition diagram, or transition diagram is a directed graph, where the
+A transition diagram is a directed graph, where the
 nodes are labeled with state names. Each node represents a state which could
 occur during the process of scanning the input, looking for a lexeme that
 matches one of several patterns \cite{Aho2006}. The edges are labeled with the
 input characters that causes transitions among the states. An edge may also
-contain actions that the lexer must perform when the transition is a token 
+contain actions that the lexer must perform when the transition is a token
 \cite{sebesta2012}.
 
-There are different type of states in the the diagram where one state state is said to be initial. The transition diagram always begins at this state, before any input symbols have been read. Some states are said to be accepting (final). They indicate that a lexeme has been found. If the found token is the longest match (see \cref{sub:longmatch}) then the token will be returned with any additional optional values, mentioned in previous section, and the transition is reset to the initial state \cite{Aho2006}.
+There are different type of states in the the transition diagram where one state
+is said to be the initial state. The transition diagram always begins at this
+state, before any input symbols have been read. Some states are said to be
+accepting (final). They indicate that a lexeme has been found. If the found
+token is the longest match (see \cref{sub:longmatch}) then the token will be
+returned with any additional optional values, mentioned in previous section, and
+the transition is reset to the initial state \cite{Aho2006}.
 
 \subsection{Longest Match}\label{sub:longmatch}
 If there are multiple feasible solutions when performing the lexical
