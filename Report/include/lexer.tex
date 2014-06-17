@@ -80,7 +80,7 @@ could look like this: $letter (letter | digit)*$.
 \end{example}
 
 \subsection{Languages}
-An alphabet is a finite set of symbols. For example Unicode includes 
+An alphabet is a finite set of symbols. For example Unicode includes
 approximately $100,000$ characters. A language is any countable set of strings
 of some fixed alphabet \cite{Aho2006}. The term formal language refers to
 languages which can be described by a body of systematic rules. There is a
@@ -89,9 +89,9 @@ languages refers to those languages that can be defined by regular expressions
 \cite{Ranta2012}.
 
 \subsection{Regular Definitions}
-When defining a language it is useful to give the regular expressions names, 
+When defining a language it is useful to give the regular expressions names,
 so they can for example be used in other regular expressions. These names for
-the regular expressions are themselves symbols. If $\Sigma$ is an alphabet of 
+the regular expressions are themselves symbols. If $\Sigma$ is an alphabet of
 basic symbols, then a regular definition is a sequence of definitions of the
 form:
 \begin{center}
@@ -105,44 +105,44 @@ $d_n$ & $\to$ & $r_n$\\
 \end{center}
 where:
 \begin{enumerate}
-\item Each $d_i$ is a new symbol, not in $\Sigma$ and not the same as any other 
+\item Each $d_i$ is a new symbol, not in $\Sigma$ and not the same as any other
 of the $d$'s.
-\item Each $r_i$ is a regular expression over the alphabet $\Sigma  \cup \{d_1, 
+\item Each $r_i$ is a regular expression over the alphabet $\Sigma  \cup \{d_1,
 d_2 \dots d_{i-1}\}$
 \end{enumerate}
-By restricting $r_i$ to $\Sigma$ and previously defined $d$'s the regular 
+By restricting $r_i$ to $\Sigma$ and previously defined $d$'s the regular
 definitions avoid recursive definitions \cite{Aho2006}.
 
 \section{Tokens, Patterns and Lexemes}
 When rules have been defined for a language, the lexer needs structures to
-represent the rules and the result from lexing the text. 
+represent the rules and the result from lexing the text.
 This section describe the structures which the lexical analyzer use
-for representing the abstract data; what these structures are used for and what is 
-forwarded to the syntactical analyzer. 
+for representing the abstract data; what these structures are used for and what is
+forwarded to the syntactical analyzer.
 
-A lexical analyzer uses three different concepts. The concepts are described 
-below. 
+A lexical analyzer uses three different concepts. The concepts are described
+below.
 \begin{description}
   \item[Token]
-    is a pair consisting of a token name and an optional attribute value. The 
-token name is an abstract symbol corresponding to a lexical unit \cite{Aho2006}. 
+    is a pair consisting of a token name and an optional attribute value. The
+token name is an abstract symbol corresponding to a lexical unit \cite{Aho2006}.
 For example, a particular keyword, data-type or identifier.
   \item[Pattern]
-    is a description of what form a lexeme may take \cite{Aho2006}. 
-For example, a variable or identifier is formed by a sequence of characters, an
-integer is a sequence consisting of digits from 0 to 9. This can
-be described by a regular expression.
+    is a description of what form a lexeme may take \cite{Aho2006}.
+For example, a variable or identifier is commonly formed by a letter followed by
+a sequence of letters, digits and \_, an integer is a sequence consisting of
+digits from 0 to 9. This can be described by a regular expression.
   \item[Lexemes]
-    is a sequence of characters in the code being analyzed which 
-matches the pattern for a token and is identified by the lexical analyzer as an 
+    is a sequence of characters in the code being analyzed which
+matches the pattern for a token and is identified by the lexical analyzer as an
 instance of a token \cite{Aho2006}.
 \end{description}
-As mentioned before a token consists of a token name and an optional attribute value. 
+As mentioned before a token consists of a token name and an optional attribute value.
 This attribute is used when one pattern can match more then one lexeme.
-For example the pattern for a digit token matches both $0$ and $1$, 
-but it is important for the code generator to know which lexeme was found. 
-Therefore the lexer often returns not just the token but also an attribute value 
-that describes the lexeme found in the source program corresponding to this 
+For example the pattern for a digit token matches both $0$ and $1$,
+but it is important for the code generator to know which lexeme was found.
+Therefore the lexer often returns not just the token but also an attribute value
+that describes the lexeme found in the source program corresponding to this
 token \cite{Aho2006}.
 
 A lexer collects chars into logical groups and assigns 
@@ -281,7 +281,7 @@ each possible input string.
     \begin{description}
       \item [Non-deterministic Finite Automata (NFA)] which have no restriction 
 of the edges, several edges can be labeled by the same symbol out from the 
-same state. Further the empty string $\epsilon$ is a possible label. 
+same state. Further, the empty string $\epsilon$ is a possible label. 
       \item [Deterministic Finite Automata (DFA)] for each state and for each 
 symbol of its input alphabet exactly one edge with that symbol leaving that 
 state. The empty string $\epsilon$ is not a valid label.
@@ -312,7 +312,7 @@ per element. An example of this can be seen in \cref{regexp2td}.
 There are two different ways of representing an NFA which this report will
 describe. One is by transition diagrams, where the regular expression will be
 represented by a graph structure. Another is by transitions table, where the 
-regular expression will be converted in to a table of states and the 
+regular expression will be converted into a table of states and the 
 transitions for these states given the input. The following examples shows how 
 the transition diagram and transition table representation will look like for a 
 given regular expression.
@@ -380,8 +380,8 @@ DFA is a special case of an NFA where,
 \end{enumerate}
 A NFA is one abstract representation of an algorithm to recognize a string 
 in one language, the DFA is a simple concrete algorithm for recognizing strings. 
-Every regular expression can be converted in to a NFA. Also every NFA can be 
-converted in to a DFA and then converted back to a regular expression \cite{Aho2006}. 
+Every regular expression can be converted into a NFA. Also every NFA can be 
+converted into a DFA and then converted back to a regular expression \cite{Aho2006}. 
 It is the DFA that is implemented and used when building lexical analyzers.
 The formal definition of a deterministic finite automaton follows:
 \begin{definition}[Deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}

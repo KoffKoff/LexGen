@@ -300,7 +300,7 @@ This can be expressed by defining an non-regular or nested type, as shown in
 \end{figure}
 
 Operations on these types of trees usually takes logarithmic time in the size of
-the tree. However in a sequence representations, constant time complexity is
+the tree. However in a sequence representation, constant time complexity is
 preferable for adding or removing element from the start or end of the sequence.
 
 A finger is a structure which provides efficient access to nodes near the
@@ -495,13 +495,13 @@ and $nodes$ groups a list of elements into $Node$s as shown in
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/ReduceAppend.hs}
-\caption{Help function for transforming a list of element in to a list of Nodes \label{fig:reduceAppend}}
+\caption{Help function for transforming a list of element into a list of Nodes \label{fig:reduceAppend}}
 \end{figure}
 
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
-\caption{Help function for transforming a list of element in to a list of Nodes \label{fig:nodesHelp}}
+\caption{Help function for transforming a list of element into a list of Nodes \label{fig:nodesHelp}}
 \end{figure}
 
 The concatenation of the Fingertrees calls on $app3$ with an empty list
@@ -595,7 +595,7 @@ divide and conquer lexer.
 The incremental divide and conquer lexer should use a structure where the
 code-lexemes can be related to its tokens, current result can be saved and
 easily recalculated. A divide and conquer lexer should therefore use a tree
-structure to save the lexed result in. Since every problem can be divided in to
+structure to save the lexed result in. Since every problem can be divided into
 several subproblems, until the base case is reached. This is cleraly a tree
 structure of solutions, where a leaf is a token for a single character, and the
 root is a sequence of all tokens in the code.  
@@ -638,7 +638,7 @@ this section, they can not be discarded.
 %\cref{longmatch}
 
 \paragraph{Conquer Step}
-The conquer step of the algorithm is to combine two transition maps in to one
+The conquer step of the algorithm is to combine two transition maps into one
 transition map. This is done by, for every transition in the left transition map, combining
 the transition with the transition in the right transition map that has the same in state as the
 left transitions out state. This can be described by the following logical statement where $T_1$ and $T_2$ refers to the first and second transition map.
@@ -722,7 +722,7 @@ $\left[\begin{array}{ccc}
 \left[\begin{array}{ccc}
 0&['\textbackslash n']&Accepting 6\\
 1&['\textbackslash n']&1\\
-5&['\textbackslash n']&NoState\\
+5& &NoState\\
 \end{array}\right] =
 \left[\begin{array}{ccc}
 0&['//','\textbackslash n']&Accepting 6\\
@@ -735,17 +735,17 @@ first token in the second list will be viewed as the start of a token and the
 last token in the first list will be viewed as the end of a token.                                                                                               
 
 \subsection{Expected Time Complexity}
-Incremental computing stated that only content which depends on the new
+Incremental computing states that only content which depends on the new
 data will be recalculated. That is, follow the branch of the tree from the new
-leaf to the root and recalculated every node on this path. 
-As shown by \cref{fig:incUp}. Only one subproblem is updated in every level of
-the tree. Lets use the master method to put this in to numbers, $e = log_b a$
-where $a$ is number of recursive calls and $n/b$ is size of the subproblem where
-$n$ is the size of the original problem. As shown by the \cref{fig:incUp} number
-of needed update calls at every level of the tree is $1$, therefore $a = 1$.
-The constant $b$ is still $2$. This will give $e = log_2 1 = 0$. Thus the update
-function of the incremental algorithm will have a time complexity of
-$\Theta(n^0 \cdot log n) = \Theta(log n)$
+leaf to the root and recalculate every node on this path. As shown by
+\cref{fig:incUp}. Only one subproblem is updated in every level of the tree.
+Using the master method to calculate the expected time complexity gives:
+$e = log_b a$ where $a$ is number of recursive calls and $n/b$ is size of the
+subproblem where $n$ is the size of the original problem. As shown by the
+\cref{fig:incUp}, the number of needed update calls at every level of the tree
+is $1$, therefore $a = 1$. The constant $b$ is still $2$. This will give
+$e = log_2 1 = 0$. Thus the update function of the incremental algorithm will
+have an expected time complexity of $\Theta(n^0 \cdot log n) = \Theta(log n)$
 
 Since the fingertree is lazy, when an element is added to the root level of the
 tree, root elements might be pushed down in the tree. The measure of the
