@@ -67,9 +67,9 @@ the file since it may be combined with something else. To ensure that all
 possible outcomes will be handled the last token can be on one of three
 different forms. The part of the text lexed can end in:
 \begin{itemize}
-\item a legal state that is not accepting.
+\item a state that is not accepting.
 \item an accepting state.
-\item a legal state that is not accepting, but the text can also be a sequence
+\item a state that is not accepting, but the text can also be a sequence
   of multiple tokens.
 \end{itemize}
 To keep track of these cases a data structure that captures this was
@@ -92,7 +92,7 @@ makes assumptions that can not be made for the $Multi$ constructor.
 
 The $Multi$ constructor is used when at least one token have been found but the
 lexeme for the suffix does not match exactly one token. The entire suffix still
-need to have a legal out state. This type of suffix can typically be found when
+need to have an out state. This type of suffix can typically be found when
 the beginning of a comment are lexed. for example the text \emph{/*hello world}
 would be lexed to a sequence of complete tokens, ``/'', ``*'', ``hello'' and
 ``world'', but the lexer still needs to keep track of the fact that it may be in
