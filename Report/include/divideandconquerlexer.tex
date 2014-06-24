@@ -617,29 +617,34 @@ refer to this as a \emph{transition map}.
 \begin{lstlisting}[language=Haskell]
 type Transition_map = [Transition]
 \end{lstlisting}
-\paragraph{The Base Case}
+\subsubsection{The Base Case}
 When the lexer tries to lex one character it will create a transition
 map using the DFA for the language. It will for each state create a transition
 that has the state as in state, a list containing the character as the only
 token and by using the DFA, lookup what out state the transition should have.
-For the character '/' part of a transition map might look like the following.
+For the character '/' part of a transition map might look like \cref{fig:bascas}.
 
-In the
-examples below the first number refers to the in state, the middle part is the
-sequence of tokens and the second number is the out state, that can be accepting.
+In \cref{fig:bascas}, \cref{fig:conq} and \cref{fig:longconq} the first number
+refers to the in state, the middle part is the sequence of tokens and the second
+number is the out state, that can be accepting.
+
+\begin{figure}[!ht]
 \begin{center}
 $\left[\begin{array}{ccc}
-10&['/']&10\\
-11& &NoState\\
-12&['/']&10\\
+0&['o']&Accepting 5\\
+1&['o']&1\\
+10& &NoState\\
 \end{array}\right]$
+\caption{The Base Case for divide and conquer lexing \label{fig:bascas}}
 \end{center}
+\end{figure}
+
 $NoState$ transition is used to tell the lexer that using that particular 
 transition will result in a lexical error. For reasons being covered later in
 this section, they can not be discarded.
 %\cref{longmatch}
 
-\paragraph{Conquer Step}
+\subsubsection{Conquer Step}
 The conquer step of the algorithm is to combine two transition maps into one
 transition map. This is done by, for every transition in the left transition map, combining
 the transition with the transition in the right transition map that has the same in state as the
@@ -652,26 +657,26 @@ $\forall.t_1\in T_1\;\exists.t_2\in T_2\;o_1=i_2,o_1=outState(t_1),i_2=inState(t
 The most general case is a naive lexer that takes the first accepting state it
 can find. When two transitions are combined there are two different outcomes:
 \begin{description} 
-  \item[Concat:]If the out state of the first transition is accepting, the
+  \item[Append:]If the out state of the first transition is accepting, the
     sequence in the transition that starts in the starting state of the second
     transition map will be appended to the first.
 \begin{lstlisting}[language=Haskell, mathescape=true]
-concat :: Tokens -> Tokens -> Tokens 
-concat tokens1 tokens2 = tokens1 >< tokens2
+appendTokens :: Tokens -> Tokens -> Tokens 
+appendTokens tokens1 tokens2 = tokens1 >< tokens2
 \end{lstlisting}
 
 %create two tokens if the
 %    out state of the first list is accepting then the second list will be appended
 %    to the first list.
-  \item[Combine:]If the out state of the first transition is not accepting, the
+  \item[Merge:]If the out state of the first transition is not accepting, the
     transition in the second transition map with the same in state as the out
     state of the first transition will be used. The last token of the sequence
-    from the first transition will be combined with the first token in the second
+    from the first transition will be merged with the first token in the second
     transition into one token and put between the two sequences.\\
 
 \begin{lstlisting}[language=Haskell, mathescape=true]
-combine :: Tokens -> Tokens -> Tokens 
-combine tokens1 tokens2 = prefix1 |> newToken >< suffix2
+mergeTokens :: Tokens -> Tokens -> Tokens 
+mergeTokens tokens1 tokens2 = prefix1 |> newToken >< suffix2
   where prefix1 |> token1'  = tokens1
         tokens2' <| suffix2 = tokens2
         newToken            = token1' `combinedWith` tokens2'
@@ -682,59 +687,143 @@ combine tokens1 tokens2 = prefix1 |> newToken >< suffix2
 %    the second list that is the same as the out state of the first transition.
 \end{description}
 For both the cases the in state of the first transition will be the new in state
-and the out state of the second transition will be the new out state.
+and the out state of the second transition will be the new out state. An example
+of bothe cases is shown in \cref{fig:conq}.
+
+\begin{figure}[!ht]
 \begin{center}
 $\left[\begin{array}{ccc}
-0&['/']&1\\
-1&['/']&Accepting 5\\
+0&['o']&Accepting 5\\
+1&['o']&1\\
 \end{array}\right] `combineTokens`
 \left[\begin{array}{ccc}
-0&['/']&1\\
-1&['/']&Accepting 5\\
+0&['~~']&Accepting 2\\
+1&['~~']&1\\
 \end{array}\right] =
 \left[\begin{array}{ccc}
-0&['//']&Accepting 5\\
-1&['/','/']&Accepting 1\\
+0&['o','~~']&Accepting 2\\
+1&['o~~']&1\\
 \end{array}\right]$
+\caption{The Conquer step for Divide and Conquer lexing\label{fig:conq}}
 \end{center}
+\end{figure}
+
 This will not work as a lexer for most languages since the longest match rule is
 not implemented. For example, it will lex a variable to variables where the
 length is a single character, for example ``os'' will be lexed as two tokens,
 ``o'' and ``s''. To solve this some more work is needed.
 
-\paragraph{Longest Match}\label{longmatch}
-Instead of taking the naive approach, where a token is created if the lexer finds an
-accepting state. The rule for creating a new token will instead be when the
-combination of two transitions yields $NoState$ the lists will be appended. That
-is, when there is an out state from the first transition that corresponds to an
-in state of the second transition and the out state of the second transition
-is not $NoState$, the last token of the first transition and the first token of
-the second transition will become one token, otherwise append the second list to
-the first list.
-%When two list of tokens are combined there are two cases that can emerge. The
-%first being that a transition from the first list has an out state that
-%corresponds to an in state with a valid out state, i.e. not $NoState$, in the
-%second list of transitions. In this case the suffix of the first transition will
-%be paired with the prefix of the second and seen as a complete token.
+\subsubsection{Longest Match}\label{longmatch}
+To ensure that only the longest token is returned some stricter rules for
+combinations are needed. Firstly, if two transitions can be combined without
+having the outgoing state $NoState$ then merge those transition. When two
+transitions are merged the last token of the left transition is merged with
+the first token of the right transition into one token. Secondly, If the
+combination of two transtitions would yield $NoState$, the transitions are
+appended instead. When two transitions are appended the right transition
+starting from the starting state is appended to the left transition. As can be
+seen in \cref{fig:longconq} 
+
+\begin{figure}[!ht]
 \begin{center}
 $\left[\begin{array}{ccc}
-0&['//']& Accepting 5\\
-1&['/', '/'] &1\\
+0&['o','~~']& Accepting 2\\
+1&['o~~'] & 1\\
 \end{array}\right] `combineTokens` 
 \left[\begin{array}{ccc}
-0&['\textbackslash n']&Accepting 6\\
-1&['\textbackslash n']&1\\
-5& &NoState\\
+0&['/','*']&Accepting 4\\
+1&['*/']&Accepting 3\\
+2& &NoState\\
 \end{array}\right] =
 \left[\begin{array}{ccc}
-0&['//','\textbackslash n']&Accepting 6\\
-1&['/','/\textbackslash n']&1\\
+0&['o','~~','*','/']&Accepting 4\\
+1&['o~~*/']& Accepting 3\\
 \end{array}\right]$
+\caption{The Conquer step when the longest match rule is applied\label{fig:longconq}}
 \end{center}
-The second case is when the out state for the right token list is $NoState$.
-This means that the two lists of tokens can not be combined. In this case the
-first token in the second list will be viewed as the start of a token and the
-last token in the first list will be viewed as the end of a token.                                                                                               
+\end{figure}
+
+When two transitions are appened another rule needs to be accounted for. If the
+last token of the first transition does not end in an accepting state a lexical
+error is found. How lexical errors are handled and stored is explained in
+\cref{sec:lexerr}.
+
+\subsection{Lexical Errors}\label{sec:lexerr}
+Even though lexical errors can not halt the lexer it is still usefull to keep
+them since they tell the user what is wrong. In an incremental lexer there are
+different ways this can be achieved. The simplest way is to store the lexical
+error, instead of the tokens and outgoing state, when an error is encountered.
+To use this method the transition need to be modified to store the error, see
+\cref{fig:error1}. The advantage of this is that when a lexical error is
+encountered nothing more will be computed for that transition, however all other
+transitions in the transition map will be computed as normal. If this style is
+used in a text editor and a lexical error is encountered, the user will only get
+feedback from that error.
+
+\begin{figure}[!ht]
+\begin{lstlisting}[language=Haskell]
+type Transition = (State,Either ([Token],State) Error)
+\end{lstlisting}
+\caption{Transition that can either contain tokens or a lexical error\label{fig:error1}}
+\end{figure}
+
+Another way is to keep as much of the correct tokens as possible and only store
+errors for the lexeme that does not match anything else. With this approach the
+lexer would store all tokens up until a lexical error is encountered. When an
+error is encountered, the error is stored and the lexer tries to lex the rest of
+the text starting from the starting state. For this to work the sequence that
+stores the tokens needs to store the lexical errors aswell, see
+\cref{fig:error2}. With this approach the lexer will continue combining tokens
+after a lexical error is found, the drawback with this is that extra
+token computations needs to be made that may not be usefull in the final lexical
+analysis. If this approach is used in a text editor the user will see the minimal
+combination of characters that construct a lexical error. After that error,
+tokens that are lexed from the starting state is returned.
+
+\begin{figure}[!ht]
+  \begin{lstlisting}[language=Haskell]
+    type Transition = (State,[Either Token Error],State)
+  \end{lstlisting}
+  \caption{Transition contains a sequence of tokens and errors\label{fig:error2}}
+\end{figure}
+
+\begin{example}[A java lette light lexer \cref{reglang}]
+Lexical analysis is done on the string ``Hello /*World''. When global error
+handling, the transition contains one error or a sequence of tokens, is used the
+result of the lexical analysis will be as in \cref{fig:globerr}. When local
+error handling, the transition contains a sequence of tokens and errors, is used
+the result of the lexical analysis will be as in \cref{fig:locaerr}.
+
+\begin{figure}[!ht]
+  \centering
+  \subfigure[Global Error]{
+    \begin{tabular}{ll}
+      String & Type\\
+      '/' & $Error$\\
+    \end{tabular}
+    \label{fig:globerr}
+  }
+  \subfigure[local Error]{
+    \begin{tabular}{ll}
+      String & Type\\
+      'Hello' & $Ident$\\
+      ' ' & $Space$\\
+      '/' & $Error$\\
+      '*' & $Reserved$\\
+      'World' & $Ident$\\
+    \end{tabular}
+    \label{fig:locaerr}
+  }
+  \caption{Difference in error handling}
+\end{figure}
+
+If local error handling is used and the comment in the string would later on be
+closed, the tokens after '/' would be thrown away since another transition would
+be used which constructs a multi line comment.
+If global error handling is used the user will get little to no use of the
+lexical analysis until the lexical error is corrected, however run time is saved
+since nothing is computed after the lexical error is found for that transition.
+\end{example}
 
 \subsection{Expected Time Complexity}
 Incremental computing states that only content which depends on the new
@@ -754,38 +843,3 @@ tree, root elements might be pushed down in the tree. The measure of the
 lower levels does not need to be immediately recalculated. Instead they
 are recalculated when they are used. Paying for this expensive operation like
 described in the section about bankers method \cite{fingertree}.
-
-\section{Lexical Errors}
-Since the lexer has to be able to handle any kind of possible not "complete"
-tokens, error handling has to take this into account. for instance if an illegal
-character would be found somewhere in the code the lexer can not return a lexical
-error right away since said character could be part of a comment. One way to
-handle this is to tie the lexical errors to transitions. in doing so the
-transition map can have one transition that is valid and another that produces a
-lexical error. To include this the transition data type can be modified as
-follows:
-\begin{lstlisting}[language=Haskell]
-type Transition = (State,Maybe ([Token],State))
-\end{lstlisting}
-If the transition is $(State_i,Nothing)$ there is a lexical error for the string
-lexed if the incoming state is $State_i$.
-
-%can be done in different ways. One approach is to simply
-%return as many tokens as possible from the code and where there might be lexical
-%errors the lexer returns the error in as small parts as possible.
-
-\begin{example}[A lexer that only lexes letters]
-\#This needs to be rewritten!\\
- When the lexer encounters the
-string "what @ day" it would return:
-\begin{center}
-\begin{tabular}{ll}
-String & Type\\
-What & $Word$\\
-'\_' & $Space$\\
-'@' & $No\_Token$\\
-'\_' & $Space$\\
-day & $Word$\\
-\end{tabular}
-\end{center}
-\end{example}
