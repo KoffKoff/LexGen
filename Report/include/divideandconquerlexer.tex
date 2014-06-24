@@ -800,9 +800,12 @@ the result of the lexical analysis will be as in \cref{fig:locaerr}.
     \begin{tabular}{ll}
       String & Type\\
       '/' & $Error$\\
+      & \\
     \end{tabular}
+    \vspace{4ex}
     \label{fig:globerr}
   }
+  \hspace{2cm}
   \subfigure[local Error]{
     \begin{tabular}{ll}
       String & Type\\
@@ -811,7 +814,9 @@ the result of the lexical analysis will be as in \cref{fig:locaerr}.
       '/' & $Error$\\
       '*' & $Reserved$\\
       'World' & $Ident$\\
+       & \\
     \end{tabular}
+    \vspace{4ex}
     \label{fig:locaerr}
   }
   \caption{Difference in error handling}
