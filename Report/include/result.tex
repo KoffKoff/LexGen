@@ -23,6 +23,30 @@
 %190000 42410  513
 %\end{filecontents*}
 
+\begin{filecontents*}{spacef.csv}
+n                        fn
+1                        1
+10                       29
+100                      580
+1000                     8987
+10000                    123631
+100000                   1568946
+1000000                  18951445
+10000000                 223222809
+100000000                2565782300
+1000000000               28926258207
+10000000000              322820130851
+100000000000             3562561046566
+1000000000000            38900488372265
+10000000000000           422407813955629
+100000000000000          4559262511644720
+1000000000000000         48874100093157427
+10000000000000000        521985601490518071
+100000000000000000       5555884811924144186
+1000000000000000000      58847078495393153085
+10000000000000000000     621553255926290448449
+\end{filecontents*}
+
 \begin{filecontents*}{time.csv}
 %characters*1000, time in microsecs
 n       alex   upd  inc
@@ -276,4 +300,31 @@ of text being lexed, the results can be found in \cref{fig:IncSpace}.
 \end{tikzpicture}
 %\end{center}
 \caption{Space usage of the transition map using a DFA with 90 states\label{fig:IncSpace}}
+\end{figure}
+
+\begin{figure}[!h]
+%\begin{center}
+\begin{tikzpicture}
+    \begin{axis}[
+    width=0.7\textwidth,
+    height=0.4\textwidth,
+    ymajorgrids,
+    xmajorgrids,
+    title = {Space for transition map},
+    ymode = log,
+    xmode = log,
+%    scaled y ticks=real:1,
+%    scaled x ticks=real:1,
+    x tick label style={/pgf/number format/1000 sep=},
+%    ytick scale label code/.code={Bytes},
+%    xtick scale label code/.code={Characters},
+    ylabel={KB},
+    xlabel={Characters},
+    legend pos=outer north east
+    ]
+        \addplot table[x=n,y=fn] {spacef.csv};\addlegendentry{Incremental lexer}
+    \end{axis}
+\end{tikzpicture}
+%\end{center}
+\caption{$y=\sum\limits_{x=0}^{log(n-1)}n-\sum\limits_{y=0}^x2^y$\label{fig:SpaceFun}}
 \end{figure}
