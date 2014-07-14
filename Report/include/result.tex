@@ -260,20 +260,24 @@ updates for every character. The result can be found in \cref{fig:IncNewTime}.
          lexing an entire file\label{fig:IncNewTime}}
 \end{figure}
 
-Since the incremental lexer uses a tree structure there will be an increase in
-data-space used compared to a sequential lexer. Since the root of every partial
-tree stores the lexed tokens for that tree, every level of the tree will store
-approximately the size of the complete tokens for the entire text. A lexer that
-uses a DFA with $m$ states will produce token data structure that grows with
-$\Theta(mn)$ since each in state will have the tokens for that state. The depth
-of the tree is $\log(n)$, this suggest a space complexity of
-$\Theta(mn\log(n))$.
-
-To test the space complexity a DFA for an early Java version that has 90 states
-was used. To see how much the data structure grew the transition map was
+%Since the incremental lexer uses a tree structure there will be an increase in
+%data-space used compared to a sequential lexer. Since the root of every partial
+%tree stores the lexed tokens for that tree, every level of the tree will store
+%approximately the size of the complete tokens for the entire text. A lexer that
+%uses a DFA with $m$ states will produce token data structure that grows with
+%$\Theta(mn)$ since each in state will have the tokens for that state. The depth
+%of the tree is $\log(n)$, this suggest a space complexity of
+%$\Theta(mn\log(n))$.
+The space a fingertree takes is dependent on the size of the measurment of the
+tree. In the case of the incremental lexer the measurement of the tree is the
+transition map. To test how much space the transition map takes a DFA for an
+early Java version that has 90 states was used. The transition map was
 serialized and stored to the disc using the Haskell library $Data.Binary$. The
 test suggested that the size of the transition map grows linearly with the size
-of text being lexed, the results can be found in \cref{fig:IncSpace}.
+of text being lexed, the results can be found in \cref{fig:IncSpace}. Because of
+how the transition map is constructed it will also grow linearly with the number
+of states in the DFA. The test shows that the transition map has space
+complexity $\Theta(mn)$.
 
 \begin{figure}[!h]
 %\begin{center}
@@ -300,6 +304,21 @@ of text being lexed, the results can be found in \cref{fig:IncSpace}.
 \end{tikzpicture}
 %\end{center}
 \caption{Space usage of the transition map using a DFA with 90 states\label{fig:IncSpace}}
+\end{figure}
+
+
+
+\begin{figure}[!h]
+\begin{center}
+$\sum\limits_{x=0}^{\log (n-1)}(n-\sum\limits_{y=1}^x2^y) =
+n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} \sum\limits_{y=1}^{x} 2^y=
+n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} (2^{x+1} - 2) =
+n + n\log(n-1) + 2\log(n-1) + 2 - \sum\limits_{x=0}^{\log n} 2^{x+1} = 
+n + (n+2)\log(n-1) - 2^{\log(n-1)+2} +4 =
+n + (n+2)\log(n-1) - 4(n-1) + 4=
+(n+2)\log(n-1) - 3n + 8 \Rightarrow \Theta(n\log n)$
+\end{center}
+\caption{The number of characters being measured in a tree with n characters\label{fig:MeaChar}}
 \end{figure}
 
 \begin{figure}[!h]
