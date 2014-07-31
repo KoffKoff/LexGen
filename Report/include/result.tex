@@ -320,13 +320,14 @@ all the levels, the resulting aproximation can be seen in \cref{fig:MeaChar}.
 
 \begin{figure}[!h]
 \begin{center}
-$\sum\limits_{x=0}^{\log (n-1)}(n-\sum\limits_{y=1}^x2^y) =
-n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} \sum\limits_{y=1}^{x} 2^y=
-n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} (2^{x+1} - 2) =
-n + n\log(n-1) + 2\log(n-1) + 2 - \sum\limits_{x=0}^{\log n} 2^{x+1} = 
-n + (n+2)\log(n-1) - 2^{\log(n-1)+2} +4 =
-n + (n+2)\log(n-1) - 4(n-1) + 4=
-(n+2)\log(n-1) - 3n + 8 \Rightarrow \Theta(n\log n)$
+$\sum\limits_{x=0}^{\log (n-1)}(n- 2 \cdot \sum\limits_{y=1}^x2^y) =
+n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} 2 \cdot \sum\limits_{y=1}^{x} 2^y=
+n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} 2(2^{x+1} - 2) =
+n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} (2^{x+2} - 4) =
+n + n\log(n-1) + 4\log(n-1) + 4 - \sum\limits_{x=0}^{\log(n-1)} 2^{x+2} =
+n + (n+4)\log(n-1) - 2^{\log(n-1)+3} +8 =
+n + (n+4)\log(n-1) - 8(n-1) + 8=
+(n+4)\log(n-1) - 7n + 16 \Rightarrow \Theta(n\log n)$
 \end{center}
 \caption{The number of characters being measured in a tree with n characters\label{fig:MeaChar}}
 \end{figure}
