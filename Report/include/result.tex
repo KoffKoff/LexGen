@@ -306,7 +306,17 @@ complexity $\Theta(mn)$.
 \caption{Space usage of the transition map using a DFA with 90 states\label{fig:IncSpace}}
 \end{figure}
 
-
+To measure the space an entire tree takes each level must be regarded. As shown
+in \cref{fig:fingertree} the n:th level of a fingertree has 2 $2-3~trees$ of
+depth n with leaves in them. The root level will therefore have a measure for
+all leaves stored, that is if the measure takes $\Theta(f(n))$ space, the
+measure in the root will take that much space. For the second level 2
+$2-3~trees$ of depth 1 has been removed, so the measure will be $\Theta(f(n-2*2))$
+in the worst case. For the third level 2 more $2-3~trees$ have been removed and
+in general on the x:th level the measure will take
+$\Theta(f(n-2*\sum\limits_{y=1}^x2^y))$. Since the measure from all the levels in
+the tree are stored, the total amount of data the measures takes is a sum over
+all the levels, the resulting aproximation can be seen in \cref{fig:MeaChar}.
 
 \begin{figure}[!h]
 \begin{center}
@@ -321,29 +331,33 @@ n + (n+2)\log(n-1) - 4(n-1) + 4=
 \caption{The number of characters being measured in a tree with n characters\label{fig:MeaChar}}
 \end{figure}
 
-\begin{figure}[!h]
+Because of time limitations the size of the fingertrees were never tested. If
+the aproximation of the space needed for a fingertree is correct the space
+complexity for the trees genereted by this lexer will be $\Theta(mn\log n)$.
+
+%\begin{figure}[!h]
 %\begin{center}
-\begin{tikzpicture}
-    \begin{axis}[
-    width=0.7\textwidth,
-    height=0.4\textwidth,
-    ymajorgrids,
-    xmajorgrids,
-    title = {Space for transition map},
-    ymode = log,
-    xmode = log,
+%\begin{tikzpicture}
+%    \begin{axis}[
+%    width=0.7\textwidth,
+%    height=0.4\textwidth,
+%    ymajorgrids,
+%    xmajorgrids,
+%    title = {Space for transition map},
+%    ymode = log,
+%    xmode = log,
 %    scaled y ticks=real:1,
 %    scaled x ticks=real:1,
-    x tick label style={/pgf/number format/1000 sep=},
+%    x tick label style={/pgf/number format/1000 sep=},
 %    ytick scale label code/.code={Bytes},
 %    xtick scale label code/.code={Characters},
-    ylabel={KB},
-    xlabel={Characters},
-    legend pos=outer north east
-    ]
-        \addplot table[x=n,y=fn] {spacef.csv};\addlegendentry{Incremental lexer}
-    \end{axis}
-\end{tikzpicture}
+%    ylabel={KB},
+%    xlabel={Characters},
+%    legend pos=outer north east
+%    ]
+%        \addplot table[x=n,y=fn] {spacef.csv};\addlegendentry{Incremental lexer}
+%    \end{axis}
+%\end{tikzpicture}
 %\end{center}
-\caption{$y=\sum\limits_{x=0}^{log(n-1)}n-\sum\limits_{y=0}^x2^y$\label{fig:SpaceFun}}
-\end{figure}
+%\caption{$y=\sum\limits_{x=0}^{log(n-1)}n-\sum\limits_{y=0}^x2^y$\label{fig:SpaceFun}}
+%\end{figure}
