@@ -306,27 +306,23 @@ complexity $\Theta(mn)$.
 \caption{Space usage of the transition map using a DFA with 90 states\label{fig:IncSpace}}
 \end{figure}
 
-To measure the space an entire tree takes each level must be regarded. As shown
-in \cref{fig:fingertree} the n:th level of a fingertree has 2 $2-3~trees$ of
+To measure the space of an entire tree takes each level must be regarded. As shown
+in \cref{fig:fingertree} the n:th level of a fingertree has two $2-3~trees$ of
 depth n with leaves in them. The root level will therefore have a measure for
 all leaves stored, that is if the measure takes $\Theta(f(n))$ space, the
-measure in the root will take that much space. For the second level 2
+measure in the root will take that much space. For the second level two
 $2-3~trees$ of depth 1 has been removed, so the measure will be $\Theta(f(n-2*2))$
-in the worst case. For the third level 2 more $2-3~trees$ have been removed and
-in general on the x:th level the measure will take
-$\Theta(f(n-2*\sum\limits_{y=1}^x2^y))$. Since the measure from all the levels in
+in the worst case. For the third level two more $2-3~trees$ have been removed and
+in general on the x:th level the measure will take:
+\begin{center}$\Theta(f(n-2*\sum\limits_{y=1}^x2^y))$\end{center}
+Since the measure from all the levels in
 the tree are stored, the total amount of data the measures takes is a sum over
 all the levels, the resulting aproximation can be seen in \cref{fig:MeaChar}.
+For the entire equation see \cref{chap:spacecomp}.
 
 \begin{figure}[!h]
 \begin{center}
 $\sum\limits_{x=0}^{\log (n-1)}(n- 2 \cdot \sum\limits_{y=1}^x2^y) =
-n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} 2 \cdot \sum\limits_{y=1}^{x} 2^y=
-n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} 2(2^{x+1} - 2) =
-n + n \log(n-1) - \sum\limits_{x=0}^{\log (n-1)} (2^{x+2} - 4) =
-n + n\log(n-1) + 4\log(n-1) + 4 - \sum\limits_{x=0}^{\log(n-1)} 2^{x+2} =
-n + (n+4)\log(n-1) - 2^{\log(n-1)+3} +8 =
-n + (n+4)\log(n-1) - 8(n-1) + 8=
 (n+4)\log(n-1) - 7n + 16 \Rightarrow \Theta(n\log n)$
 \end{center}
 \caption{The number of characters being measured in a tree with n characters\label{fig:MeaChar}}
