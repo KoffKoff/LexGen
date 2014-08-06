@@ -1,4 +1,4 @@
-\chapter{Conclusion and Future Work}
+\chapter{Conclusion and Future Work \label{chap:concfuture}}
 As mentioned in the result chapter the incremental lexer was both robust and
 precise. This means that without considering the time and space efficiency an
 incremental lexer will produce the same result as a sequential lexer with the
@@ -36,8 +36,8 @@ To solve the problem with the space requirements for this implementation an
 implementation using sequence of characters could be used instead. That is,
 instead of using a character as the base case, a sequence of characters is used
 which is sequentially lexed, an example of a sequence is one line of code. This
-would shrink the tree from $\log(n)$ to $\log(n/x)$ where x is the mean length
-of a line. Since lines in the code is roughly of the same length there will be
+would shrink the tree from $\log(n)$ to $\log(n/x)$ where $x$ is the mean length
+of a line. Since lines in the code are roughly of the same length there will be
 no impact on the worst case scenario time, for instance lexing 10 characters
 always takes the same amount of time. Since the lines in general are short
 updating a line will not take long time.
@@ -52,4 +52,4 @@ implementation suggested by this report will store all such sequences
 separately. An improvement would be if somehow the sequences of tokens that are
 identical could be stored in a separate table and the in state in the transition
 map points to the corresponding sequence for that in state. This would not
-improve the space complexity, but he practical space needed would shrink.
+improve the space complexity, but the practical space needed would shrink.

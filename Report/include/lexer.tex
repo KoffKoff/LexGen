@@ -1,4 +1,4 @@
-\chapter{Lexer}
+\chapter{Lexer \label{chap:lexer}}
 A lexer, lexical analyzer, is a pattern matcher. Its job is to divide a text
 into a sequence of tokens (such as words, punctuation and symbols). A Lexer is
 often used as a front end to a syntax analyzer \cite{sebesta2012}. The syntax
@@ -27,7 +27,7 @@ Secondly, overall efficiency of the compiler can be improved. When separating th
 lexical analyzer it allows for use of specialized techniques that can be used 
 only in the lexical task.
 
-Thirdly and last, compiler portability can be enhanced. This means that
+Thirdly and last, compiler portability can be enhanced. That is,
 Input-device-specific peculiarities can be restricted to the lexical analysis
 \cite{Aho2006}. Therefore the lexer can detect syntactical errors in tokens,
 such as ill-formed floating-points literals, and report these errors to the user
@@ -116,27 +116,24 @@ definitions avoid recursive definitions \cite{Aho2006}.
 \section{Tokens, Patterns and Lexemes}
 When rules have been defined for a language, the lexer needs structures to
 represent the rules and the result from lexing the text.
-This section describe the structures which the lexical analyzer use
+This section describes the structures which the lexical analyzer uses
 for representing the abstract data; what these structures are used for and what is
 forwarded to the syntactical analyzer.
 
 A lexical analyzer uses three different concepts. The concepts are described
 below.
-\begin{description}
-  \item[Token]
-    is a pair consisting of a token name and an optional attribute value. The
+\begin{itemize}
+  \item A \textbf{token} is a pair consisting of a token name and an optional attribute value. The
 token name is an abstract symbol corresponding to a lexical unit \cite{Aho2006}.
-For example, a particular keyword, data-type or identifier.
-  \item[Pattern]
-    is a description of what form a lexeme may take \cite{Aho2006}.
+For example, a particuar keyword, data-type or identifier.
+  \item A \textbf{pattern} is a description of what form a lexeme may take \cite{Aho2006}.
 For example, a variable or identifier is commonly formed by a letter followed by
 a sequence of letters, digits and \_, an integer is a sequence consisting of
 digits from 0 to 9. This can be described by a regular expression.
-  \item[Lexemes]
-    is a sequence of characters in the code being analyzed which
+  \item A \textbf{lexeme} is a sequence of characters in the code being analyzed which
 matches the pattern for a token and is identified by the lexical analyzer as an
 instance of a token \cite{Aho2006}.
-\end{description}
+\end{itemize}
 As mentioned before a token consists of a token name and an optional attribute value.
 This attribute is used when one pattern can match more then one lexeme.
 For example the pattern for a digit token matches both $0$ and $1$,
@@ -180,8 +177,9 @@ language described in \cref{reglang}.
 \begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
 Consider the following text; to be lexed:
 \lstinputlisting[language=c]{examples/token.c}
-Given the regular language defined in \cref{reglang}, the lexical analyzer would use the rules defined in \cref{fig:grammar}
-In order to produce the resulting tokens shown in \cref{fig:codeToToken}.
+Given the regular language defined in \cref{reglang}, the lexical analyzer would
+use the rules defined in \cref{fig:grammar} and produce the resulting
+tokens shown in \cref{fig:codeToToken}.
 
 \begin{figure}[h!]
 \begin{center}
@@ -217,11 +215,11 @@ input characters that causes transitions among the states. An edge may also
 contain actions that the lexer must perform when the transition is a token
 \cite{sebesta2012}.
 
-There are different type of states in the the transition diagram where one state
-is said to be the initial state. The transition diagram always begins at this
-state, before any input symbols have been read. Some states are said to be
-accepting (final). They indicate that a lexeme has been found. If the found
-token is the longest match (see \cref{sub:longmatch}) then the token will be
+There are different types of states in the the transition diagram. One
+state is said to be the initial state. The transition diagram always begins at
+this state, before any input symbols have been read. Some states are said to be
+accepting (final). They indicate that a lexeme has been found. If the token
+found is the longest match (see \cref{sub:longmatch}) then the token will be
 returned with any additional optional values, mentioned in previous section, and
 the transition is reset to the initial state \cite{Aho2006}.
 
@@ -244,7 +242,8 @@ token, is then lexed from the initial state as part of a new token
 \begin{example}[Longest Match] \label{longestMatch}
 Consider the following text; to be lexed.
 \lstinputlisting[language=c]{examples/longesttoken.c}
-All though this text is not legal code, there is no lexical errors in it. Since
+Allthough this piece of C code is not syntactically correct, there are no
+lexical errors in it. Since
 the text starts with a multi line comment sign the lexer will try to lex it as
 a comment. When the lexer encounters the end of the text it will return the
 token corresponding to the last accepting state and begin lexing the rest from
@@ -283,7 +282,7 @@ differences:
 \begin{itemize}
   \item Finite automata are recognizers; they say "YES" or "NO" about 
 each possible input string.
-  \item Finite automata comes in two different forms:
+  \item Finite automata come in two different forms:
     \begin{description}
       \item [Non-deterministic Finite Automata (NFA)] which have no restriction 
 of the edges, several edges can be labeled by the same symbol out from the 
@@ -374,7 +373,7 @@ The transition diagram in \cref{fig:td} is representing this regular expression.
 It could also be converted into the transition table shown in \cref{fig:tt}
 \end{example}
 
-Transition tables have the advantage that they have an quick lookup time. But 
+Transition tables have the advantage that they have a quick lookup time. But 
 instead it will take a lot of data space, when the alphabet is large. Most 
 states do not have any move on most of the input symbols \cite{Aho2006}.
 \subsubsection{Deterministic Finite Automata}

@@ -25,14 +25,14 @@ generated that takes advantage of the fact that for most characters the same
 state will be used the majority of time. This saves a lot of elements that
 would otherwise be the same in the array.
 
-The trade of for using the Alex generated DFA is that some minor arithmetic
+The trade off for using the Alex generated DFA is that some minor arithmetic
 operations are used and some extra lookups are needed. These operations
 are far less time consuming then the rest of the lexical operations.
 
 \section{Token data structure}
 To keep all the information that might be needed when combining two texts, a data
 structure for the tokens was created. This data type contains more information
-about the last token then what a sequential lexer would save, exactly what is
+about the last token than what a sequential lexer would save, exactly what is
 explained in \cref{sub:suff}.
 
 %Rewrite this paragraph.
@@ -64,15 +64,15 @@ next.
 \subsection{Suffix}\label{sub:suff}
 When a text is lexed it is uncertain that the last token is the actual end of
 the file since it may be combined with something else. To ensure that all
-possible outcomes will be handled the last token can be on one of three
+possible outcomes will be handled the last token can take one of three
 different forms. The part of the text lexed can end in:
 \begin{itemize}
-\item a state that is not accepting.
-\item an accepting state.
+\item a state that is not accepting,
+\item an accepting state,
 \item a state that is not accepting, but the text can also be a sequence
   of multiple tokens.
 \end{itemize}
-To keep track of these cases a data structure that captures this was
+To keep track of these cases a data structure that captures them was
 implemented, see \cref{fig:suff}.
 
 \begin{figure}[h!]
@@ -84,15 +84,15 @@ The $Str$ constructor is used to keep track of partially complete tokens, an
 example of this is when a string is started but the end quotation character have
 not yet been found.
 
-The $One$ constructor is used one exactly one token have been found, it may or
+The $One$ constructor is used when exactly one token has been found, it may or
 may not be the token that is used in the final result of the lexing. Since this
 constructor is a special case of the $Multi$ constructor it can be omitted.
 However the $One$ constructor makes certain cases redundant since the lexer
 makes assumptions that can not be made for the $Multi$ constructor.
 
-The $Multi$ constructor is used when at least one token have been found but the
+The $Multi$ constructor is used when at least one token has been found but the
 lexeme for the suffix does not match exactly one token. The entire suffix still
-need to have an out state. This type of suffix can typically be found when
+needs to have an out state. This type of suffix can typically be found when
 the beginning of a comment are lexed. for example the text \emph{/*hello world}
 would be lexed to a sequence of complete tokens, ``/'', ``*'', ``hello'' and
 ``world'', but the lexer still needs to keep track of the fact that it may be in
@@ -116,7 +116,7 @@ implemented in two ways, a table format and a function composition format.
 
 The table format uses an array to store the currently lexed tokens where the
 index of the array represents the in state for that sequence of tokens. This is
-useful when the tokens needs to be stored since it ensures that the tokens are
+useful when the tokens need to be stored since it ensures that the tokens are
 computed.
 
 When combining lexed tokens it is useful to use functional composition since it
@@ -139,7 +139,7 @@ to be a monoid in order to be a legal measure of the fingertree.
   \caption{The data type for storing the tokens and text \label{fig:fingertreedt}}
 \end{figure}
 
-The monoid class in Haskell have two different functions, $mempty$ which is the
+The monoid class in Haskell has two different functions, $mempty$ which is the
 identity element and $mappend$ which is an associative operator that describes
 how two elements are combined. As can be seen in \cref{fig:tablemonoid},
 $mempty$ creates an array filled of empty $Tokens$. $mappend$ extracts the

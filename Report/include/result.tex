@@ -87,17 +87,17 @@ n       size
 1638400 154486
 \end{filecontents*}
 
-\chapter{Result}
+\chapter{Result \label{chap:result}}
 The incremental lexer has three requirements, it should be
 robust, efficient and precise. Robustness means that the lexer does not crash
-when it encounter an error in the syntax. That is, if a string would yield an
+when it encounters an error in the syntax. That is, if a string would yield an
 error when lexed from the starting state the lexer does not return that error but
 instead stores the error and lexes the rest of the possible input states since
 the current string might not be at the start of the text. The implementation
 this report propose is robust since it stores errors in the data structure
 rather then returning an error.
 
-For it to be efficient the feedback to the user must be instant, or more
+For it to be efficient the feedback to the user must be fast enough, or more
 formally the combination of two strings should be handled in $\Theta(log(n))$ time.
 
 Finally to be precise the lexer must give a correct result. This chapter is
@@ -112,9 +112,9 @@ lexical routines differs.
 \section{Preciseness}
 For an incremental lexer to work, the lexer must be able to do lexical analysis
 of any part of a text and be able to combine two partial texts. If the lexical
-analysis of one partial text does not result in any legal tokens it must be able
+analysis of one partial text does not result in any legal token it must be able
 to be combined with other partial texts that makes it legal tokens. The lexical
-analysis of a text might not always result in the same tokens that the
+analysis of a text might not always result in the same tokens than the
 combination of the text with another text would give.
 
 To test these cases a test was constructed which did a lexical analysis on two
@@ -228,8 +228,9 @@ performance benchmarks can be found in \cref{preformanceAppendix}.
 
 The running time when constructing the tree was not as fast as either the update
 or the sequential lexer. The tests for the running time, when constructing a new
-tree, sugged $\Theta n\log(n)$, this was expected since there are $\log(n)$
-updates for every character. The result can be found in \cref{fig:IncNewTime}.
+tree, sugged $\Theta (n\log(n))$, this was expected since there are
+$\Theta(\log(n))$ updates for every character. The result can be found in
+\cref{fig:IncNewTime}.
 
 \begin{figure}[!h]
 %\begin{center}
