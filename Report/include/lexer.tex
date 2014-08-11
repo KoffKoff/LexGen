@@ -48,7 +48,7 @@ tokens.
 
 \begin{definition}[Regular Expressions \cite{Aho1990}]\label{regexp} $ $\\
 \begin{enumerate}
-  \item The following characters are meta characters $meta = \{ '|', ~~ '(', ~~ ')', ~~ '*' \}$.
+  \item The following characters are meta characters: $meta = \{ '|', ~~ '(', ~~ ')', ~~ '*' \}$.
   \item A character $a \notin meta$ is a regular expression that matches the 
       string $a$.
   \item If $r_1$ and $r_2$ are regular expressions then $(r_1 | r_2)$ is a 
@@ -58,7 +58,7 @@ tokens.
       and $y$ matches $r_2$.
   \item If $r$ is a regular expression $r*$ is a regular expression that
       matches any string of the form $(x_1)(x_2) \dots  (x_n), n \geq 0$;
-      where $r$ matches $x_i$ for $1 \leq i \leq n$, in particular $(r)*$ 
+      where $X_i$ matches $r$ for $1 \leq i \leq n$, in particular $(r)*$ 
       matches the empty string, $\varepsilon$.
   \item If $r$ is a regular expression, then $(r)$ is a regular expression that
       matches the same string as $r$.
@@ -134,7 +134,7 @@ digits from 0 to 9. This can be described by a regular expression.
 matches the pattern for a token and is identified by the lexical analyzer as an
 instance of a token \cite{Aho2006}.
 \end{itemize}
-As mentioned before a token consists of a token name and an optional attribute value.
+As mentioned before, a token consists of a token name and an optional attribute value.
 This attribute is used when one pattern can match more then one lexeme.
 For example the pattern for a digit token matches both $0$ and $1$,
 but it is important for the code generator to know which lexeme was found.
@@ -375,7 +375,7 @@ It could also be converted into the transition table shown in \cref{fig:tt}
 
 Transition tables have the advantage that they have a quick lookup time. But 
 instead it will take a lot of data space, when the alphabet is large. Most 
-states do not have any move on most of the input symbols \cite{Aho2006}.
+states do not have any moves on most of the input symbols \cite{Aho2006}.
 \subsubsection{Deterministic Finite Automata}
 DFA is a special case of an NFA where,
 \begin{enumerate}
@@ -385,7 +385,7 @@ DFA is a special case of an NFA where,
 \end{enumerate}
 A NFA is one abstract representation of an algorithm to recognize a string 
 in one language, the DFA is a simple concrete algorithm for recognizing strings. 
-Every regular expression can be converted into a NFA. Also every NFA can be 
+Every regular expression can be converted into a NFA. Every NFA can be 
 converted into a DFA and then converted back to a regular expression \cite{Aho2006}. 
 It is the DFA that is implemented and used when building lexical analyzers.
 The formal definition of a deterministic finite automaton follows:
@@ -401,7 +401,7 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 \end{definition}
 
 \begin{example}[DFA representation of RegExp \cite{Aho2006}] \label{regexp2dfa}
-A DFA representation of same regular expression from \cref{regexp2td} is shown in \cref{fig:dfa}
+A DFA representation of the regular expression from \cref{regexp2td} is shown in \cref{fig:dfa}
 \end{example}
 \begin{figure}[!h]
   \centering
