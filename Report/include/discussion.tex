@@ -1,7 +1,7 @@
 \chapter{Discussion \label{chap:disc}}
 During the course of the project there were some setbacks. The first setback
-was that our initial solution had bad running time, hard to understand and did
-not handle longest matching correctly.
+was that our initial solution had bad running time, was hard to understand and
+did not handle longest matching correctly.
 
 After the first solution came a solution
 that was easier to understand but still had problem with the longest match. The
@@ -34,15 +34,15 @@ lexer generators in other languages, lex, Flex and Jlex, which can be used to
 create an efficient DFA. There have also been earlier articles that handle
 problems similar to this project written in Java \cite{JavaIncRegExp}.
 
-The advantage of using finger trees in an incremental lexer is that it is easy
+The advantage of using fingertrees in an incremental lexer is that it is easy
 to keep track of which tokens correspond to which part of the text, since the
-tokens are in the measure of the tree. Finger trees
+tokens are in the measure of the tree. Fingertrees
 also has the advantage of keeping track of earlier result. When a tree is split
 up the tokens that match the partial texts are already calculated. The time
 complexity for combining two trees is low, O(log n), where n is the size of the
 smallest tree. The lexical routines revolve around combining two lexical
-results. Because of this it is advantageous to use finger trees since combination
-of two finger trees are fast. The main reason to not use any other type of tree
+results. Because of this it is advantageous to use fingertrees since combination
+of two fingertrees are fast. The main reason to not use any other type of tree
 is that another tree would not keep track of measure for the partial trees. In
 the case of splitting a tree the tokens would have to be recalculated.
 
@@ -59,13 +59,13 @@ places and that no unnecessary information was stored. To solve this an overhaul
 of the projects data structure was made. The result is close to the structure
 used in the final result. This solution still had some problem with the running
 time. The main reason was that the lexical result was not explicitly stored in
-the finger trees. That is, the functional composition was stored in the finger
+the fingertrees. That is, the functional composition was stored in the finger
 trees and since Haskell is lazy in nature the result was not computed resulting
 in slow running time when combining trees.
 
 The final version of the project ensured that the lexer ran fast and made
 sure that fringe cases were computed correctly. The solution to this was to use
-arrays in the measure of the finger trees since arrays are always explicitly
+arrays in the measure of the fingertrees since arrays are always explicitly
 evaluated to normal form and that they have quick lookup time $O(1)$. Since the
 lexical routines can take advantage of the transitions in the form of functions
 that representation was used in the lexical routines and functions for

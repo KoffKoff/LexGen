@@ -131,8 +131,9 @@ token that they were the same kind of token and had the same lexeme.
 
 \cref{fig:CheckEquility} shows the test for equality:
 \begin{figure}[h!]
-  \centering
+  \begin{center}
   \lstinputlisting[language=c]{examples/CorrectEquility.hs}
+  \end{center}
   notEqual function is a function which pattern-match on the two different
   tokens and returns true if they are not of the same type.
   \caption{Code for testing tokens from IncLex is equal to tokens from Alex. 
@@ -165,7 +166,7 @@ To measure the performance of the incremental step two fingertrees were created,
 each representing one half of a text. By creating the two fingertrees the
 transition map for the code in those trees are created as well. The benchmarking
 was then done on the combination of the two trees. The results of the incremental
-lexer benchmarking sugged a running time of $\Theta(log(n))$. To get a reference
+lexer benchmarking suggested a running time of $\Theta(log(n))$. To get a reference
 point the same text was lexed using a sequential lexer. The benchmarks can be
 found in \cref{fig:IncSeqTime} and \cref{fig:IncTime}. More details on the
 performance benchmarks can be found in \cref{preformanceAppendix}.
@@ -261,14 +262,6 @@ $\Theta(\log(n))$ updates for every character. The result can be found in
          lexing an entire file\label{fig:IncNewTime}}
 \end{figure}
 
-%Since the incremental lexer uses a tree structure there will be an increase in
-%data-space used compared to a sequential lexer. Since the root of every partial
-%tree stores the lexed tokens for that tree, every level of the tree will store
-%approximately the size of the complete tokens for the entire text. A lexer that
-%uses a DFA with $m$ states will produce token data structure that grows with
-%$\Theta(mn)$ since each in state will have the tokens for that state. The depth
-%of the tree is $\log(n)$, this suggest a space complexity of
-%$\Theta(mn\log(n))$.
 The space a fingertree takes is dependent on the size of the measurement of the
 tree. In the case of the incremental lexer the measurement of the tree is the
 transition map. To test how much space the transition map takes a DFA for an
@@ -310,7 +303,8 @@ complexity $\Theta(mn)$.
 \emph{Our conclussions on the space complexity is based on the assumption that
 there is no data sharing for our measurement between levels in the fingertree}
 
-To measure the space of an entire tree takes each level must be regarded. As shown
+To measure the space of an entire fingertree each level of the tree must be
+regarded. As shown
 in \cref{fig:fingertree} the n:th level of a fingertree has two $2-3~trees$ of
 depth n with leaves in them. The root level will therefore have a measure for
 all leaves stored, that is if the measure takes $\Theta(f(n))$ space, the

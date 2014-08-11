@@ -293,7 +293,7 @@ Lets start by looking at an ordinary 2-3 tree representing the string "thisisnot
 \label{fig:2-3tree}}
 \end{figure}
 
-The tree shown in the \cref{fig:2-3tree} stores all it is data in the leaves.
+The tree shown in the \cref{fig:2-3tree} stores all its data in the leaves.
 This can be expressed by defining a non-regular or nested type, as shown in
 \cref{fig:2-3Fingertree}.
 
@@ -358,15 +358,14 @@ the top level there are two to three elements on each side, while the other
 levels have one or two subtrees, whose depth increases down the spine.
 Depending on if the root node had 2 or 3 branches in the original 2-3 tree, The
 bottom node will have either a single 2-3 tree or an empty tree. This structure
-can be described as shown in \cref{fig:DataTypeFingertree}.
+can be described as shown in \cref{fig:DataTypeFingertree}. Where Digit is a
+buffer of elements stored left to right, here represented as a list for
+simplicity.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
 \caption{Definition of the Fingertree data type \label{fig:DataTypeFingertree}}
 \end{figure}
-
-Where Digit is a buffer of elements stored left to right, here represented as a
-list for simplicity
 
 The non-regular definition of the $FingerTree$ type determines the unusual shape
 of these trees, which is the key to their performance. The top level of the tree
@@ -499,7 +498,7 @@ and $nodes$ groups a list of elements into $Node$s as shown in
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/ReduceAppend.hs}
-\caption{Help function for transforming a list of element into a list of Nodes \label{fig:reduceAppend}}
+\caption{Help function for inserting a list of element into a fingertree \label{fig:reduceAppend}}
 \end{figure}
 
 
@@ -624,7 +623,7 @@ When the lexer tries to lex one character it will create a transition
 map using the DFA for the language. It will for each state create a transition
 that has the state as in state, a list containing the character as the only
 token and by using the DFA, lookup what out state the transition should have.
-For the character '/' part of a transition map might look like \cref{fig:bascas}.
+For the character 'o' part of a transition map might look like \cref{fig:bascas}.
 
 In \cref{fig:bascas}, \cref{fig:conq} and \cref{fig:longconq} the first number
 refers to the in state, the middle part is the sequence of tokens and the second
@@ -648,13 +647,20 @@ this section, they can not be discarded.
 
 \subsubsection{Conquer Step}
 The conquer step of the algorithm is to combine two transition maps into one
-transition map. This is done by, for every transition in the left transition map, combining
-the transition with the transition in the right transition map that has the same in state as the
-left transitions out state. This can be described by the following logical statement where $T_1$ and $T_2$ refers to the first and second transition map.
+transition map. This is done by, for every transition in the left transition
+map, combining the transition with the transition in the right transition map
+that has the same in state as the left transitions out state. This can be
+described by the function in \cref{fig:mergetransmap} where $map1$ and $map2$
+refers to the first and second transition map.
+
+\begin{figure}
 \begin{lstlisting}
 merge :: Transition_map -> Transition_map -> Transition_map
-merge map1 map2 = [(i,t1++t2,o) | (i,t1,o1) <- map1, (i2,t2,o) <- map2, o1==i2]
+merge map1 map2 = [(i,t1><t2,o) | (i,t1,o1) <- map1, (i2,t2,o) <- map2, o1==i2]
 \end{lstlisting}
+\caption{Function for merging two transition maps into one transition map
+  \label{fig:mergetransmap}}
+\end{figure}
 
 The most general case is a naive lexer that takes the first accepting state it
 can find. When two transitions are combined there are two different outcomes:
@@ -679,9 +685,9 @@ appendTokens tokens1 tokens2 = tokens1 >< tokens2
 \begin{lstlisting}[language=Haskell, mathescape=true]
 mergeTokens :: Tokens -> Tokens -> Tokens 
 mergeTokens tokens1 tokens2 = prefix1 |> newToken >< suffix2
-  where prefix1 |> token1'  = tokens1
-        tokens2' <| suffix2 = tokens2
-        newToken            = token1' `combinedWith` tokens2'
+  where prefix1 |> token1 = tokens1
+        token2 <| suffix2 = tokens2
+        newToken          = token1 `combinedWith` token2
 \end{lstlisting}
 
 %The other case is when the first list of tokens does not end
@@ -690,7 +696,7 @@ mergeTokens tokens1 tokens2 = prefix1 |> newToken >< suffix2
 \end{description}
 For both the cases the in state of the first transition will be the new in state
 and the out state of the second transition will be the new out state. An example
-of bothe cases is shown in \cref{fig:conq}.
+of both cases is shown in \cref{fig:conq}.
 
 \begin{figure}[!ht]
 \begin{center}

@@ -93,7 +93,7 @@ makes assumptions that can not be made for the $Multi$ constructor.
 The $Multi$ constructor is used when at least one token has been found but the
 lexeme for the suffix does not match exactly one token. The entire suffix still
 needs to have an out state. This type of suffix can typically be found when
-the beginning of a comment are lexed. for example the text \emph{/*hello world}
+the beginning of a comment is lexed. for example the text \emph{/*hello world}
 would be lexed to a sequence of complete tokens, ``/'', ``*'', ``hello'' and
 ``world'', but the lexer still needs to keep track of the fact that it may be in
 the middle of a multi-line comment. Note that in this case the $Tokens$ data
@@ -153,7 +153,7 @@ a new table filled with the combination.
 
 There are two helper functions that convert between the table format that is
 stored as the measure and the function composition format that is used in the
-lexical routines.
+lexical routines. These can be seen in \cref{fig:tablemonoid}.
 
 \section{Lexical routines}
 %\subsection{combineTokens}
@@ -223,7 +223,7 @@ the first token of the second tokens, for the code see \cref{fig:mergetokens}.
 \item If there are more then one token in $toks2$, $suff1$ is combined into one
   token with the first token in $toks2$ and the rest of the tokens in $toks2$
   is appended and returned.
-\item If there is exactly one token in $toks2$, the suffix from $toks1$ is
+\item If there is exactly one token in $toks2$, the suffix from $toks2$ is
   combined with $suff1$. When two suffixes are combined some extra checks are
   needed. If $toks2$ has an accepting out state, the two suffixes
   can be combined into one token. If $toks2$ does not have an accepting out
