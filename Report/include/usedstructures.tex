@@ -25,6 +25,8 @@ generated that takes advantage of the fact that for most characters the same
 state will be used the majority of time. This saves a lot of elements that
 would otherwise be the same in the array.
 
+\newpage
+
 The trade off for using the Alex generated DFA is that some minor arithmetic
 operations are used and some extra lookups are needed. These operations
 are far less time consuming then the rest of the lexical operations.
@@ -122,12 +124,14 @@ computed.
 When combining lexed tokens it is useful to use functional composition since it
 ensures that no unnecessary states will be computed. The drawback is that it
 does not guarantee that the actual tokens are computed which may result in slow
-performance at a later stage in the lexing.
+performance at a later stage in the lexing. Since Haskell does not evaluate
+functional composition to $(f . g) x$ but rather $f (g~x)$ all incrementality
+will be lost with this data structure.
 
 Both these representations are used in the incremental divide and conquer lexer.
 The table format is used when storing the tokens in the fingertree to allow for
-fast access. The function composition is used when combining tokens to ensure
-that only needed data is computed.
+fast access and incrementality. The function composition is used when combining
+tokens to ensure that only needed data is computed.
 
 \section{Fingertree}
 The fingertree is constructed with the characters of a text being the leaves and
