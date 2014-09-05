@@ -1,0 +1,71 @@
+
+simplicity of design is the most important reason. When dividing the task
+into these two subtasks, it allows the programmer to simplify each of these
+subtasks. For example, a parser that has to deal with white-spaces and comments
+would be more complex than one that can assume these have already been removed
+by a lexer. When the two tasks have been separated into subtasks it can lead to 
+cleaner overall design when designing a new language. 
+
+
+Fingertrees uses Right and Left Reductions. This is a function which
+collapses a structure of $f$ $a$ into a single value of type $a$. The base case
+for when the tree is empty is replaced with a constant value, such as 
+$\emptyset$. Intermediate results are combined using a binary operation, like
+$\bullet$. Reduction with a monoid always returns the same value,
+independently of the argument nesting. For a reduction with an arbitrary
+constant and a binary operation there must be a specified nesting rule. If
+combining operations are only nested to the right, or to the left, the obtained
+result will be a skewed reductions, which can be singled out as a type class
+described in \cref{fig:Reduction} \cite{fingertree}.
+
+
+
+Since all leaves in the 2-3 tree are at the same level, the left and right
+spine has the same length. Therefore the left and right spines can be paired up
+to create a single central spine. Branching out from the spine are 2-3 trees. At
+the top level there are two to three elements on each side, while the other
+levels have one or two subtrees, whose depth increases down the spine.
+Depending on if the root node had 2 or 3 branches in the original 2-3 tree, The
+bottom node will have either a single 2-3 tree or an empty tree. This structure
+can be described as shown in \cref{fig:DataTypeFingertree}. Where Digit is a
+buffer of elements stored left to right, here represented as a list for
+simplicity.
+
+
+The non-regular definition of the $FingerTree$ type determines the unusual shape
+of these trees, which is the key to their performance. The top level of the tree
+contains elements of type $a$. Next level contains elements of type $Node$ $a$.
+At the $n$th level, elements are of type $Node^n$ $a$. which are 2-3 trees with
+a depth of $n$. This gives that a sequence of $n$ elements is represented by
+a $FingerTree$ of depth $\Theta(\log n)$. An element at position $d$ from
+the nearest end is stored at a depth of $\Theta(\log d)$ in the $FingerTree$
+
+
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeInfixr.hs}
+\caption{Adding an element to the beginning of the sequence \label{fig:AddFirst}}
+\end{figure}
+
+Adding to the end of the sequence is a mirror image of the code in
+\cref{fig:AddFirst} and is shown in \cref{fig:AddLast}.
+
+Adding an element to the beginning of the sequence is trivial, except
+when the initial buffer ($Digit$) already is full. In this case, push all but
+one of the elements in the buffer as a node, leaving behind two elements in the
+buffer, shown in \cref{fig:AddFirst}.
+
+
+ A double-ended queue operation can only propagate to the next level from a
+dangerous element. Doing so makes that dangerous element safe, which means
+that the next operation reaching that digit will not propagate. This will result
+in that at most $1/2$ of the operations descend one level, at most $1/4$ two
+levels, and so on. This will give that in a over time the average cost of
+operations is constant \cite{fingertree}.
+
+The same bounds holds in a persistent setting if subtrees are suspended using lazy
+evaluation. Laziness makes sure that changes deep in the spine do not take place
+until a subsequent operation need to go that far. From the above properties of
+safe and dangerous digits, by the time a change deep down in the tree is needed
+enough cheap shallow operations will have been performed to pay for the more
+expensive operation. This can be expressed more in detail by the bankers method

@@ -214,16 +214,11 @@ three properties:
     \bullet e = a$
 \end{description}
 
-Fingertrees uses Right and Left Reductions. This is a function which
-collapses a structure of $f$ $a$ into a single value of type $a$. The base case
-for when the tree is empty is replaced with a constant value, such as 
-$\emptyset$. Intermediate results are combined using a binary operation, like
-$\bullet$. Reduction with a monoid always returns the same value,
-independently of the argument nesting. For a reduction with an arbitrary
-constant and a binary operation there must be a specified nesting rule. If
-combining operations are only nested to the right, or to the left, the obtained
-result will be a skewed reductions, which can be singled out as a type class
-described in \cref{fig:Reduction} \cite{fingertree}.
+When combining one or more elements in the monoids set, using the monoids operator,
+the result will always be the same. Independent of the elements nesting. To support
+this fingertrees uses a method which pattern matches the different nesting cases
+and makes the right operation insertion. This methods are part of a class called
+Reduce, which can be seen in \cref{fig:Reduction} \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeReduceFun.hs}
@@ -353,29 +348,32 @@ nodes of and lifting them up together. The result should look like in
 \label{fig:fingertree}}
 \end{figure}
 
-Since all leaves in the 2-3 tree are at the same level, the left and right
-spine has the same length. Therefore the left and right spines can be paired up
-to create a single central spine. Branching out from the spine are 2-3 trees. At
-the top level there are two to three elements on each side, while the other
-levels have one or two subtrees, whose depth increases down the spine.
-Depending on if the root node had 2 or 3 branches in the original 2-3 tree, The
-bottom node will have either a single 2-3 tree or an empty tree. This structure
-can be described as shown in \cref{fig:DataTypeFingertree}. Where Digit is a
-buffer of elements stored left to right, here represented as a list for
-simplicity.
+The difference in structure between a fingertree and a normal 2-3 tree is that
+at the root there are direct access to the start and end of the sequence
+expressed by the leafs. For every step down in the tree, or spine, the depth
+of the data carrying structure increases by 1. So 3 steps down the spine the
+branching sub-trees has a depth of at most 4. At the bottom spine node of the
+fingertree there can either be a single 2-3 tree or an empty tree. This is
+depending on the structure of the original 2-3 tree. If the original tree had
+3 branches from the root node, the fingertree will have a single 2-3 tree
+branching out from the bottom spine node. If the original tree had 2 branches
+out from the root, the bottom spine node will have an empty tree \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
 \caption{Definition of the Fingertree data type \label{fig:DataTypeFingertree}}
 \end{figure}
 
-The non-regular definition of the $FingerTree$ type determines the unusual shape
-of these trees, which is the key to their performance. The top level of the tree
-contains elements of type $a$. Next level contains elements of type $Node$ $a$.
-At the $n$th level, elements are of type $Node^n$ $a$. which are 2-3 trees with
-a depth of $n$. This gives that a sequence of $n$ elements is represented by
-a $FingerTree$ of depth $\Theta(\log n)$. An element at position $d$ from
-the nearest end is stored at a depth of $\Theta(\log d)$ in the $FingerTree$
+The access time of an element in the fingertree can be argued in this way.
+Since for every level in the fingertrees spine which is traversed the depth
+of the branching tree increases by one. This means that at level $n$ in the
+tree the branching trees can hold $(2-3)^n$ elements. So therefore an element
+at place $d$ in the sequence represented by the fingertree is placed at a
+depth of $\log d$. This means that the nearer the ends of a sequence an
+element is, the closer to the root the element is stored. And there by the
+smaller access time that element has. In contrast to an ordinary tree, where
+all elements are at the same level, the access time is always the same for
+every element \cite{fingertree}. 
 
 In fingertrees and nodes the reduce function mentioned in fundamental concepts
 is genericly defined to the following types. 
@@ -400,18 +398,11 @@ on how fingertrees makes efficient Double-ended Queue, a queue which can be
 accessed from both ends, where both the operations having the time complexity
 $\Theta(1)$.
 
-Adding an element to the beginning of the sequence is trivial, except
-when the initial buffer ($Digit$) already is full. In this case, push all but
-one of the elements in the buffer as a node, leaving behind two elements in the
-buffer, shown in \cref{fig:AddFirst}.
-
-\begin{figure}[h!]
-\lstinputlisting[language=Haskell]{examples/FingerTreeInfixr.hs}
-\caption{Adding an element to the beginning of the sequence \label{fig:AddFirst}}
-\end{figure}
-
-Adding to the end of the sequence is a mirror image of the code in
-\cref{fig:AddFirst} and is shown in \cref{fig:AddLast}.
+When adding an element to the end of the sequence expressed by the fingertree,
+the structure adds it to the end. In the case that the top node is full, some
+of the elements already in the top node needs to be moved down in the tree.
+The elements which needs to be pushed down are done so in a recursively way on
+the central spine \cite{fingertree}. 
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixl.hs}
@@ -423,21 +414,24 @@ operation is done with a time complexity of $\Theta (\log n)$. The expected
 time complexity of a fingertree can be expressed in this way:
 Digits of two or three elements (which is being of similar structure to elements
 of type $Node$ $a$) are classified as safe since these can easily be mapped to a
-$Node$ and those of one or four elements are classified as dangerous. A
-double-ended queue operation can only propagate to the next level from a
-dangerous element. Doing so makes that dangerous element safe, which means
-that the next operation reaching that digit will not propagate. This will result
-in that at most $1/2$ of the operations descend one level, at most $1/4$ two
-levels, and so on. This will give that in a over time the average cost of
-operations is constant.
+$Node$ and those of one or four elements are classified as dangerous. When
+pushing down a dangerous element in the spine, that element will become safe
+in the lower level. And by the next time that element is called to store
+another element, there will be room for this element. This means that that
+operation does not need to go further down in the tree. This means that at
+most half of all operations needs to go down one level. A quarter needs to go
+down two levels. So only $1/n$ operations need to down to the $\log n$ level.
+This means that the cost of adding an element to the fingertree can be seen as
+constant \cite{fingertree}.  
 
-The same bounds holds in a persistent setting if subtrees are suspended using lazy
-evaluation. Laziness makes sure that changes deep in the spine do not take place
-until a subsequent operation need to go that far. From the above properties of
-safe and dangerous digits, by the time a change deep down in the tree is needed
-enough cheap shallow operations will have been performed to pay for the more
-expensive operation. This can be expressed more in detail by the bankers method
-\cite{fingertree}.
+Since the fingertrees structure supports lazy evaluation, that is changes down
+deep in the tree will not be calculated before they are actual needed. By the
+definition of safe and dangerous elements which state that the majority of
+operations will only need to access nodes in the top of the tree. When a
+element deep down in the tree is needed, enough cheep operations will have paid
+for the expensive one accessing elements deep down \cite{fingertree}. More of
+this is explained in the section about Bankers Method.
+
 
 \subsubsection{The Bankers Method}
 The bankers method is a technique used to calculate the practical time
