@@ -168,8 +168,8 @@ transition map for the code in those trees are created as well. The benchmarking
 was then done on the combination of the two trees. The results of the incremental
 lexer benchmarking suggested a running time of $\Theta(log(n))$. To get a reference
 point the same text was lexed using a sequential lexer. The benchmarks can be
-found in \cref{fig:IncSeqTime} and \cref{fig:IncTime}. More details on the
-performance benchmarks can be found in \cref{preformanceAppendix}.
+found in \cref{fig:IncSeqTime} and \cref{fig:IncTime}.% More details on the
+%performance benchmarks can be found in \cref{preformanceAppendix}.
 
 %Tester för nybyggning av träd?
 \begin{figure}[!h]
@@ -261,6 +261,8 @@ $\Theta(\log(n))$ updates for every character. The result can be found in
 \caption{Comparison between the sequential lexer and the incremental lexer when
          lexing an entire file\label{fig:IncNewTime}}
 \end{figure}
+
+\newpage
 
 The space a fingertree takes is dependent on the size of the measurement of the
 tree. In the case of the incremental lexer the measurement of the tree is the
