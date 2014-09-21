@@ -11,8 +11,8 @@ concepts of the lexer in detail.
 \section{Lexing vs Parsing}
 Lexers usually work as a pass before parser; giving their result to the syntax
 analyzer. Splitting up a parser into a number of different tasks have several
-benefits. Here follows some from breaking out the lexical analyzer from the
-syntactical analyzer.
+benefits. Here follows some benefits from breaking out the lexical analyzer from
+the syntactical analyzer.
 
 Firstly, a clean design. If striping the lexical analyse part out of a parser,
 the parsing step can be designed in a cleaner way. Also the lexical analyse can
@@ -77,11 +77,6 @@ operator with the lowest level is the \emph{or} operator $|$. The $*$ operator
 can not have a associativity since it only takes one argument. The other two
 \emph{binary} operators \emph{concat} and \emph{or} are left-associative
 \cite{Aho1990}.
-
-Many parentheses can be omitted by adopting the convention that the \emph{Kleene
-closure} operator $*$ has the highest precedence, the \emph{concat} operator
-$(r_1)(r_2)$ the second highest and last the \emph{or} operator $|$. The two
-binary operators, \emph{concat} and \emph{or} are left-associative \cite{Aho1990}.
 
 \begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
 Using regular expressions to express a set of valid C identifiers is easy.
