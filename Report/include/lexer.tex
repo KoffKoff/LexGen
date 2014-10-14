@@ -125,35 +125,34 @@ This section describes the structures which the lexical analyzer uses
 for representing the abstract data; what these structures are used for and what is
 forwarded to the syntactical analyzer.
 
-A lexical analyzer uses three different concepts. The concepts are described
+A lexical analyzer uses three different concepts. The concepts are listed
 below.
 \begin{itemize}
-  \item A \textbf{token} is a pair consisting of a token name and an optional attribute value. The
-token name is an abstract symbol corresponding to a lexical unit \cite{Aho2006}.
-For example, a particuar keyword, data-type or identifier.
-  \item A \textbf{pattern} is a description of what form a lexeme may take \cite{Aho2006}.
-For example, a variable or identifier is commonly formed by a letter followed by
-a sequence of letters, digits and \_, an integer is a sequence consisting of
-digits from 0 to 9. This can be described by a regular expression.
-  \item A \textbf{lexeme} is a sequence of characters in the code being analyzed which
-matches the pattern for a token and is identified by the lexical analyzer as an
-instance of a token \cite{Aho2006}.
+  \item A \textbf{token}, which is an abstract for representing an atomic code
+  segment. The token is represented by a name and an optional attribute for
+  holding the value of the token \cite{Aho2006}.
+  \item A \textbf{pattern}, which is the regular expression for describing the
+  text format on which a token can be represented \cite{Aho2006}. For example a
+  string in most languages is represented by first a \" character and zero or 
+  more characters and finally ends with a \" character.
+  \item A \textbf{lexeme}, which is the text fulfilling the pattern bound to 
+  the token. Therefore a lexeme can be viewed as an instance of an abstract 
+  token \cite{Aho2006}.
 \end{itemize}
-As mentioned before, a token consists of a token name and an optional attribute value.
-This attribute is used when one pattern can match more then one lexeme.
-For example the pattern for a digit token matches both $0$ and $1$,
-but it is important for the code generator to know which lexeme was found.
-Therefore the lexer often returns not just the token but also an attribute value
-that describes the lexeme found in the source program corresponding to this
-token \cite{Aho2006}.
+As mentioned before, a token ha an optional attribute. This is used when a 
+token can be represented by several different instances, lexemes. For example a 
+string token can be represented by the different strings "", "a", "b" and so 
+on. However the code generator needs to know the exact string token instance 
+which was found. Therefore the lexer need to pass the information further on \cite{Aho2006}.
 
-A lexer collects chars into logical groups and assigns 
-internal codes to these groups according to their structure, 
-where the groups of chars are lexemes and the internal codes are tokens \cite{sebesta2012}.
-In some cases it is not relevant to return a token for a pattern, in these
-cases the token and lexeme is discarded and the lexer continues,
-typical examples are whitespaces and comments which have no impact on
-the code \cite{Aho2006}.
+To summarize, a lexer collects characters from a code and finds the largest 
+continues sequences which builds up valid tokens \cite{sebesta2012}. As 
+mentioned before it is not always relevant to return a attribute to the token. 
+These cases can be when finding keywords of the language, like in a $if$, $for$
+, $while$, and so on. Sometimes it is not relevant to even return the token. 
+Example of such cases could be tokens for comments and white-spaces, which in 
+most languages has no relevance to the compiled code. In these cases the lexer 
+just drops the token and continues the lexical routine \cite{Aho2006}.
 
 \begin{figure}[h!]
 \begin{center}
