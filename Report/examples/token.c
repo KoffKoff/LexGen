@@ -1,1 +1,1 @@
-result = oldsum - value /100;
+fileName = filepath + ".png";

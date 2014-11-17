@@ -191,13 +191,11 @@ tokens shown in \cref{fig:codeToToken}.
 \begin{center}
 \begin{tabular}{l c}
 \underline{Token} & \underline{Lexeme}\\
-Identifier & result\\
+Identifier & fileName\\
 Reserved & $=$\\
-Identifier & oldsum\\
-Reserved & $-$\\
-Identifier & value\\
-Reserved & $/$\\
-Integer & 100\\
+Identifier & filepath\\
+Reserved & $+$\\
+String & ".png"\\
 Reserved & ;
 \end{tabular}
 \end{center}
@@ -206,28 +204,25 @@ Reserved & ;
 \end{example}
 
 \section{Recognition of Tokens}
-The topic in the previous section covers how to represent a pattern using
-regular expressions and how these expressions relate to tokens. A pattern is
-used to determine if a string matches a token. This section is highlighting how
-to transform a sequence of characters into a sequence of abstract tokens using
-patterns.
+Regular expressions have been shown in the previous section how they can be used
+to express patterns for tokens. In this section the different techniques on how
+to transform a sequence of characters into abstract tokens using these patterns
+is described.
 
 \subsection{Transition Diagrams}
-A transition diagram is a directed graph, where the
-nodes are labeled with state names. Each node represents a state which could
-occur during the process of scanning the input, looking for a lexeme that
-matches one of several patterns \cite{Aho2006}. The edges are labeled with the
-input characters that causes transitions among the states. An edge may also
-contain actions that the lexer must perform when the transition is a token
-\cite{sebesta2012}.
-
-There are different types of states in the the transition diagram. One
-state is said to be the initial state. The transition diagram always begins at
-this state, before any input symbols have been read. Some states are said to be
-accepting (final). They indicate that a lexeme has been found. If the token
-found is the longest match (see \cref{sub:longmatch}) then the token will be
-returned with any additional optional values, mentioned in previous section, and
-the transition is reset to the initial state \cite{Aho2006}.
+To recognise tokens from a pattern, one could use transitions diagrams which are
+directed graphs consisting of nodes and edges. The nodes correspond to the
+discrete states in the transformation process. In the transition diagram there
+are three kinds of states. The first is the the starting state, there can only
+be one starting state in the graph. It is from this state the process start when
+a new token should be found. There are at least one accepting state, these states
+correspond to that a valid token has been found. Then there can be zero or many
+none-accepting states. These do not correspond to any found token \cite{Aho2006}.
+The edges in the graph are represented by the input character which must be
+found to be able to traverse between the two states which the edge connects. If
+there is no valid edge out of an accepting state, the found token is said to be
+the longest match (see \cref{sub:longmatch}) then that token is returned and the
+lexer starts reading the next character from the starting state \cite{Aho2006}.
 
 \subsection{Longest Match}\label{sub:longmatch}
 If there are multiple feasible solutions when performing the lexical
@@ -264,13 +259,11 @@ The result can be found in \cref{fig:longestmatch}.
 \underline{Token} & \underline{Lexeme}\\
 Reserved & $/$\\
 Reserved & $*$\\
-Identifier & result\\
+Identifier &fileName\\
 Reserved & $=$\\
-Identifier & oldsum\\
-Reserved & $-$\\
-Identifier & value\\
-Reserved & $/$\\
-Integer & 100\\
+Identifier & filepath\\
+Reserved & $+$\\
+String & ".png"\\
 Reserved & ;
 \end{tabular}
 \end{center}
@@ -279,32 +272,29 @@ Reserved & ;
 
 
 \subsection{Finite Automata}
-Transition diagrams of the form used in lexers are representations of a class 
-of mathematical machines called finite automata. Finite automata can be 
-designed to recognize members of a class of languages called regular languages, 
-mentioned above \cite{sebesta2012}.
-A finite automaton is essentially a graph, like transitions diagrams, with some 
-differences:
-\begin{itemize}
-  \item Finite automata are recognizers; they say "YES" or "NO" about 
-each possible input string.
-  \item Finite automata come in two different forms:
-    \begin{description}
-      \item [Non-deterministic Finite Automata (NFA)] which have no restriction 
-of the edges, several edges can be labeled by the same symbol out from the 
-same state. Further, the empty string $\epsilon$ is a possible label. 
-      \item [Deterministic Finite Automata (DFA)] for each state and for each 
-symbol of its input alphabet exactly one edge with that symbol leaving that 
-state. The empty string $\epsilon$ is not a valid label.
-    \end{description}
-\end{itemize}
-Both these forms of finite automata are capable of recognizing the same 
-subset of languages, all regular languages \cite{Aho2006}.
+To recognize members of regular languages, which are languages that lexers can
+work on as mentioned in previous sections, a type of transition diagrams
+represented by a mathematical machine celled finite automata can be used
+\cite{sebesta2012}. Finite automata are purly recognizers, they only say if a
+input sequence is valid or not.
+
+There are two different forms of finite automata, which both are capable of
+working on regular languages \cite{Aho2006}:
+\begin{description}
+\item [Non-deterministic Finite Automata (NFA)] as the name suggest there are no
+requirements of a deterministic path for a input sequence in this type of
+automata. A state may have multiple edges for the same symbol. Also edges my
+take no symbol, the empty string $\epsilon$.
+\item [Deterministic Finite Automata (DFA)] in this form there can only be one
+path for an input. That is, a state must have exactly one edge per input symbol
+leaving the state and edges are not allowed to have the empty string $\epsilon$
+as symbol.
+\end{description}
 
 \subsubsection{Non-deterministic Finite Automata}
-An NFA accepts the input $x$ if and only if there is a path in the transition 
-diagram from the start state to one of the accepting states, such that the 
-symbols along the way spells out $x$ \cite{Aho2006}.
+For an NFA to accept an input as valid token there must be at least one path
+from the starting state to an accepting state and off-course the symbols along
+the path must spell out the input which was accepted \cite{Aho2006}.
 The formal definition of a non-deterministic finite automaton follows:
 \begin{definition}[Non-deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
 A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
@@ -316,9 +306,10 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
   \item $F \subseteq Q$ is the accepting states.
 \end{enumerate} 
 \end{definition}
-The transition function does not map to one particular state from a
-state and element tuple. This is because one state may have more than one edge
-per element. An example of this can be seen in \cref{regexp2td}.
+
+Since a state can have several edges with the same symbol the transition
+function does not map to a single state. An example of this can be seen in
+\cref{regexp2td}.
 
 There are two different ways of representing an NFA which this report will
 describe. One is by transition diagrams, where the regular expression will be
@@ -331,7 +322,7 @@ given regular expression.
 \begin{example}[RegExp to Transition Diagram \& Transition Table \cite{Aho2006}] \label{regexp2td}
 Given this regular expression:
 \begin{center}
-    $(a | b)* abb$ 
+    $a (a|b)* b$ 
 \end{center}
 
 \begin{figure}[h!]
@@ -344,16 +335,14 @@ Given this regular expression:
 
     \newState{0}{$0$}{initial}{}
     \newState{1}{$1$}{right of=0}{}
-    \newState{2}{$2$}{right of=1}{}
-    \newState{3}{$3$}{right of=2}{accepting} 
+    \newState{2}{$2$}{right of=1}{accepting}
 
-    \newTransition{0}{0}{a}{loop above}
-    \newTransition{0}{0}{b}{loop below}
     \newTransition{0}{1}{a}{}
+    \newTransition{1}{1}{b}{loop above}
+    \newTransition{1}{1}{a}{loop below}
     \newTransition{1}{2}{b}{}
-    \newTransition{2}{3}{b}{}
   \end{tikzpicture}
-  \caption{Transition Diagram, accepting the pattern $(a | b)* abb$
+  \caption{Transition Diagram, accepting the pattern $a (a|b)* b$
   \label{fig:td}}
 \end{figure}
 
@@ -366,13 +355,14 @@ The transition diagram in \cref{fig:td} is representing this regular expression.
     \hline
     State & a & b & $\epsilon$\\
     \hline
-    0 & $\{0, 1\}$ & $\{0\}$ & $\emptyset$ \\
+    0 & $\{1\}$ & $\emptyset$ & $\emptyset$ \\
     1 & $\emptyset$ & $\{2\}$ & $\emptyset$ \\
-    2 & $\emptyset$ & $\{3\}$ & $\emptyset$ \\
+    2 & $\{3\}$ & $\{2\}$ & $\emptyset$ \\
+    3 & $\{3\}$ & $\{3,4\}$ & $\emptyset$ \\
     3 & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
     \hline
   \end{tabular}
-  \caption{Transition Table, accepting the pattern $(a | b)* abb$
+  \caption{Transition Table, accepting the pattern $a (a|b)* b$
   \label{fig:tt}}
 \end{figure}
 
