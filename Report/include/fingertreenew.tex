@@ -1,0 +1,82 @@
+\section{Fingertree}
+\subsection{Structure of Fingertrees}
+A fingertree is a tree structure that is built to make access to the beginning
+and end of the tree easy. This is achieved by having the leaves for the 1-4
+first elements and 1-4 last elements in the root level of the tree, these are
+called fingers. The rest of
+the elements constitutes the spine which is another fingertree, with one
+difference, instead of having the first 1-4 elements the second level will
+instead have two 2-3 tree of depth 2 at the beginning and end of the tree. The
+third level will have 2-3 trees of depth 3 and for level $n$ the 2-3 trees in
+the beginning and end will have depth $n$.
+
+%Code for the basic finger tree?
+%illustration.
+
+As can be seen in figure \cref{KÅÅD} there are three constructors for a
+fingertree, there are the trivial cases for an empty tree and for a tree with
+one element. The last constructor calls itself with $Node~a$ instead of just $a$.
+This is what determines the depth of the 2-3 tree on each side of the spine. The
+reasons for the first level of the tree having fingers of size 1-4 is because of
+insertion and deletion which is covered in \cref{DEQUE BITCH}.
+
+Accessing an element at place $d$ in the tree will take $\log(min(d,n-d))$. This
+is because the closer to the end of the fingertree the element is the closer the
+surface it is. This in turn gives the time complexity of accessing an element,
+which in worst case is $O(\log n)$ and for the first and last element is $O(1)$
+
+\subsection{Insertion and Deletion}
+The fingers in a tree have two different states called dangerous and safe. The
+safe states is when there are 2 to 3 elements in the finger and when the finger
+is safe an insertion or deletion from the tree will not be anything more then an
+insertion or deletion in that finger.
+
+When a finger has 1 or 4 elements the finger is called dangerous. In this case
+there might be implications down the spine. The first case is when there is an
+insertion into a finger that has 4 elements, in this case there are 5 elements
+that is assigned to the same level. If the insertion was done to the end of the
+tree the last 2 elements will be the new finger which is then a safe finger. The
+first 3 elements are used to create a new $Node3$ which is passed down the spine
+as a single element to be inserted at the next level.
+
+The other dangerous operation is when a deletion from a finger of size 1 is
+done. In this case, if the deletion is made to the end of the tree, the last
+element of the end finger in the spine is deleted and used as the finger for the
+level where the the finger would have been empty. Since the element in the
+finger below will either be a $Node2$ or a $Node3$ the new finger will be safe.
+
+Since the dangerous states propagate actions down the spine insertion and
+deletion will not have $O(1)$ time at the beginning and end of the tree. Since
+each new level will take at most $O(1)$ time the insertion or deletion of an
+element will in the worst case take $O(\log n)$ time. However since 3 of 4
+operations are safe for insertion and deletion respectivly the expected time
+consumption for an insertion or deletion will be $O(1)$ if the time for finding
+the place for the insertion or deletion is disregarded.
+
+\subsection{Concatenation of Fingertrees}
+When 2 fingertrees are concatenated there are a number of different cases which
+can occur. To begin with, when a concatenation of two trees is done a function
+called $app3$ is called with the two trees and an empty list of ``between''
+elements. As can be seen in \cref{app3 ref} there are 4 trivial cases, the first
+two is when either tree is empty in which case the ``between'' elements is
+added to the nonempty tree. The other two are when there is exactly one element
+in one of the trees in which case that element is added to the other tree after
+the ``between'' elements.
+
+In the last case two trees of more then one elements
+are concateneted. In this case, a new tree is created which has the first
+finger set as the first finger from the first tree and the last finger set as
+the last finger from the second tree. The spine will be created by calling
+$app3$ recursivly with the spine from the first tree as the first tree, the last
+finger of the first tree plus ``between'' elements plus the first finger of the
+second tree as the new ``between'' elements and the spine from the second tree
+as the second tree.
+
+%Somthing about time complexity would be AWESOME!!
+
+\subsection{Measurements}
+%Caching Measurements
+\subsection{Sequences}
+\subsection{Double-ended Queue Operations}
+%Bankers
+%Bankers on fingertrees
