@@ -72,11 +72,31 @@ finger of the first tree plus ``between'' elements plus the first finger of the
 second tree as the new ``between'' elements and the spine from the second tree
 as the second tree.
 
-%Somthing about time complexity would be AWESOME!!
+The time complexity for concatenation can be reasoned as follows. As can be seen
+in \cref{app3 ref} the only operation that is run recursivly is $nodes$. $nodes$
+will run in $O(1)$ time since the most amount of arguments passed to it will be
+12 in which case 4 $node3$ elements will be returned. Since each recursive step
+takes at most $O(1)$ time and the function terminates when the bottom of the
+shallower tree has been reached the total time to concatenate two trees is
+$\theta(\log(min(n,m)))$ where $n$ and $m$ are the heights of the trees being
+concatenated.
 
 \subsection{Measurements}
-%Caching Measurements
-\subsection{Sequences}
-\subsection{Double-ended Queue Operations}
+To make fingertrees useful for a divide and conquer lexer measures of the tree
+needs to be added. A measure of a tree may for example be how many elements is
+in the tree or as will be shown below, the tokens of a lexed text. To implement
+measures time effiecently the data type that is choosen should be a monoid. A
+monoid is in abstract algebra a set $S$ and an operator $*$ which satisfies the
+rules in \cref{monoid stuff}.
+
+Since the measure is a monoid, when two trees are concatenated the measure of 
+the new tree is simply $measure1 * measure2$. Since the fingers of the tree
+grows with the depth a measure of the finger is also stored to make updates and
+concatenation more time efficient. With the measurement modifcation to the
+fingertree the datastructure is almost the same, with the addition of measures
+at certain places as can be seen in \cref{measuredfingertree}. Because of how
+fingertrees are implemented the type of the elements will change, in the
+begining it is $a$ at the second level it is $node ~ v ~ a$. However the measure
+will always be of type $v$
 %Bankers
 %Bankers on fingertrees
