@@ -322,7 +322,7 @@ given regular expression.
 \begin{example}[RegExp to Transition Diagram \& Transition Table \cite{Aho2006}] \label{regexp2td}
 Given this regular expression:
 \begin{center}
-    $a (a|b)* b$ 
+    $(a|b|c)(a|c)* c$ 
 \end{center}
 
 \begin{figure}[h!]
@@ -337,12 +337,14 @@ Given this regular expression:
     \newState{1}{$1$}{right of=0}{}
     \newState{2}{$2$}{right of=1}{accepting}
 
-    \newTransition{0}{1}{a}{}
-    \newTransition{1}{1}{b}{loop above}
-    \newTransition{1}{1}{a}{loop below}
-    \newTransition{1}{2}{b}{}
+    \newTransition{0}{1}{a}{bend left=45}
+    \newTransition{0}{1}{b}{}
+    \newTransition{0}{1}{c}{bend right=45}
+    \newTransition{1}{1}{a}{loop above}
+    \newTransition{1}{1}{c}{loop below}
+    \newTransition{1}{2}{c}{}
   \end{tikzpicture}
-  \caption{Transition Diagram, accepting the pattern $a (a|b)* b$
+  \caption{Transition Diagram, accepting the pattern $(a|b|c)(a|c)* c$
   \label{fig:td}}
 \end{figure}
 
@@ -350,19 +352,17 @@ The transition diagram in \cref{fig:td} is representing this regular expression.
 
 \begin{figure}[h!]
   \centering
-  \begin{tabular}{| c | c c c |}
+  \begin{tabular}{| c | c c c c |}
     \hline
     \hline
-    State & a & b & $\epsilon$\\
+    State & a & b & c & $\epsilon$\\
     \hline
-    0 & $\{1\}$ & $\emptyset$ & $\emptyset$ \\
-    1 & $\emptyset$ & $\{2\}$ & $\emptyset$ \\
-    2 & $\{3\}$ & $\{2\}$ & $\emptyset$ \\
-    3 & $\{3\}$ & $\{3,4\}$ & $\emptyset$ \\
-    3 & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
+    0 & $\{1\}$ & $\{1\}$ & $\{1\}$ & $\emptyset$ \\
+    1 & $\{1\}$ & $\emptyset$ & $\{1,2\}$ & $\emptyset$ \\
+    2 & $\emptyset$ & $\emptyset$ & $\emptyset$ & $\emptyset$ \\
     \hline
   \end{tabular}
-  \caption{Transition Table, accepting the pattern $a (a|b)* b$
+  \caption{Transition Table, accepting the pattern $(a|b|c)(a|c)* c$
   \label{fig:tt}}
 \end{figure}
 
@@ -373,17 +373,16 @@ Transition tables have the advantage that they have a quick lookup time. But
 instead it will take a lot of data space, when the alphabet is large. Most 
 states do not have any moves on most of the input symbols \cite{Aho2006}.
 \subsubsection{Deterministic Finite Automata}
-DFA is a special case of an NFA where,
-\begin{enumerate}
-  \item there are no moves on input $\epsilon$ and
-  \item for each state $s$ and input symbol $a$, there is exactly one edge out
-        of $s$ labeled with $a$.
-\end{enumerate}
-A NFA is one abstract representation of an algorithm to recognize a string 
-in one language, the DFA is a simple concrete algorithm for recognizing strings. 
-Every regular expression can be converted into a NFA. Every NFA can be 
-converted into a DFA and then converted back to a regular expression \cite{Aho2006}. 
-It is the DFA that is implemented and used when building lexical analyzers.
+DFA is a special case of an NFA where, edges can not be labeled with the empty input $\epsilon$ and there is exactly one edge for each symbol in the alphabete out of every state.
+
+If a NFA can be seen as the abstract form of a string-recognizer algorithm, a
+DFA could be seen as a concrete algorithm for finding a specific string. As
+mentioned Finite Automata can be generated from regular expressions. That is, a
+NFA can be generated from regular expressions and a DFA can be generated from a
+NFA. This goes the other way as well, and DFA can be converted into a regular
+expression \cite{Aho2006}. A lexer uses a DFA as the algorithm for pattern a
+lexeme to a specific token.
+
 The formal definition of a deterministic finite automaton follows:
 \begin{definition}[Deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
 A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
@@ -412,19 +411,17 @@ A DFA representation of the regular expression from \cref{regexp2td} is shown in
 
     \newState{0}{$0$}{initial}{}
     \newState{1}{$1$}{right of=0}{}
-    \newState{2}{$2$}{right of=1}{}
-    \newState{3}{$3$}{right of=2}{accepting} 
+    \newState{2}{$2$}{right of=1}{accepting} 
 
-    \newTransition{0}{0}{b}{loop above}
-    \newTransition{0}{1}{a}{}
-    \newTransition{1}{1}{a}{loop below}
-    \newTransition{1}{2}{b}{}
-    \newTransition{2}{3}{b}{}
+    \newTransition{0}{1}{a}{bend left=45}
+    \newTransition{0}{1}{b}{bend right=45}
+    \newTransition{0}{1}{c}{}
+    \newTransition{1}{1}{a}{loop above}
+    \newTransition{1}{2}{c}{}
     \newTransition{2}{1}{a}{bend left=45}
-    \newTransition{3}{1}{a}{bend left=60}
-    \newTransition{3}{0}{b}{bend right=45}
+    \newTransition{2}{2}{c}{loop above}
   \end{tikzpicture}
-  \caption{DFA, accepting the regular expression: $(a | b)* abb$
+  \caption{DFA, accepting the regular expression: $(a|b|c)(a|c)* c$
   \label{fig:dfa}}
 \end{figure}
 
