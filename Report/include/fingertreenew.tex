@@ -1,102 +1,392 @@
+
 \section{Fingertree}
-\subsection{Structure of Fingertrees}
-A fingertree is a tree structure that is built to make access to the beginning
-and end of the tree easy. This is achieved by having the leaves for the 1-4
-first elements and 1-4 last elements in the root level of the tree, these are
-called fingers. The rest of
-the elements constitutes the spine which is another fingertree, with one
-difference, instead of having the first 1-4 elements the second level will
-instead have two 2-3 tree of depth 2 at the beginning and end of the tree. The
-third level will have 2-3 trees of depth 3 and for level $n$ the 2-3 trees in
-the beginning and end will have depth $n$.
+Fingertree is a tree structure which is incremental in its nature and has good
+performance. To ensure that an incremental divide and conquer algorithm can
+access the intermediate states, a data structure like fingertrees can be used.
+Before describing how the fingertree is defined, an introduction to the
+fingertrees building blocks is given \cite{fingertree}.
 
-%Code for the basic finger tree?
-%illustration.
+\subsection{Fundamental Concepts}
 
-As can be seen in figure \cref{KÅÅD} there are three constructors for a
-fingertree, there are the trivial cases for an empty tree and for a tree with
-one element. The last constructor calls itself with $Node~a$ instead of just $a$.
-This is what determines the depth of the 2-3 tree on each side of the spine. The
-reasons for the first level of the tree having fingers of size 1-4 is because of
-insertion and deletion which is covered in \cref{DEQUE BITCH}.
+Fingertrees uses monoids which in abstract algebra is a set, $S$, and a binary
+operation $\bullet$ which fulfills the following
+three properties:
+\begin{description}
+\item[Closure] $\forall a,b \in S: a \bullet b \in S$
+\item[Associativity] $\forall a,b,c \in S: (a \bullet b) \bullet c = a \bullet
+    (b \bullet c)$ 
+\item[Identity element] $\exists e \in S: \forall a \in S: e \bullet a = a
+    \bullet e = a$
+\end{description}
 
-Accessing an element at place $d$ in the tree will take $\log(min(d,n-d))$. This
-is because the closer to the end of the fingertree the element is the closer the
-surface it is. This in turn gives the time complexity of accessing an element,
-which in worst case is $O(\log n)$ and for the first and last element is $O(1)$
+When combining one or more elements in the monoids set, using the monoids operator,
+the result will always be the same. Independent of the elements nesting. To support
+this fingertrees uses a method which pattern matches the different nesting cases
+and makes the right operation insertion. This methods are part of a class called
+Reduce, which can be seen in \cref{fig:Reduction} \cite{fingertree}.
 
-\subsection{Insertion and Deletion}
-The fingers in a tree have two different states called dangerous and safe. The
-safe states is when there are 2 to 3 elements in the finger and when the finger
-is safe an insertion or deletion from the tree will not be anything more then an
-insertion or deletion in that finger.
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeReduceFun.hs}
+\caption{Reduction function in Haskell \label{fig:Reduction}}
+\end{figure}
 
-When a finger has 1 or 4 elements the finger is called dangerous. In this case
-there might be implications down the spine. The first case is when there is an
-insertion into a finger that has 4 elements, in this case there are 5 elements
-that is assigned to the same level. If the insertion was done to the end of the
-tree the last 2 elements will be the new finger which is then a safe finger. The
-first 3 elements are used to create a new $Node3$ which is passed down the spine
-as a single element to be inserted at the next level.
+In the case for lists, left and right reductions are equivalent to foldl and foldr.
 
-The other dangerous operation is when a deletion from a finger of size 1 is
-done. In this case, if the deletion is made to the end of the tree, the last
-element of the end finger in the spine is deleted and used as the finger for the
-level where the the finger would have been empty. Since the element in the
-finger below will either be a $Node2$ or a $Node3$ the new finger will be safe.
+\subsection{Simple Sequence}
+The fingertrees can be described by comparing it to an already
+known data structure and how that data structure represent data. Lets take a look
+at the definition on a 2-3 fingertree and how they can implement a sequence.
+Lets start by looking at an ordinary 2-3 tree representing the string "thisisnotatree".
 
-Since the dangerous states propagate actions down the spine insertion and
-deletion will not have $O(1)$ time at the beginning and end of the tree. Since
-each new level will take at most $O(1)$ time the insertion or deletion of an
-element will in the worst case take $O(\log n)$ time. However since 3 of 4
-operations are safe for insertion and deletion respectivly the expected time
-consumption for an insertion or deletion will be $O(1)$ if the time for finding
-the place for the insertion or deletion is disregarded.
+\begin{figure}[!h]
+\centering
+\begin{tikzpicture}[auto, level 1/.style={sibling distance=7.5cm},
+  level 2/.style={sibling distance=2.5cm},
+  level 3/.style={sibling distance=1cm},
+  level distance = 0.5cm]
+    \node [branch] {}
+        child{ node [branch] {}
+            child{ node [branch] {}
+            	child{ node [leaf] {t}
+                }
+			    child{ node [leaf] {h}
+                }
+            }
+            child{ node [branch] {}
+            	child{ node [leaf] {i}
+                }
+			    child{ node [leaf] {s}
+                }
+            }
+            child{ node [branch] {}
+            	child{ node [leaf] {i}
+                }
+			    child{ node [leaf] {s}
+                }
+            }
+        }
+        child{ node [branch] {}
+            child{ node [branch] {}
+            	child{ node [leaf] {n}
+                }
+			    child{ node [leaf] {o}
+                }
+			    child{ node [leaf] {t}
+                }
+            }
+            child{ node [branch] {}
+            	child{ node [leaf] {a}
+                }
+			    child{ node [leaf] {t}
+                }
+            }
+            child{ node [branch] {}
+            	child{ node [leaf] {r}
+                }
+			    child{ node [leaf] {e}
+                }
+			    child{ node [leaf] {e}
+                }
+            }
+        }
+    ; 
+\end{tikzpicture}
+\caption{Ordinary 2-3 tree
+\label{fig:2-3tree}}
+\end{figure}
 
-\subsection{Concatenation of Fingertrees}
-When 2 fingertrees are concatenated there are a number of different cases which
-can occur. To begin with, when a concatenation of two trees is done a function
-called $app3$ is called with the two trees and an empty list of ``between''
-elements. As can be seen in \cref{app3 ref} there are 4 trivial cases, the first
-two is when either tree is empty in which case the ``between'' elements is
-added to the nonempty tree. The other two are when there is exactly one element
-in one of the trees in which case that element is added to the other tree after
-the ``between'' elements.
+The tree shown in the \cref{fig:2-3tree} stores all its data in the leaves.
+This can be expressed by defining a non-regular or nested type, as shown in
+\cref{fig:2-3Fingertree}.
 
-In the last case two trees of more then one elements
-are concateneted. In this case, a new tree is created which has the first
-finger set as the first finger from the first tree and the last finger set as
-the last finger from the second tree. The spine will be created by calling
-$app3$ recursivly with the spine from the first tree as the first tree, the last
-finger of the first tree plus ``between'' elements plus the first finger of the
-second tree as the new ``between'' elements and the spine from the second tree
-as the second tree.
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTree2-3Tree.hs}
+\caption{Definition of a 2-3 Fingertree \label{fig:2-3Fingertree}}
+\end{figure}
 
-The time complexity for concatenation can be reasoned as follows. As can be seen
-in \cref{app3 ref} the only operation that is run recursivly is $nodes$. $nodes$
-will run in $O(1)$ time since the most amount of arguments passed to it will be
-12 in which case 4 $node3$ elements will be returned. Since each recursive step
-takes at most $O(1)$ time and the function terminates when the bottom of the
-shallower tree has been reached the total time to concatenate two trees is
-$\theta(\log(min(n,m)))$ where $n$ and $m$ are the heights of the trees being
-concatenated.
+Operations on these types of trees usually take logarithmic time in the size of
+the tree. However in a sequence representation, constant time complexity is
+preferable for adding or removing an element from the start or end of the
+sequence.
+
+A finger is a structure which provides efficient access to nodes near the
+distinguished location. To obtain efficient access to the starting and ending
+elements of the sequence represented by the tree, there should be fingers placed
+at these positions of the tree. In the example tree, taking hold of the end and start
+nodes of and lifting them up together. The result should look like in
+\cref{fig:fingertree}
+
+\begin{figure}[!h]
+\centering
+\begin{tikzpicture}[level distance=2cm, sibling distance = 2cm]
+    \node[blackbranch] {}
+        child { node[leaf] {t} }
+        child { node[leaf] {h} }
+        child[level distance=2cm, sibling distance=2.5cm, grow=down]
+          { node[blackbranch] {}[level distance=2cm]
+            child { node[branch] {} [sibling distance=1cm]
+                child { node[leaf] {i} }
+                child { node[leaf] {s} }
+            }
+            child { node[branch] {} [sibling distance=1cm]
+                child { node[leaf] {i} }
+                child { node[leaf] {s} }
+            }
+            child[level distance=2cm, grow=down]
+              { node[blackbranch, fill=white] {}}
+            child { node[branch] {} [sibling distance=1cm]
+                child { node[leaf] {n} }
+                child { node[leaf] {o} }
+                child { node[leaf] {t} }
+            }
+            child { node[branch] {} [sibling distance=1cm]
+                child { node[leaf] {a} }
+                child { node[leaf] {t} }
+            }
+        }
+        child { node[leaf] {r} }
+        child { node[leaf] {e} }
+        child { node[leaf] {e} }
+    ;
+\end{tikzpicture} 
+\caption{2-3 Fingertree
+\label{fig:fingertree}}
+\end{figure}
+
+The difference in structure between a fingertree and a normal 2-3 tree is that
+at the root there are direct access to the start and end of the sequence
+expressed by the leafs. For every step down in the tree, or spine, the depth
+of the data carrying structure increases by 1. So 3 steps down the spine the
+branching sub-trees has a depth of at most 4. At the bottom spine node of the
+fingertree there can either be a single 2-3 tree or an empty tree. This is
+depending on the structure of the original 2-3 tree. If the original tree had
+3 branches from the root node, the fingertree will have a single 2-3 tree
+branching out from the bottom spine node. If the original tree had 2 branches
+out from the root, the bottom spine node will have an empty tree \cite{fingertree}.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
+\caption{Definition of the Fingertree data type \label{fig:DataTypeFingertree}}
+\end{figure}
+
+The access time of an element in the fingertree can be argued in this way.
+Since for every level in the fingertrees spine which is traversed the depth
+of the branching tree increases by one. This means that at level $n$ in the
+tree the branching trees can hold $(2-3)^n$ elements. So therefore an element
+at place $d$ in the sequence represented by the fingertree is placed at a
+depth of $\log d$. This means that the nearer the ends of a sequence an
+element is, the closer to the root the element is stored. And there by the
+smaller access time that element has. In contrast to an ordinary tree, where
+all elements are at the same level, the access time is always the same for
+every element \cite{fingertree}. 
+
+In fingertrees and nodes the reduce function mentioned in fundamental concepts
+is genericly defined to the following types. 
+Reduction for the node which is shown in \cref{fig:reductionNode}.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeReduceNode.hs}
+\caption{Reduction of a fingertrees node \label{fig:reductionNode}}
+\end{figure}
+
+For the fingertrees reduction instance both single and double lifting of the binary
+operation is used as shown in \cref{fig:reductionFingerTree} \cite{fingertree}.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeReduceFingerTree.hs}
+\caption{Reduction of a Fingertree \label{fig:reductionFingerTree}}
+\end{figure}
+
+\subsection{Double-ended Queue Operations}
+After showing how the Fingertrees basic structure is defined, lets take a look
+on how fingertrees makes efficient Double-ended Queue, a queue which can be
+accessed from both ends, where both the operations having the time complexity
+$\Theta(1)$.
+
+When adding an element to the end of the sequence expressed by the fingertree,
+the structure adds it to the end. In the case that the top node is full, some
+of the elements already in the top node needs to be moved down in the tree.
+The elements which needs to be pushed down are done so in a recursively way on
+the central spine \cite{fingertree}. 
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeInfixl.hs}
+\caption{Adding an element to the end of the sequence \label{fig:AddLast}}
+\end{figure}
+
+In the basic 2-3 tree, where the data is stored in the leaves, an insertion
+operation is done with a time complexity of $\Theta (\log n)$. The expected 
+time complexity of a fingertree can be expressed in this way:
+Digits of two or three elements (which is being of similar structure to elements
+of type $Node$ $a$) are classified as safe since these can easily be mapped to a
+$Node$ and those of one or four elements are classified as dangerous. When
+pushing down a dangerous element in the spine, that element will become safe
+in the lower level. And by the next time that element is called to store
+another element, there will be room for this element. This means that that
+operation does not need to go further down in the tree. This means that at
+most half of all operations needs to go down one level. A quarter needs to go
+down two levels. So only $1/n$ operations need to down to the $\log n$ level.
+This means that the cost of adding an element to the fingertree can be seen as
+constant \cite{fingertree}.  
+
+Since the fingertrees structure supports lazy evaluation, that is changes down
+deep in the tree will not be calculated before they are actual needed. By the
+definition of safe and dangerous elements which state that the majority of
+operations will only need to access nodes in the top of the tree. When a
+element deep down in the tree is needed, enough cheep operations will have paid
+for the expensive one accessing elements deep down \cite{fingertree}. More of
+this is explained in the section about Bankers Method.
+
+
+\subsubsection{The Bankers Method}
+The bankers method is a technique used to calculate the practical time
+assumption where it accounts for accumulated debt. A form of currency called
+debit is used. Where each debit correspond to an constant amount of suspended
+work. When a computation initially suspends, it create a number of debits
+proportional to it is shared cost and associate each debit with a location
+in the object. The selection of location for every debit depends on the type
+of the computation. If the computation is monolithic (i.e., once begun, it
+runs to completion), then all debits are usually assigned to the root of the
+result, which the fingertree is not. But if the computation is lazy, like for
+the fingertree, then the debits may be distributed among the roots of the partial
+results.
+
+The amortized cost of an operation is the unshared cost of the operation
+plus the number of debits discharged by the operation. Where an unshared cost
+for an operation does not include the number of debits created by an operation.
+The ordering of how debits should be discharged depends on the probable ordering
+of accesses to objects; debits on nodes with the highest likelihood to be accessed
+first should also be discharged first.
+
+Incremental functions play an important part in the bankers method since
+they allow debits to be dispersed to different locations in a data structure,
+each corresponding to a nested suspension. This means that each location can be
+accessed as soon as its debits are discharged, without waiting for other
+locations debits to be discharged. This results in that the initial partial
+results of an incremental computation can be paid for quickly, and that
+subsequent partial results may be paid for as they are needed \cite{Okasaki1999}.
+
+\subsubsection{Banker Method on the Fingertree}
+The amortized time can be argued for by using the Banker method.
+This is done by assigning the suspension of the middle tree in each Deep node
+as many debits as the node has safe digits. (0,1 or 2) A double-ended queue
+operation which descends $k$ levels turns $k$ dangerous digits into safe digits.
+By doing so creates $k$ debits to pay for the work done.
+Applying the bankers method of debit passing to any debits already attached to
+these $k$ nodes. It can be shown that each operation must discharge at most
+one debit. Therefore the double-ended queue operations run in $\Theta(1)$
+amortized time \cite{fingertree}.
+
+
+\subsection{Concatenation Operations}
+Concatenation is a simple operation for most cases, except for the case when two
+$Deep$ trees are being concatenated. Since $Empty$ is the identity element,
+concatenation with an $Empty$ yields the other tree. Concatenation with a
+$Single$ will reduce to $<|$ or $|>$. For the hard part when there are two
+$Deep$ trees, the prefix of the first tree will be the final prefix. Suffix of
+the second tree will be the suffix of the final tree. The recursive function
+$app3$ shown in \cref{fig:concatHelp} combines two trees and a list of $Nodes$
+(basically the old prefix and suffixes down the spines of the old trees).
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeApp3.hs}
+\caption{Help function for concatenating two fingertrees \label{fig:concatHelp}}
+\end{figure}
+
+Where $(<|')$ and $(|>')$ are the functions defined in \cref{fig:reduceAppend}
+and $nodes$ groups a list of elements into $Node$s as shown in
+\cref{fig:nodesHelp}. 
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/ReduceAppend.hs}
+\caption{Help function for inserting a list of element into a fingertree \label{fig:reduceAppend}}
+\end{figure}
+
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
+\caption{Help function for transforming a list of element into a list of Nodes \label{fig:nodesHelp}}
+\end{figure}
+
+The concatenation of the Fingertrees calls on $app3$ with an empty list
+between the two trees, as shown in \cref{fig:concat}.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/FingerTreeConcatFunc.hs}
+\caption{Concatenation function for Fingertree \label{fig:concat}}
+\end{figure}
+
+The time spent on concatenation can be reasoned in this way. The list passed to
+$app3$ will never have more then 4 elements since $nodes$ will never
+construct a longer list, that is, the longest list that will be passed
+to $nodes$ will be of length 12 and a list of length 12 will result in 4 $Node3$
+elements. That means that every call of $app3$ will take $\Theta(1)$. The
+recursion terminates when the bottom of the shallower tree has been reached. So
+the total time complexity is $\Theta(\log min\{n_1, n_2\})$ where $n_1$ and
+$n_2$ are the number of elements in the two trees \cite{fingertree}.
 
 \subsection{Measurements}
-To make fingertrees useful for a divide and conquer lexer measures of the tree
-needs to be added. A measure of a tree may for example be how many elements is
-in the tree or as will be shown below, the tokens of a lexed text. To implement
-measures time effiecently the data type that is choosen should be a monoid. A
-monoid is in abstract algebra a set $S$ and an operator $*$ which satisfies the
-rules in \cref{monoid stuff}.
+Fingertrees have been shown to work well as catenable double-ended queues. A 
+measurement is a property describing the state of the tree. This section present
+Paterson and Hinze modification of the fingertree, which provides positional and
+set-theoretic operations. For example taking or dropping the first $n$ elements.
+These operations involve searching for an element with a certain property.
+To implement additional operations with good performance there must be a way
+to steer this search. A way to measure the tree.
 
-Since the measure is a monoid, when two trees are concatenated the measure of 
-the new tree is simply $measure1 * measure2$. Since the fingers of the tree
-grows with the depth a measure of the finger is also stored to make updates and
-concatenation more time efficient. With the measurement modifcation to the
-fingertree the datastructure is almost the same, with the addition of measures
-at certain places as can be seen in \cref{measuredfingertree}. Because of how
-fingertrees are implemented the type of the elements will change, in the
-begining it is $a$ at the second level it is $node ~ v ~ a$. However the measure
-will always be of type $v$
-%Bankers
-%Bankers on fingertrees
+A measurement can be viewed as a cached reduction with some monoid. 
+Reductions, possibly cached, are captured by the class declaration in 
+\cref{fig:measure}. Where $a$ is the type of a tree and $v$ the type of an
+associated measurement. $v$ must be of a monoidal structure so measurements of
+subtrees easily can be combined independently of the nesting. Take the size of a
+tree as an example. Measure maps onto the monoid over the set of natural numbers
+and with the binary operator of addition \cite{fingertree}.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell, mathescape=true]{examples/ClassMeasure.hs}
+\caption{Definition of the Measure class \label{fig:measure}}
+\end{figure}
+
+\subsubsection{Caching measurements}
+It should be cheap to obtain a measurement. The fingertree should ensure that a
+measurement can be obtained with a bounded number of $\bullet$ operations.
+Therefore fingertrees cache the measurements in the 2-3 nodes. In
+\cref{fig:measureNode} the Measure of Node is shown.
+The constructors and the instance declaration are completely generic: they
+work for arbitrary annotations.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell, mathescape=true]{examples/Node2-3Measure.hs}
+\caption{Measure of the data type Node \label{fig:measureNode}}
+\end{figure}
+
+Digits are measured on the fly. As the length of the buffer Digit is bounded by
+a constant, the number of $\bullet$ operations is also bounded.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell, mathescape=true]{examples/DigitMeasure.hs}
+\caption{Measure of the data type Digit \label{fig:measureDigit}}
+\end{figure}
+
+Fingertrees are modified in a similar manner to 2-3 nodes.
+The top level of a measured fingertree contains elements of type $a$, the second
+level of type $Node$ $v$ $a$, the third of type $Node$ $v$ ($Node$ $v$ $a$), and
+so on. The Measure function is shown in \cref{fig:measureFingerTree}. The tree 
+type $a$ changes from level to level, whereas the measure type $v$ remains the 
+same. This means that Fingertree is nested in $a$, but regular in $v$ \cite{fingertree}.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell, mathescape=true]{examples/FingerTreeMeasure.hs}
+\caption{Fingertrees Measure function \label{fig:measureFingerTree}}
+\end{figure}
+
+
+\subsection{Sequences}
+A sequence in Haskell is a special case of the fingertree that has no measure.
+The performance is therefore superior to that of standard lists. Where a list in
+Haskell has $\Theta(n)$ for finding, inserting or deleting elements, that is in
+a list there is only known current element and the rest of the list. Results in 
+finding the last element of a list, the computer must look at every element
+until the empty list has been found as the rest of the list. Where in a sequence
+the last element can be obtained in $\Theta(1)$ time. Adding an element anywhere
+in the sequence can be done in worst case, $\Theta(\log n)$ \cite{fingertree}.

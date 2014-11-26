@@ -1,3 +1,6 @@
+instance (Measured a v) => Measured (Digit a) v where
+  measure xs = foldl (\v x -> v $\bullet$ x) mempty xs
+
 data Node v a = Node2 v a a | Node3 v a a a
 
 node2 :: (Measured a v) => a -> a -> Node v a
