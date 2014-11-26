@@ -133,8 +133,8 @@ below.
   holding the value of the token \cite{Aho2006}.
   \item A \textbf{pattern}, which is the regular expression for describing the
   text format on which a token can be represented \cite{Aho2006}. For example a
-  string in most languages is represented by first a \" character and zero or 
-  more characters and finally ends with a \" character.
+  string in most languages is represented by first a " character and zero or 
+  more characters and finally ends with a " character.
   \item A \textbf{lexeme}, which is the text fulfilling the pattern bound to 
   the token. Therefore a lexeme can be viewed as an instance of an abstract 
   token \cite{Aho2006}.
@@ -369,9 +369,8 @@ The transition diagram in \cref{fig:td} is representing this regular expression.
 It could also be converted into the transition table shown in \cref{fig:tt}
 \end{example}
 
-Transition tables have the advantage that they have a quick lookup time. But 
-instead it will take a lot of data space, when the alphabet is large. Most 
-states do not have any moves on most of the input symbols \cite{Aho2006}.
+Transition tables store all possible transitions which gives it a quick lookup time. However there are often a majority of states which does not have any transitions for some input symbols. And since the table stores all states it will need a lot of data space, especially for situations when the alphabet for the language is large \cite{Aho2006}.
+
 \subsubsection{Deterministic Finite Automata}
 DFA is a special case of an NFA where, edges can not be labeled with the empty input $\epsilon$ and there is exactly one edge for each symbol in the alphabete out of every state.
 
