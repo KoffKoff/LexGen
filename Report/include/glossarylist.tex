@@ -6,7 +6,7 @@
 \newglossaryentry{Alex}
 {
         name=Alex,
-        description={Is a tool for generating lexical analyzers in Haskell}
+        description={Is a lexical analyzer generating tool written in Haskell}
 }
 \newglossaryentry{Finger}
 {
@@ -17,26 +17,22 @@
 \newglossaryentry{FingerTree}
 {
         name=Fingertree,
-            description={Is a tree data structure for general
-            sequence representation with arbitrary annotations}
+            description={Is a tree data structure with fast access time to elements}
 }
 \newglossaryentry{Incremental}
 {
         name=Incremental (computation),
-            description={Is to save time by only recomputing those outputs which
-            directly depend on the changed data}
+            description={Save running time by only update directly depending data}
 }
 \newglossaryentry{Lazy Evaluation}
 {
         name=Lazy Evaluation,
-            description={Is an evaluation strategy where the evaluation of an
-            expression is delayed until its value is needed}
+            description={Evaluate an expression first when the value is needed}
 }
 \newglossaryentry{Lexer}
 {
         name=Lexer,
-            description={Is a program for converting a sequence of characters
-            into a sequence of tokens}
+            description={Given a string, find abstract tokens represented by the string}
 }
 \newglossaryentry{Lexeme}
 {
@@ -46,31 +42,28 @@
 \newglossaryentry{Monoid}
 {
         name=Monoid,
-            description={Is an algebraic structure with a single associative
-            binary operation and an identity element}
+            description={Is a mathematical structure for a binary operator and an identity element}
 }
 \newglossaryentry{Normal Form}
 {
         name=Normal Form,
-            description={An expression is evaluated to normal form when no further
-            computations can be made}
+            description={Is the form of an expression when no more computations can be made}
 }
 \newglossaryentry{Regular Expression}
 {
         name=Regular Expression,
-            description={Is a sequence of characters that forms a search
-            pattern}
+            description={Is a pattern for which a sequence of symbols can follow}
 }
 \newglossaryentry{Regular Language}
 {
         name=Regular Language,
-            description={Is a formal language that can be expressed using a
-            regular expression}
+            description={Is a formal language where all lexems in the language
+		can be expressed using regular expressions}
 }
 \newglossaryentry{Sequence}
 {
         name=Sequence,
-            description={Is an abstract data type that implements a finite
+            description={Is a data structure which represents a finite
             ordered collection of elements}
 }
 \newglossaryentry{Spine}
@@ -81,18 +74,17 @@
 \newglossaryentry{Token}
 {
         name=Token,
-            description={Is a string of one or more characters that is
-            significant as a group}
+            description={Is an abstract class for a lexeme matching a pattern}
 }
 \newglossaryentry{Transition}
 {
         name=Transition,
-            description={Is a path in a DFA from an in state to an out state
+            description={Is a path in a Finite Automata from an in-state to an out-state
             given a string}
 }
 \newglossaryentry{Transition Map}
 {
         name=Transition Map,
             description={Is a collection of all possible transitions for a
-            string}
+            string in each state}
 }

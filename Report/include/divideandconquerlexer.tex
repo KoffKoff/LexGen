@@ -21,7 +21,8 @@ and Conquer algorithm always consists of a pattern with these three steps
 \item[Divide:] If the input size is bigger than the base case then divide the
 input into subproblems. Otherwise solve the problem using a straightforward
 method.
-\item[Recur:] Recursively solve the subproblems associated with the subset.
+\item[Recur:] Solve the sub-problems by recursively call itself with each
+sub-problem as argument
 \item[Conquer:] Given the solutions to the subproblems, combine the results to
 solve the original problem.
 \end{description}
@@ -51,7 +52,9 @@ Otherwise the algorithm can give different results for the same data.
 To calculate the running time of any divide and conquer algorithm the master
 method can be applied \cite{Cormen}. This method is based on the following
 theorem.
-\begin{theorem}[Master Theorem \cite{Cormen} \label{MasterTheo}] $ $\\
+
+\begin{theorem}[Master Theorem \cite{Cormen}, \label{MasterTheo}
+ as described by \cite{bernardyefficient2013}] $ $ \\
 Assume a function $T_n$ constrained by the recurrence
 \begin{center}
 $T_n = {\alpha}T_{\frac{n}{\beta}}+ f(n)$
@@ -137,10 +140,10 @@ $T(n) = \Theta(n^{\log_2 2} \cdot \log n) = \Theta(n \cdot \log n)$
 \end{center}
 
 \subsection{Incremental Computing}
-To be incremental means that, whenever some part of the input data to the
-algorithm changes the algorithm tries to save time by only recomputing the parts
-that depend on this changed data
-\cite{incrementalDef}. This is illustrated in \cref{fig:incUp}.
+For an algorithm to be incremental means that when a point in the data source
+is updated, the algorithm tries to save time by only update the direct effected
+path in the data source \cite{incrementalDef}. The \cref{fig:incUp} illustrate
+the updated nodes in a tree structured data source.
 
 \begin{figure}[!htp]
 \centering
