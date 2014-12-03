@@ -199,7 +199,7 @@ $T(n) = \Theta(n^e \cdot \log n) = \Theta(\log n)$
 
 \section{Fingertree}
 A fingertree is a tree structure that is built to make access to the beginning
-and end of the collection easy. In the following section fingertrees are
+and end of a collection easy. In the following section fingertrees are
 explained. The code examples are simplified for demostrative purposes, for
 instance in real implementations lists are not used since they do not give good
 performance for what fingertrees are designed for.
@@ -213,7 +213,7 @@ difference, instead of having the first 1-4 elements the second level will
 instead have two 2-3 tree of depth 2 at the beginning and end of the tree. The
 third level will have 2-3 trees of depth 3 and for level $n$ the 2-3 trees in
 the beginning and end will have depth $n$. An illustration of how a fingertree
-can look can be seen in \cref{fig:fingertree}.
+can look can be seen in \cref{fig:fingertree} \cite{fingertree}.
 
 \begin{figure}[!h]
 \centering
@@ -253,7 +253,7 @@ can look can be seen in \cref{fig:fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
-\caption{Definition of the Fingertree data type \label{fig:DataTypeFingertree}}
+\caption{Definition of the Fingertree data type \label{fig:DataTypeFingertree}\cite{fingertree}}
 \end{figure}
 
 As can be seen in figure \cref{fig:DataTypeFingertree} there are three constructors
@@ -261,12 +261,13 @@ for a fingertree, there are the trivial cases for an empty tree and for a tree
 with one element. The last constructor calls itself with $Node~a$ instead of
 just $a$. This is what determines the depth of the 2-3 tree on each side of the
 spine. The reasons for the first level of the tree having fingers of size 1-4 is
-because of insertion and deletion which is covered in \cref{insertDelete}.
+because of insertion and deletion which is covered in \cref{insertDelete} \cite{fingertree}.
 
 Accessing an element at place $d$ in the tree will take $O(\log(min(d,n-d)))$. This
 is because the closer to the end of the fingertree the element is the closer the
 surface it is. This in turn gives the time complexity of accessing an element,
 which in worst case is $O(\log n)$ and for the first and last element is $O(1)$
+\cite{fingertree}.
 
 \subsection{Insertion and Deletion \label{insertDelete}}
 The fingertree described so far can only handle insertion and deletion to the
@@ -275,7 +276,7 @@ which is covered in \cref{sub:measurement}.
 The fingers in a tree have two different states called dangerous and safe. The
 safe states is when there are 2 to 3 elements in the finger and when the finger
 is safe an insertion or deletion from the tree will not be anything more then an
-insertion or deletion in that finger.
+insertion or deletion in that finger \cite{fingertree}.
 
 When a finger has 1 or 4 elements the finger is called dangerous. In this case
 there might be implications down the spine. The first case is when there is an
@@ -285,11 +286,11 @@ tree the last 2 elements will be the new finger which is then a safe finger. The
 first 3 elements are used to create a new $Node3$ which is passed down the spine
 as a single element to be inserted at the next level. Inserting an element to
 the end of a tree can be seen in \cref{fig:AddLast}, conversly adding an element
-to the begining of a tree is the mirror to this function.
+to the begining of a tree is the mirror to this function \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixl.hs}
-\caption{Adding an element to the end of the sequence \label{fig:AddLast}}
+\caption{Adding an element to the end of the sequence \label{fig:AddLast}\cite{fingertree}}
 \end{figure}
 
 The other dangerous operation is when a deletion from a finger of size 1 is
@@ -299,11 +300,11 @@ level where the the finger would have been empty. Since the element in the
 finger below will either be a $Node2$ or a $Node3$ the new finger will be safe.
 Deletion of an element at the end or begining of a tree is implemented
 similiarly to $head$ for lists, the functions $viewL$ which returns the first
-element and the rest of the tree can be seen in \cref{fig:Viewl}.
+element and the rest of the tree can be seen in \cref{fig:Viewl} \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeViewL.hs}
-\caption{Adding an element to the end of the sequence \label{fig:Viewl}}
+\caption{Adding an element to the end of the sequence \label{fig:Viewl} \cite{fingertree}}
 \end{figure}
 
 Since the dangerous states propagate actions down the spine insertion and
@@ -313,7 +314,7 @@ element will in the worst case take $O(\log n)$ time. However since 3 of 4
 operations are safe for insertion and deletion respectivly the expected time
 consumption for an insertion or deletion at the begining or end of the tree will
 be $O(1)$. This is because each operation on a dangerous finger will render it
-safe for the next time it's accessed.
+safe for the next time it is accessed \cite{fingertree}.
 
 \subsection{Concatenation of Fingertrees}
 When 2 fingertrees are concatenated there are a number of different cases which
@@ -323,21 +324,23 @@ elements. As can be seen in \cref{fig:concat} there are 4 trivial cases, the fir
 two is when either tree is empty in which case the ``between'' elements is
 added to the nonempty tree. The other two are when there is exactly one element
 in one of the trees in which case that element is added to the other tree after
-the ``between'' elements.
+the ``between'' elements \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeConcatFunc.hs}
-\caption{Concatenation function for Fingertree \label{fig:concat}}
+\caption{Concatenation function for Fingertree \label{fig:concat}\cite{fingertree}}
 \end{figure}
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeAppend.hs}
-\caption{Help function for inserting a list of element into a fingertree \label{fig:reduceAppend}}
+\caption{Help function for inserting a list of element into a fingertree
+  \label{fig:reduceAppend}\cite{fingertree}}
 \end{figure}
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
-\caption{Help function for transforming a list of element into a list of Nodes \label{fig:nodesHelp}}
+\caption{Help function for transforming a list of element into a list of Nodes
+  \label{fig:nodesHelp}\cite{fingertree}}
 \end{figure}
 
 In the last case two trees of more then one elements
@@ -347,7 +350,7 @@ the last finger from the second tree. The spine will be created by calling
 $app3$ recursivly with the spine from the first tree as the first tree, the last
 finger of the first tree plus ``between'' elements plus the first finger of the
 second tree as the new ``between'' elements and the spine from the second tree
-as the second tree.
+as the second tree \cite{fingertree}.
 
 The time complexity for concatenation can be reasoned as follows. As can be seen
 in \cref{app3 ref} the only operation that is run recursivly is $nodes$. $nodes$
@@ -356,42 +359,43 @@ will run in $O(1)$ time since the most amount of arguments passed to it will be
 takes at most $O(1)$ time and the function terminates when the bottom of the
 shallower tree has been reached the total time to concatenate two trees is
 $\theta(\log(min(n,m)))$ where $n$ and $m$ is the size of the trees being
-concatenated.
+concatenated \cite{fingertree}.
 
 \subsection{Measurements \label{sub:measurement}}
 To make fingertrees useful for a divide and conquer lexer measures of the tree
 needs to be added. A measure of a tree may for example be how many elements is
-in the tree or as will be shown below, the tokens of a lexed text. To implement
-measures time effiecently the data type that is choosen should be a monoid. A
-monoid is in abstract algebra a set $S$ and an operator $\bullet$ which
-satisfies the following rules:
+in the tree or as will be shown later in the report, the lexed tokens of the
+text in a tree. To implement measures time effiecently the data type that is
+choosen should be a monoid. A monoid is in abstract algebra a set $S$ and an
+operator $(<>)$ which satisfies the following rules \cite{fingertree}:
 
 \begin{description}
-\item[Closure] $\forall a,b \in S: a \bullet b \in S$
-\item[Associativity] $\forall a,b,c \in S: (a \bullet b) \bullet c = a \bullet
-    (b \bullet c)$ 
-\item[Identity element] $\exists e \in S: \forall a \in S: e \bullet a = a
-    \bullet e = a$
+\item[Closure] $\forall a,b \in S: a <> b \in S$
+\item[Associativity] $\forall a,b,c \in S: (a <> b) <> c = a <> (b <> c)$
+\item[Identity element] $\exists e \in S: \forall a \in S: e <> a = a <> e = a$
 \end{description}
 
-Using the class system in Haskell measures are defined as in \cref{fig:measure},
-with some syntactical differences:
+An example of a monoid is the natural numbers which under addition form a monoid
+where the identity element is $0$.
+Using the class system in Haskell measures are defined as in \cref{fig:measure}.
+$mempty$ will henceforth be used as the identity element in examples and
+defenitions.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell, mathescape=true]{examples/ClassMeasure.hs}
-\caption{Definition of the Measure class \label{fig:measure}}
+\caption{Definition of the Measure class \label{fig:measure} \cite{fingertree}}
 \end{figure}
 
 Since the measure is a monoid, when two trees are concatenated the measure of 
-the new tree is simply $\parallel tr1 \parallel \bullet \parallel tr2 \parallel$.
+the new tree is simply $measure ~ tr1 <> measure ~ tr2$.
 The $Digit$ data type in the trees are always of constant size, however the
 elements in $Digit$ are of type $Node$ $a$ which grows with the depth of the tree.
 Because of this the $Node$ $a$ data type is also measured as can be seen in
-\cref{fig:measureNode}.
+\cref{fig:measureNode} \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell, mathescape=true]{examples/Node2-3Measure.hs}
-\caption{Measure of the data type Node \label{fig:measureNode}, mempty is the identy element}
+\caption{Measure of the data type Node \label{fig:measureNode} \cite{fingertree}}
 \end{figure}
 
 With the measurement modifcation to the fingertree the datastructure is almost
@@ -399,12 +403,17 @@ the same, with the addition of measures at certain places as can be seen in
 \cref{fig:measuredFingerTree} where $deep$ is used as the new constructor.
 Because of how fingertrees are implemented the type of the elements will change,
 in the begining it is $a$ at the second level it is $node$ $v$ $a$. However the
-measure will always be of type $v$.
+measure will always be of type $v$ \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell, mathescape=true]{examples/FingerTreeMeasure.hs}
-\caption{Fingertrees Measure function \label{fig:measureFingerTree}}
+\caption{Fingertrees Measure function \label{fig:measureFingerTree} \cite{fingertree}}
 \end{figure}
+
+Fingertrees offers a data structure where the time complexity for operations on
+the tree scales logarithmically with the size of the tree. Because of this and
+the fact that operations on the measure in the fingertree has constant time it
+makes the data structure suitable for a divide and conquer lexer.
 
 \section{Divide and Conquer Lexing in General}
 In \cref{sec:divconq} the general divide and conquer algorithm was covered. This
