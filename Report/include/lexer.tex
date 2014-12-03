@@ -9,8 +9,10 @@ formal language theory \cite{Aho1990}. The rest of this chapter describes the
 concepts of the lexer in detail.
 
 \section{Lexing vs Parsing}
-Lexers usually work as a pass before parser; giving their result to the syntax
-analyzer. Splitting up a parser into a number of different tasks have several
+It is common that a parser has a pre-step where the plain text is transformed
+in to some more computer readable form. This step is called a lexical analyzer.
+The computer friendly output is then then given to the syntactical analyzer of
+the parser. Splitting up a parser into a number of different tasks have several
 benefits. Here follows some benefits from breaking out the lexical analyzer from
 the syntactical analyzer.
 
@@ -18,31 +20,31 @@ Firstly, a clean design. If striping the lexical analyse part out of a parser,
 the parsing step can be designed in a cleaner way. Also the lexical analyse can
 be designed in a cleaner and smarter way. A Lexer can ignore to pass along
 unneeded (for the parser) data, like white spaces and comments. This opens up
-for a cleaner design of a programming language. The only thing the syntax
-analyzer will see is the output from the lexer, tokens (and lexemes). The lexer
-usually skips comments and white-spaces, since these are often not relevant for
-the syntax analyzer \cite{Aho2006}.
+for a cleaner design when defining a new programming language. The syntactical
+part of the parser will only receive the output from the lexer as input. The 
+output of the lexer is described in more detail further on in this chapter.
+\cite{Aho2006}.
 
 Secondly, splitting a big problem into smaller specific sub-problems opens up
-for an efficient problem solving. Specific problems can use specialized techniques
-,which are often optimized, to solve the problem. This means that the efficiency
-of the parser can be improved \cite{Aho2006}.
+for an efficient problem solving. Specific problems can use specialized
+techniques, which are often optimized, to solve the problem. This means that
+the efficiency of the parser can be improved \cite{Aho2006}.
 
 Thirdly and last, breaking out the lexical part makes it possible for the
 syntactical part to solve its problem in a generic way. When changing language
 to parse, the only part that needs to be changed in the parser is the lexical
-part. This opens up for portability. Illegal character sequences can be stopped
-in the lexical part of the parser \cite{Aho2006}. Therefore the lexer can detect
-syntactical errors in tokens, such as ill-formed floating-points literals, and
-report these errors to the user \cite{sebesta2012}. Finding these errors allows
-the compiler to break the compilation before running the syntax analyzer,
-thereby saving computing time.
+part. This opens up for portability \cite{Aho2006}. If there is an illegal
+character sequences inside the code it will be detected by the lexer and
+report it to the user \cite{sebesta2012}. Because the lexer can find and report
+these errors to the user, there is no need to go into the syntactical analysis
+part of the parser. Hence saving running time for giving the user feedback.
 
 \section{Token Specification}
-The job of the lexical analyzer is to translate a human readable text to an
-abstract computer-readable list of tokens. There are different techniques a
-lexer can use when finding the abstract tokens representing a text. This section
-describes the techniques used when writing rules for the tokens patterns.
+As mentioned earlier in this chapter, the responsibility of the lexical analyzer
+is to transform a human readable text to an abstract computer-readable list of
+tokens. There are different techniques a lexer can use when finding the
+abstract tokens representing a text. This section describes the techniques used
+when writing rules for the tokens patterns.
 
 \subsection{Regular Expressions}
 Regular expressions is a key part in describing patterns of a text. However,
@@ -87,14 +89,26 @@ could look like this: $letter (letter | digit)*$.
 \end{example}
 
 \subsection{Languages}
-A language is build up by an alphabet. An alphabet is represented by a finite collection of characters. These symbols can build up strings and a language is a countable set of these different strings \cite{Aho2006}. For example the alphabet Unicode used by computers to represent text includes over $100,000$ different symbols. This means that a language can be enormous.
-There are different types of languages. A lexer can work with a type of the languages which can be described by a set of systematic rules, called formal languages. The lexer can however not work with all formal languages, only with the languages which can be described by regular expressions, called regular languages \cite{Ranta2012}. 
+A language is build up by an alphabet. An alphabet is represented by a finite
+collection of characters. These symbols can build up strings and a language is
+a countable set of these different strings \cite{Aho2006}. For example the
+alphabet Unicode used by computers to represent text includes over $100,000$
+different symbols. This means that a language can be enormous. There are
+different types of languages. A lexer can work with a type of the languages
+which can be described by a set of systematic rules, called formal languages.
+The lexer can however not work with all formal languages, only with the
+languages which can be described by regular expressions, called regular
+languages \cite{Ranta2012}. 
 
 \subsection{Regular Definitions}
-When defining a language it is useful to give the regular expressions identifiers,
-so they can for example be used in other regular expressions. These identifiers for the regular expressions are abstracted to the symbol-patterns they represent.
+When defining a language it is useful to give the regular expressions
+identifiers, so they can for example be used in other regular expressions.
+These identifiers for the regular expressions are abstracted to the
+symbol-patterns they represent.
 
-From the book "Compilers . Principles, Techniques and Tools" by Alfred V. Aho, Monica S. Lam, Ravi Sethi, and Jeffrey D. Ullman comes the following definition of regular definitions:
+From the book "Compilers . Principles, Techniques and Tools" by Alfred V.
+Aho, Monica S. Lam, Ravi Sethi, and Jeffrey D. Ullman comes the following
+definition of regular definitions:
 
 "If $\Sigma$ is an alphabet of
 basic symbols, then a regular definition is a sequence of definitions of the
@@ -125,8 +139,8 @@ This section describes the structures which the lexical analyzer uses
 for representing the abstract data; what these structures are used for and what is
 forwarded to the syntactical analyzer.
 
-A lexical analyzer uses three different concepts. The concepts are listed
-below.
+The following three different structural concepts are vital to the lexical
+analyzer:
 \begin{itemize}
   \item A \textbf{token}, which is an abstract for representing an atomic code
   segment. The token is represented by a name and an optional attribute for
@@ -243,7 +257,7 @@ token, is then lexed from the initial state as part of a new token
 \begin{example}[Longest Match] \label{longestMatch}
 Consider the following text; to be lexed.
 \lstinputlisting[language=c]{examples/longesttoken.c}
-Allthough this piece of C code is not syntactically correct, there are no
+Although this piece of C code is not syntactically correct, there are no
 lexical errors in it. Since
 the text starts with a multi line comment sign the lexer will try to lex it as
 a comment. When the lexer encounters the end of the text it will return the
@@ -275,7 +289,7 @@ Reserved & ;
 To recognize members of regular languages, which are languages that lexers can
 work on as mentioned in previous sections, a type of transition diagrams
 represented by a mathematical machine celled finite automata can be used
-\cite{sebesta2012}. Finite automata are purly recognizers, they only say if a
+\cite{sebesta2012}. Finite automata are purely recognizers, they only say if a
 input sequence is valid or not.
 
 There are two different forms of finite automata, which both are capable of
@@ -369,10 +383,16 @@ The transition diagram in \cref{fig:td} is representing this regular expression.
 It could also be converted into the transition table shown in \cref{fig:tt}
 \end{example}
 
-Transition tables store all possible transitions which gives it a quick lookup time. However there are often a majority of states which does not have any transitions for some input symbols. And since the table stores all states it will need a lot of data space, especially for situations when the alphabet for the language is large \cite{Aho2006}.
+Transition tables store all possible transitions which gives it a quick lookup
+time. However there are often a majority of states which does not have any
+transitions for some input symbols. And since the table stores all states it
+will need a lot of data space, especially for situations when the alphabet for
+the language is large \cite{Aho2006}.
 
 \subsubsection{Deterministic Finite Automata}
-DFA is a special case of an NFA where, edges can not be labeled with the empty input $\epsilon$ and there is exactly one edge for each symbol in the alphabete out of every state.
+DFA is a special case of an NFA where, edges can not be labelled with the empty
+input $\epsilon$ and there is exactly one edge for each symbol in the alphabet
+out of every state.
 
 If a NFA can be seen as the abstract form of a string-recognizer algorithm, a
 DFA could be seen as a concrete algorithm for finding a specific string. As
