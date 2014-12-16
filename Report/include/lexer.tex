@@ -16,8 +16,8 @@ the parser. Splitting up a parser into a number of different tasks have several
 benefits. Here follows some benefits from breaking out the lexical analyzer from
 the syntactical analyzer.
 
-Firstly, a clean design. If striping the lexical analyse part out of a parser,
-the parsing step can be designed in a cleaner way. Also the lexical analyse can
+Firstly, a clean design. If striping the lexical analyze part out of a parser,
+the parsing step can be designed in a cleaner way. Also the lexical analyze can
 be designed in a cleaner and smarter way. A Lexer can ignore to pass along
 unneeded (for the parser) data, like white spaces and comments. This opens up
 for a cleaner design when defining a new programming language. The syntactical
@@ -207,7 +207,7 @@ tokens shown in \cref{fig:codeToToken}.
 \underline{Token} & \underline{Lexeme}\\
 Identifier & fileName\\
 Reserved & $=$\\
-Identifier & filepath\\
+Identifier & filePath\\
 Reserved & $+$\\
 String & ".png"\\
 Reserved & ;
@@ -224,7 +224,7 @@ to transform a sequence of characters into abstract tokens using these patterns
 is described.
 
 \subsection{Transition Diagrams}
-To recognise tokens from a pattern, one could use transitions diagrams which are
+To recognize tokens from a pattern, one could use transitions diagrams which are
 directed graphs consisting of nodes and edges. The nodes correspond to the
 discrete states in the transformation process. In the transition diagram there
 are three kinds of states. The first is the the starting state, there can only
@@ -275,7 +275,7 @@ Reserved & $/$\\
 Reserved & $*$\\
 Identifier &fileName\\
 Reserved & $=$\\
-Identifier & filepath\\
+Identifier & filePath\\
 Reserved & $+$\\
 String & ".png"\\
 Reserved & ;
@@ -390,7 +390,7 @@ will need a lot of data space, especially for situations when the alphabet for
 the language is large \cite{Aho2006}.
 
 \subsubsection{Deterministic Finite Automata}
-DFA is a special case of an NFA where, edges can not be labelled with the empty
+DFA is a special case of an NFA where, edges can not be labeled with the empty
 input $\epsilon$ and there is exactly one edge for each symbol in the alphabet
 out of every state.
 
