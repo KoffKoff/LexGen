@@ -16,7 +16,7 @@ the parser. Splitting up a parser into a number of different tasks have several
 benefits. Here follows some benefits from breaking out the lexical analyzer from
 the syntactical analyzer.
 
-Firstly, a clean design. If striping the lexical analyze part out of a parser,
+Firstly, a clean design. If the lexical analysis is stripped out of a parser,
 the parsing step can be designed in a cleaner way. Also the lexical analyze can
 be designed in a cleaner and smarter way. A Lexer can ignore to pass along
 unneeded (for the parser) data, like white spaces and comments. This opens up
@@ -49,7 +49,7 @@ when writing rules for the tokens patterns.
 \subsection{Regular Expressions}
 Regular expressions is a key part in describing patterns of a text. However,
 they cannot express all possible patterns on which a text can follow, but they
-can describing those type of pattern which are used in a lexer, the pattern of
+can describe those types of patterns which are used in a lexer, the patterns of
 tokens.
 
 \begin{definition}[Regular Expressions \cite{Aho1990}]\label{regexp} $ $\\
@@ -77,7 +77,7 @@ parentheses can be eliminated. The operator with the highest priority is the $*$
 operator. The second highest is the \emph{concat} operator $(r_1)(r_2)$ and the
 operator with the lowest level is the \emph{or} operator $|$. The $*$ operator
 can not have a associativity since it only takes one argument. The other two
-\emph{binary} operators \emph{concat} and \emph{or} are left-associative
+binary operators \emph{concat} and \emph{or} are left-associative
 \cite{Aho1990}.
 
 \begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
@@ -93,17 +93,18 @@ A language is build up by an alphabet. An alphabet is represented by a finite
 collection of characters. These symbols can build up strings and a language is
 a countable set of these different strings \cite{Aho2006}. For example the
 alphabet Unicode used by computers to represent text includes over $100,000$
-different symbols. This means that a language can be enormous. There are
-different types of languages. A lexer can work with a type of the languages
-which can be described by a set of systematic rules, called formal languages.
-The lexer can however not work with all formal languages, only with the
-languages which can be described by regular expressions, called regular
-languages \cite{Ranta2012}. 
+different symbols. This means that a language can be enormous.
+
+There are different types of languages. A lexer can work with a subset of all
+languages which can be described by a set of systematic rules, these are called
+formal languages. The lexer can however not work with all formal languages, only
+with the languages which can be described by regular expressions, these are
+called regular languages \cite{Ranta2012}. 
 
 \subsection{Regular Definitions}
 When defining a language it is useful to give the regular expressions
-identifiers, so they can for example be used in other regular expressions.
-These identifiers for the regular expressions are abstracted to the
+identifiers, so they can be used in other regular expressions.
+The identifiers for the regular expressions are abstracted to the
 symbol-patterns they represent.
 
 From the book "Compilers . Principles, Techniques and Tools" by Alfred V.
@@ -161,9 +162,9 @@ which was found. Therefore the lexer need to pass the information further on \ci
 
 To summarize, a lexer collects characters from a code and finds the largest 
 continues sequences which builds up valid tokens \cite{sebesta2012}. As 
-mentioned before it is not always relevant to return a attribute to the token. 
-These cases can be when finding keywords of the language, like in a $if$, $for$
-, $while$, and so on. Sometimes it is not relevant to even return the token. 
+mentioned before it is not always relevant to return an attribute to the token. 
+These cases can be when finding keywords of the language, like in $if$, $for$
+and $while$. Sometimes it is not relevant to return the token. 
 Example of such cases could be tokens for comments and white-spaces, which in 
 most languages has no relevance to the compiled code. In these cases the lexer 
 just drops the token and continues the lexical routine \cite{Aho2006}.
@@ -218,20 +219,22 @@ Reserved & ;
 \end{example}
 
 \section{Recognition of Tokens}
-Regular expressions have been shown in the previous section how they can be used
+The previous section showed how Regular expressions can be used
 to express patterns for tokens. In this section the different techniques on how
 to transform a sequence of characters into abstract tokens using these patterns
 is described.
 
 \subsection{Transition Diagrams}
-To recognize tokens from a pattern, one could use transitions diagrams which are
+To recognize tokens from a pattern transitions diagrams can be used, these are
 directed graphs consisting of nodes and edges. The nodes correspond to the
 discrete states in the transformation process. In the transition diagram there
 are three kinds of states. The first is the the starting state, there can only
 be one starting state in the graph. It is from this state the process start when
 a new token should be found. There are at least one accepting state, these states
-correspond to that a valid token has been found. Then there can be zero or many
-none-accepting states. These do not correspond to any found token \cite{Aho2006}.
+represents that a valid token has been found. Then there can be zero or more
+none-accepting states. These states represents that a token has not yet been
+found \cite{Aho2006}.
+
 The edges in the graph are represented by the input character which must be
 found to be able to traverse between the two states which the edge connects. If
 there is no valid edge out of an accepting state, the found token is said to be
@@ -244,6 +247,7 @@ analysis, the lexer will return the token that is the longest. To manage this
 the lexer will continue in the transition diagram if there are any legal edges
 leading out of the current state, even if it is an accepting state \cite{Aho2006}.
 
+% Skriva om första meningen?
 The above rule is not always enough since the lexer has to explore all legal
 edges, even if the current state is accepting. If the lexer is in a state that
 is not accepting and do not have any legal edge out of that state, the lexer
@@ -287,7 +291,7 @@ Reserved & ;
 
 \subsection{Finite Automata}
 To recognize members of regular languages, which are languages that lexers can
-work on as mentioned in previous sections, a type of transition diagrams
+be used with, a type of transition diagrams
 represented by a mathematical machine celled finite automata can be used
 \cite{sebesta2012}. Finite automata are purely recognizers, they only say if a
 input sequence is valid or not.
@@ -307,7 +311,7 @@ as symbol.
 
 \subsubsection{Non-deterministic Finite Automata}
 For an NFA to accept an input as valid token there must be at least one path
-from the starting state to an accepting state and off-course the symbols along
+from the starting state to an accepting state where the symbols along
 the path must spell out the input which was accepted \cite{Aho2006}.
 The formal definition of a non-deterministic finite automaton follows:
 \begin{definition}[Non-deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
@@ -321,7 +325,7 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 \end{enumerate} 
 \end{definition}
 
-Since a state can have several edges with the same symbol the transition
+Since a state can have several edges with the same symbol, the transition
 function does not map to a single state. An example of this can be seen in
 \cref{regexp2td}.
 
@@ -329,7 +333,7 @@ There are two different ways of representing an NFA which this report will
 describe. One is by transition diagrams, where the regular expression will be
 represented by a graph structure. Another is by transitions table, where the 
 regular expression will be converted into a table of states and the 
-transitions for these states given the input. The following examples shows how 
+transitions for these states given the input. \cref{regexp2td} shows how 
 the transition diagram and transition table representation will look like for a 
 given regular expression.
 
@@ -443,5 +447,3 @@ A DFA representation of the regular expression from \cref{regexp2td} is shown in
   \caption{DFA, accepting the regular expression: $(a|b|c)(a|c)* c$
   \label{fig:dfa}}
 \end{figure}
-
- 
