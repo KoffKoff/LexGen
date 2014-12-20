@@ -293,26 +293,34 @@ Reserved & ;
 To recognize members of regular languages, which are languages that lexers can
 be used with, a type of transition diagrams
 represented by a mathematical machine celled finite automata can be used
-\cite{sebesta2012}. Finite automata are purely recognizers, they only say if a
+\cite{sebesta2012}. Finite automata are purely recognizers, they only say if an
 input sequence is valid or not.
 
 There are two different forms of finite automata, which both are capable of
 working on regular languages \cite{Aho2006}:
 \begin{description}
-\item [Non-deterministic Finite Automata (NFA)] as the name suggest there are no
-requirements of a deterministic path for a input sequence in this type of
+\item [Non-deterministic Finite Automata (NFA):] As the name suggest there are no
+requirements of a deterministic path for an input sequence in this type of
 automata. A state may have multiple edges for the same symbol. Also edges my
 take no symbol, the empty string $\epsilon$.
-\item [Deterministic Finite Automata (DFA)] in this form there can only be one
+\item [Deterministic Finite Automata (DFA):] In this form there can only be one
 path for an input. That is, a state must have exactly one edge per input symbol
 leaving the state and edges are not allowed to have the empty string $\epsilon$
 as symbol.
 \end{description}
 
+There are two common ways of representing a finite automata, transition diagram
+and transition table. A transition diagram is a directed graph where the nodes
+are the states in the automata and the edges represent the symbol needed for the
+next state. A transition table is a table where the rows represents the current
+state, the columns the next symbol and the cell is the next state. Examples of
+how a NFA can be described by these can be seen in \label{regexp2td}
+\cite{Aho2006}.
+
 \subsubsection{Non-deterministic Finite Automata}
-For an NFA to accept an input as valid token there must be at least one path
-from the starting state to an accepting state where the symbols along
-the path must spell out the input which was accepted \cite{Aho2006}.
+a NFA will accept a string if there exists atleast one path from the starting
+state to an accepting state where the edges along the path spell out the symbols
+in the string \cite{Aho2006}.
 The formal definition of a non-deterministic finite automaton follows:
 \begin{definition}[Non-deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
 A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
@@ -325,23 +333,15 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 \end{enumerate} 
 \end{definition}
 
-Since a state can have several edges with the same symbol, the transition
-function does not map to a single state. An example of this can be seen in
-\cref{regexp2td}.
-
-There are two different ways of representing an NFA which this report will
-describe. One is by transition diagrams, where the regular expression will be
-represented by a graph structure. Another is by transitions table, where the 
-regular expression will be converted into a table of states and the 
-transitions for these states given the input. \cref{regexp2td} shows how 
-the transition diagram and transition table representation will look like for a 
-given regular expression.
+\cref{regexp2td} shows how the transition diagram and transition table
+representation will look like for a given regular expression. Since a state can
+have several edges with the same symbol, the transition function does not map to
+a single state.
 
 \begin{example}[RegExp to Transition Diagram \& Transition Table \cite{Aho2006}] \label{regexp2td}
-Given this regular expression:
-\begin{center}
-    $(a|b|c)(a|c)* c$ 
-\end{center}
+Given the regular expression $(a|b|c)(a|c)* c$ a transition diagram can be
+created that represents the expression, see \cref{fig:td}. The transition table
+in \cref{fig:tt} represents the same graph.
 
 \begin{figure}[h!]
   \centering
@@ -366,8 +366,6 @@ Given this regular expression:
   \label{fig:td}}
 \end{figure}
 
-The transition diagram in \cref{fig:td} is representing this regular expression.
-
 \begin{figure}[h!]
   \centering
   \begin{tabular}{| c | c c c c |}
@@ -383,8 +381,6 @@ The transition diagram in \cref{fig:td} is representing this regular expression.
   \caption{Transition Table, accepting the pattern $(a|b|c)(a|c)* c$
   \label{fig:tt}}
 \end{figure}
-
-It could also be converted into the transition table shown in \cref{fig:tt}
 \end{example}
 
 Transition tables store all possible transitions which gives it a quick lookup
