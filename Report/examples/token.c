@@ -1,1 +1,1 @@
-fileName = filepath + ".png";
+fileName = filePath + ".png";

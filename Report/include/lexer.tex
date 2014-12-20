@@ -1,4 +1,5 @@
 \chapter{Lexer \label{chap:lexer}}
+%Skriv om stycke.
 A lexer, lexical analyzer, is a pattern matcher. Its job is to divide a text
 into a sequence of tokens (such as words, punctuation and symbols). A Lexer is
 often used as the first stage of a syntax analyzer \cite{sebesta2012}. The syntax
@@ -16,28 +17,29 @@ the parser. Splitting up a parser into a number of different tasks have several
 benefits. Here follows some benefits from breaking out the lexical analyzer from
 the syntactical analyzer.
 
-Firstly, a clean design. If the lexical analysis is stripped out of a parser,
-the parsing step can be designed in a cleaner way. Also the lexical analyze can
-be designed in a cleaner and smarter way. A Lexer can ignore to pass along
-unneeded (for the parser) data, like white spaces and comments. This opens up
-for a cleaner design when defining a new programming language. The syntactical
+To keep a clean design of the parser. If the lexical analysis is stripped out of
+a parser, the parsing step can be designed in a cleaner way. Also the lexical
+analyze can be designed in a cleaner and smarter way. A Lexer can ignore to pass
+along unneeded (for the parser) data, like white spaces and comments. This opens
+up for a cleaner design when defining a new programming language. The syntactical
 part of the parser will only receive the output from the lexer as input. The 
 output of the lexer is described in more detail further on in this chapter.
 \cite{Aho2006}.
 
-Secondly, splitting a big problem into smaller specific sub-problems opens up
-for an efficient problem solving. Specific problems can use specialized
-techniques, which are often optimized, to solve the problem. This means that
-the efficiency of the parser can be improved \cite{Aho2006}.
+Splitting a big problem into smaller specific sub-problems opens up
+for an efficient problem solving. In general to solve specific problems finalized techniques can be used, which are often optimized. This means that
+the parser can be more efficient \cite{Aho2006}.
 
-Thirdly and last, breaking out the lexical part makes it possible for the
+Breaking out the lexical part from the parser makes it possible for the
 syntactical part to solve its problem in a generic way. When changing language
 to parse, the only part that needs to be changed in the parser is the lexical
-part. This opens up for portability \cite{Aho2006}. If there is an illegal
-character sequences inside the code it will be detected by the lexer and
-report it to the user \cite{sebesta2012}. Because the lexer can find and report
-these errors to the user, there is no need to go into the syntactical analysis
-part of the parser. Hence saving running time for giving the user feedback.
+part. This opens up for portability \cite{Aho2006}.
+
+If there is an illegal character sequences inside the code it will be detected
+by the lexer and feedback will be given to the user \cite{sebesta2012}. Because
+the lexer can find and report these errors to the user, there is no need to go
+into the syntactical analysis part of the parser. Hence saving running time for
+giving the user feedback.
 
 \section{Token Specification}
 As mentioned earlier in this chapter, the responsibility of the lexical analyzer
@@ -47,10 +49,9 @@ abstract tokens representing a text. This section describes the techniques used
 when writing rules for the tokens patterns.
 
 \subsection{Regular Expressions}
-Regular expressions is a key part in describing patterns of a text. However,
-they cannot express all possible patterns on which a text can follow, but they
-can describe those types of patterns which are used in a lexer, the patterns of
-tokens.
+Regular expressions are used to verify if a sequence of symbols matches a
+pattern. Due to the definition of regular expressions they cannot describe all
+possible patterns. However, they are in most cases good enough for lexers.
 
 \begin{definition}[Regular Expressions \cite{Aho1990}]\label{regexp} $ $\\
 \begin{enumerate}
@@ -81,11 +82,12 @@ binary operators \emph{concat} and \emph{or} are left-associative
 \cite{Aho1990}.
 
 \begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
-Using regular expressions to express a set of valid C identifiers is easy.
-Given an element $letter \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup 
-\{$\_$\}$ and another element $digit \in \{0 \dots 9\}$ then using a regular
-expression, the definition of all valid C identifiers 
-could look like this: $letter (letter | digit)*$. 
+A valid C identifier must start with a letter character and then have zero or more characters or digits. To describe this an element $letter
+\in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$ is intruduced and
+another element $digit \in \{0 \dots 9\}$.
+
+Then by using these elements the regular expression for describing all leagual C
+identifiers can be design in the following way: $letter (letter | digit)*$.
 \end{example}
 
 \subsection{Languages}
@@ -99,39 +101,26 @@ There are different types of languages. A lexer can work with a subset of all
 languages which can be described by a set of systematic rules, these are called
 formal languages. The lexer can however not work with all formal languages, only
 with the languages which can be described by regular expressions, these are
-called regular languages \cite{Ranta2012}. 
+called regular languages \cite{Ranta2012}.
 
 \subsection{Regular Definitions}
-When defining a language it is useful to give the regular expressions
-identifiers, so they can be used in other regular expressions.
-The identifiers for the regular expressions are abstracted to the
-symbol-patterns they represent.
+To be able to reuse already written expression, an identifier $d$ can be
+assigned to an expression. $d$ can then be used in expressions. However
+this introduces the problem of recursive defnintions. To counteract this
+the properties for the identifiers and expressions are defined as follows.
 
-From the book "Compilers . Principles, Techniques and Tools" by Alfred V.
-Aho, Monica S. Lam, Ravi Sethi, and Jeffrey D. Ullman comes the following
-definition of regular definitions:
-
-"If $\Sigma$ is an alphabet of
-basic symbols, then a regular definition is a sequence of definitions of the
-form:
+A set of regular definitions for an alphabete $\Sigma$ is given:
 \begin{center}
 \begin{tabular}{l c r}
 $d_1$ & $\to$ & $r_1$\\
 $d_2$ & $\to$ & $r_2$\\
 $\vdots$ & $\to$ & $\vdots$\\
 $d_n$ & $\to$ & $r_n$\\
-
 \end{tabular}
 \end{center}
-where:
-\begin{enumerate}
-\item Each $d_i$ is a new symbol, not in $\Sigma$ and not the same as any other
-of the $d$'s.
-\item Each $r_i$ is a regular expression over the alphabet $\Sigma  \cup \{d_1,
-d_2 \dots d_{i-1}\}$
-\end{enumerate}
-By restricting $r_i$ to $\Sigma$ and previously defined $d$'s the regular
-definitions avoid recursive definitions" \cite{Aho2006}.
+The following property apply on the definition identifiers $d_1 ... d_n$: a definition identifier $d_i$ is a new symbol not already pressent in the alphabete $\Sigma$ and not equal to any other definition identifier $d_x \in {d_1 ... d_n}$ where $i \neq x$.
+The following property apply on the regular expresions $r_1 ... r_n$: a regular expression $r_i$ can work on the aphabete $\Sigma \cup {d_1 ... d_{i-1}}$
+\cite{Aho2006}.
 
 \section{Tokens, Patterns and Lexemes}
 When rules have been defined for a language, the lexer needs structures to
@@ -154,20 +143,22 @@ analyzer:
   the token. Therefore a lexeme can be viewed as an instance of an abstract 
   token \cite{Aho2006}.
 \end{itemize}
-As mentioned before, a token ha an optional attribute. This is used when a 
-token can be represented by several different instances, lexemes. For example a 
-string token can be represented by the different strings "", "a", "b" and so 
-on. However the code generator needs to know the exact string token instance 
-which was found. Therefore the lexer need to pass the information further on \cite{Aho2006}.
+As mentioned before, a token can carry an optional attribute. When a token can
+be represented by several different instances, lexemes, this attribute is used
+for giving the specific value. For example a string token can be represented by
+the different strings "", "a", "b" and so on. However different parts of the
+compiler may need to know the exact string token instance which was found
+Therefore the lexer need to pass the information further on \cite{Aho2006}.
 
-To summarize, a lexer collects characters from a code and finds the largest 
+To summarize, a lexer reads characters from a code and finds the largest 
 continues sequences which builds up valid tokens \cite{sebesta2012}. As 
 mentioned before it is not always relevant to return an attribute to the token. 
 These cases can be when finding keywords of the language, like in $if$, $for$
-and $while$. Sometimes it is not relevant to return the token. 
+and $while$. There are cases when it make no sence to return the found token.
 Example of such cases could be tokens for comments and white-spaces, which in 
 most languages has no relevance to the compiled code. In these cases the lexer 
 just drops the token and continues the lexical routine \cite{Aho2006}.
+\cref{codeToToken} shows how a small piece of code is devided in to abstract tokens using the rules in \cref{fig:grammar}. The complete language specification can be found in \cref{reglang}.
 
 \begin{figure}[h!]
 \begin{center}
@@ -179,7 +170,7 @@ just drops the token and continues the lexical routine \cite{Aho2006}.
 
 <identifier> ::= <letter> (<letter> | <digit>)* 
 
-<integer> ::= <digit>+
+<string> ::= `"' [$\wedge$ `"']* `"'
 
 <multi-line comment> ::= `/*' ([$\wedge$ `*'] | `*' [$\wedge$ `/'])* `*/'
 
@@ -189,11 +180,6 @@ just drops the token and continues the lexical routine \cite{Aho2006}.
 \caption{Grammar rules for \cref{codeToToken} \& \cref{longestMatch}\label{fig:grammar}}
 \end{center}
 \end{figure}
-
-An example follows how a small piece of code would be divided given the regular
-language described in \cref{reglang}.
-
-\newpage
 
 \begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
 Consider the following text; to be lexed:
@@ -247,9 +233,7 @@ analysis, the lexer will return the token that is the longest. To manage this
 the lexer will continue in the transition diagram if there are any legal edges
 leading out of the current state, even if it is an accepting state \cite{Aho2006}.
 
-% Skriva om första meningen?
-The above rule is not always enough since the lexer has to explore all legal
-edges, even if the current state is accepting. If the lexer is in a state that
+The above model introduces a new problem. If the lexer ends up in a state that
 is not accepting and do not have any legal edge out of that state, the lexer
 can not return a token. To solve this the lexer has to keep track of what the
 latest accepting state was. When the lexer reaches a state with no

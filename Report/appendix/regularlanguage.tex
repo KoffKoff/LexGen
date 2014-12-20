@@ -1,5 +1,5 @@
-\chapter{Java Lette Light}\label{reglang}
-Here is a simplified version of Java that only have variables, numbers and some
+\chapter{Modified Java Lette Light}\label{reglang}
+Here is a simplified version of Java that only have variables, numbers, strings and some
 simple operators. The language includes $while$ loops but the lexical analyzer
 will read ``while'' as an identifier, The syntactical analyzer will later
 determine if it is a loop. The expressions that matches rules without a name
@@ -16,11 +16,12 @@ $white$   & $\rightarrow$ & [ \textbackslash{t}\textbackslash{r}\textbackslash{n
 Rules\\
 & & $white$+\\
 & & // [.]* & Single line comment\\
-& & /\textbackslash*) ([\^\textbackslash*] | (\textbackslash*) [\^/])*
+& & /\textbackslash*) ([$\wedge$\textbackslash*] | (\textbackslash*) [$\wedge$/])*
     (\textbackslash*)+ / & Multi line comment\\
 Identifier & $\rightarrow$ & $letter$ $ident$*\\
 Integer    & $\rightarrow$ & $digit$+\\
 Double     & $\rightarrow$ & $digit$+ \textbackslash. $digit$+\\
+String     & $\rightarrow$ & \textbackslash" [$\wedge$ \textbackslash"]* \textbackslash"\\
 Reserved   & $\rightarrow$ & \textbackslash( | \textbackslash) | \textbackslash\{
                          | \textbackslash\} | ; | = | \textbackslash+\textbackslash+
                          | < | \textbackslash+ | - | \textbackslash* | \/ \\ %& Reserved characters\\
