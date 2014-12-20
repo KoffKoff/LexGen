@@ -202,7 +202,7 @@ A fingertree is a tree structure that is built to make access to the beginning
 and end of a collection easy. In the following section fingertrees are
 explained. The code examples are simplified for demostrative purposes, for
 instance in real implementations lists are not used since they do not give good
-performance for what fingertrees are designed for.
+performance for what fingertrees are designed to do.
 
 \subsection{Structure of Fingertrees}
 To achieve fast access to the begining and end of the tree the leaves for the
@@ -362,7 +362,7 @@ $\theta(\log(min(n,m)))$ where $n$ and $m$ is the size of the trees being
 concatenated \cite{fingertree}.
 
 \subsection{Measurements \label{sub:measurement}}
-To make fingertrees useful for a divide and conquer lexer measures of the tree
+To make fingertrees useful for a divide and conquer lexer a measure of the tree
 needs to be added. A measure of a tree may for example be how many elements is
 in the tree or as will be shown later in the report, the lexed tokens of the
 text in a tree. To implement measures time effiecently the data type that is
@@ -377,7 +377,7 @@ operator $(<>)$ which satisfies the following rules \cite{fingertree}:
 
 An example of a monoid is the natural numbers which under addition form a monoid
 where the identity element is $0$.
-Using the class system in Haskell measures are defined as in \cref{fig:measure}.
+Using Haskells class system measures are defined as in \cref{fig:measure}.
 $mempty$ will henceforth be used as the identity element in examples and
 defenitions.
 
@@ -413,7 +413,8 @@ measure will always be of type $v$ \cite{fingertree}.
 Fingertrees offers a data structure where the time complexity for operations on
 the tree scales logarithmically with the size of the tree. Because of this and
 the fact that operations on the measure in the fingertree has constant time it
-makes the data structure suitable for a divide and conquer lexer.
+makes the data structure suitable for a divide and conquer lexer
+\cite{fingertree}.
 
 \section{Divide and Conquer Lexing in General}
 In \cref{sec:divconq} the general divide and conquer algorithm was covered. This
