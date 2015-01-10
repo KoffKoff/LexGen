@@ -26,6 +26,8 @@ part of the parser will only receive the output from the lexer as input. The
 output of the lexer is described in more detail further on in this chapter.
 \cite{Aho2006}.
 
+\newpage
+
 Splitting a big problem into smaller specific sub-problems opens up
 for an efficient problem solving. In general to solve specific problems finalized techniques can be used, which are often optimized. This means that
 the parser can be more efficient \cite{Aho2006}.
@@ -53,6 +55,7 @@ Regular expressions are used to verify if a sequence of symbols matches a
 pattern. Due to the definition of regular expressions they cannot describe all
 possible patterns. However, they are in most cases good enough for lexers.
 
+\begin{figure}[hb!]
 \begin{definition}[Regular Expressions \cite{Aho1990}]\label{regexp} $ $\\
 \begin{enumerate}
   \item The following characters are meta characters: $meta = \{ '|', ~~ '(', ~~ ')', ~~ '*' \}$.
@@ -72,15 +75,17 @@ possible patterns. However, they are in most cases good enough for lexers.
 \end{enumerate}
 \qeda
 \end{definition}
+\end{figure}
 
-By introducing a priority level and associativity to the different operators,
+Given the definition of regular expressions seen in \cref{regexp},
+by introducing a priority level and associativity to the different operators,
 parentheses can be eliminated. The operator with the highest priority is the $*$
 operator. The second highest is the \emph{concat} operator $(r_1)(r_2)$ and the
 operator with the lowest level is the \emph{or} operator $|$. The $*$ operator
 can not have a associativity since it only takes one argument. The other two
 binary operators \emph{concat} and \emph{or} are left-associative
 \cite{Aho1990}.
-
+\newline
 \begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
 A valid C identifier must start with a letter character and then have zero or more characters or digits. To describe this an element $letter
 \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$ is intruduced and
@@ -106,10 +111,13 @@ called regular languages \cite{Ranta2012}.
 \subsection{Regular Definitions}
 To be able to reuse already written expression, an identifier $d$ can be
 assigned to an expression. $d$ can then be used in expressions. However
-this introduces the problem of recursive defnintions. To counteract this
+this introduces the problem of recursive definitions. To counteract this
 the properties for the identifiers and expressions are defined as follows.
 
-A set of regular definitions for an alphabete $\Sigma$ is given:
+A set of regular definitions for an alphabet $\Sigma$ is given, which can be
+seen in \cref{fig:regularDefinitions}
+
+\begin{figure}[hb!]
 \begin{center}
 \begin{tabular}{l c r}
 $d_1$ & $\to$ & $r_1$\\
@@ -117,9 +125,16 @@ $d_2$ & $\to$ & $r_2$\\
 $\vdots$ & $\to$ & $\vdots$\\
 $d_n$ & $\to$ & $r_n$\\
 \end{tabular}
+\caption{List of definitions and their regular expressions \label{fig:regularDefinitions}}
 \end{center}
-The following property apply on the definition identifiers $d_1 ... d_n$: a definition identifier $d_i$ is a new symbol not already pressent in the alphabete $\Sigma$ and not equal to any other definition identifier $d_x \in {d_1 ... d_n}$ where $i \neq x$.
-The following property apply on the regular expresions $r_1 ... r_n$: a regular expression $r_i$ can work on the aphabete $\Sigma \cup {d_1 ... d_{i-1}}$
+\end{figure}
+
+The following property apply on the definition identifiers $d_1 ... d_n$: a
+definition identifier $d_i$ is a new symbol not already present in the alphabet
+$\Sigma$ and not equal to any other definition identifier
+$d_x \in {d_1 ... d_n}$ where $i \neq x$.
+The following property apply on the regular expressions $r_1 ... r_n$: a regular
+expression $r_i$ can work on the alphabet $\Sigma \cup {d_1 ... d_{i-1}}$
 \cite{Aho2006}.
 
 \section{Tokens, Patterns and Lexemes}
@@ -154,14 +169,18 @@ To summarize, a lexer reads characters from a code and finds the largest
 continues sequences which builds up valid tokens \cite{sebesta2012}. As 
 mentioned before it is not always relevant to return an attribute to the token. 
 These cases can be when finding keywords of the language, like in $if$, $for$
-and $while$. There are cases when it make no sence to return the found token.
+and $while$. There are cases when it make no sense to return the found token.
 Example of such cases could be tokens for comments and white-spaces, which in 
 most languages has no relevance to the compiled code. In these cases the lexer 
 just drops the token and continues the lexical routine \cite{Aho2006}.
-\cref{codeToToken} shows how a small piece of code is devided in to abstract tokens using the rules in \cref{fig:grammar}. The complete language specification can be found in \cref{reglang}.
+\cref{codeToToken} shows how a small piece of code is divided in to abstract
+tokens using the rules in \cref{fig:grammar}. The complete language specification
+can be found in \cref{reglang}.
+
+\newpage
 
 \begin{figure}[h!]
-\begin{center}
+\begin{addmargin}[2em]{0em}
 \begin{grammar}
 
 <letter>  $\in$ \{`a' - `z'\} $\cup$ \{`A' - `Z'\} $\cup$ \{`_'\}
@@ -177,8 +196,8 @@ just drops the token and continues the lexical routine \cite{Aho2006}.
 <reserved-words> ::= `(' | `)' | `{' | `}' | `;' | `=' | `++' | `<' | `+' | `-' | `*'
 
 \end{grammar}
+\end{addmargin}
 \caption{Grammar rules for \cref{codeToToken} \& \cref{longestMatch}\label{fig:grammar}}
-\end{center}
 \end{figure}
 
 \begin{example}[Logical grouping \cite{sebesta2012}] \label{codeToToken}$ $\\
@@ -242,20 +261,7 @@ accepting state. The tail of the string, the part that was not in the returned
 token, is then lexed from the initial state as part of a new token
 \cite{Aho2006}.
 
-\begin{example}[Longest Match] \label{longestMatch}
-Consider the following text; to be lexed.
-\lstinputlisting[language=c]{examples/longesttoken.c}
-Although this piece of C code is not syntactically correct, there are no
-lexical errors in it. Since
-the text starts with a multi line comment sign the lexer will try to lex it as
-a comment. When the lexer encounters the end of the text it will return the
-token corresponding to the last accepting state and begin lexing the rest from
-the initial state. The rules relevant to this example are defined in 
-\cref{fig:grammar} the rest of the rules can be found in \cref{reglang}.\\
-The result can be found in \cref{fig:longestmatch}.
-\end{example}
-
-\begin{figure}[h!]
+\begin{figure}[hb!]
 \begin{center}
 \begin{tabular}{l c}
 \underline{Token} & \underline{Lexeme}\\
@@ -271,11 +277,23 @@ Reserved & ;
 \end{center}
 \caption{Result of lexing the code in \cref{longestMatch} \label{fig:longestmatch}}
 \end{figure}
-
+\newpage
+\begin{example}[Longest Match] \label{longestMatch}
+Consider the following text; to be lexed.
+\lstinputlisting[language=c]{examples/longesttoken.c}
+Although this piece of C code is not syntactically correct, there are no
+lexical errors in it. Since
+the text starts with a multi line comment sign the lexer will try to lex it as
+a comment. When the lexer encounters the end of the text it will return the
+token corresponding to the last accepting state and begin lexing the rest from
+the initial state. The rules relevant to this example are defined in 
+\cref{fig:grammar} the rest of the rules can be found in \cref{reglang}.\\
+The result can be found in \cref{fig:longestmatch}.
+\end{example}
 
 \subsection{Finite Automata}
 To recognize members of regular languages, which are languages that lexers can
-be used with, a mathematical machine celled finite automata can be used
+be used with, a mathematical machine called finite automata can be used
 \cite{sebesta2012}. Finite automata are purely recognizers, they only say if an
 input sequence is valid or not.
 
@@ -305,6 +323,7 @@ a NFA will accept a string if there exists atleast one path from the starting
 state to an accepting state where the edges along the path spell out the symbols
 in the string \cite{Aho2006}.
 The formal definition of a non-deterministic finite automaton follows:
+\newpage
 \begin{definition}[Non-deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
 A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 \begin{enumerate}
@@ -320,7 +339,7 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 representation will look like for a given regular expression. Since a state can
 have several edges with the same symbol, the transition function does not map to
 a single state.
-
+\newline
 \begin{example}[RegExp to Transition Diagram \& Transition Table \cite{Aho2006}] \label{regexp2td}
 Given the regular expression $(a|b|c)(a|c)* c$ a transition diagram can be
 created that represents the expression, see \cref{fig:td}. The transition table
@@ -386,6 +405,7 @@ expression \cite{Aho2006}. A lexer uses a DFA as the algorithm for pattern a
 lexeme to a specific token.
 
 The formal definition of a deterministic finite automaton follows:
+\newline
 \begin{definition}[Deterministic Finite Automata \cite{sipser2006}] \label{finiteAutomataDef}
 A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
 \begin{enumerate}
@@ -396,7 +416,8 @@ A finite automata is a 5-tuple $(Q, \Sigma, \delta, q_0, F)$, where
   \item $F \subseteq Q$ is the set of accepting states.
 \end{enumerate} 
 \end{definition}
-
+\hfill 
+\break
 \begin{example}[DFA representation of RegExp \cite{Aho2006}] \label{regexp2dfa}
 A DFA representation of the regular expression from \cref{regexp2td} is shown in \cref{fig:dfa}
 \end{example}
