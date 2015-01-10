@@ -205,12 +205,12 @@ $T(n) = \Theta(n^e \cdot \log n) = \Theta(\log n)$
 \section{Fingertree}
 A fingertree is a tree structure that is built to make access to the beginning
 and end of a collection easy. In the following section fingertrees are
-explained. The code examples are simplified for demostrative purposes, for
+explained. The code examples are simplified for demonstrative purposes, for
 instance in real implementations lists are not used since they do not give good
 performance for what fingertrees are designed to do.
 
 \subsection{Structure of Fingertrees}
-To achieve fast access to the begining and end of the tree the leaves for the
+To achieve fast access to the beginning and end of the tree the leaves for the
 1-4 first elements and 1-4 last elements are placed in the root of the tree,
 these are called fingers. The rest of
 the elements constitutes the spine which is another fingertree, with one
@@ -276,7 +276,7 @@ which in worst case is $O(\log n)$ and for the first and last element is $O(1)$
 
 \subsection{Insertion and Deletion \label{insertDelete}}
 The fingertree described so far can only handle insertion and deletion to the
-begining and end of the tree, for more functionality, measurments are needed
+beginning and end of the tree, for more functionality, measurements are needed
 which is covered in \cref{sub:measurement}.
 The fingers in a tree have two different states called dangerous and safe. The
 safe states is when there are 2 to 3 elements in the finger and when the finger
@@ -290,8 +290,8 @@ that is assigned to the same level. If the insertion was done to the end of the
 tree the last 2 elements will be the new finger which is then a safe finger. The
 first 3 elements are used to create a new $Node3$ which is passed down the spine
 as a single element to be inserted at the next level. Inserting an element to
-the end of a tree can be seen in \cref{fig:AddLast}, conversly adding an element
-to the begining of a tree is the mirror to this function \cite{fingertree}.
+the end of a tree can be seen in \cref{fig:AddLast}, conversely adding an element
+to the beginning of a tree is the mirror to this function \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeInfixl.hs}
@@ -303,8 +303,8 @@ done. In this case, if the deletion is made to the end of the tree, the last
 element of the end finger in the spine is deleted and used as the finger for the
 level where the the finger would have been empty. Since the element in the
 finger below will either be a $Node2$ or a $Node3$ the new finger will be safe.
-Deletion of an element at the end or begining of a tree is implemented
-similiarly to $head$ for lists, the functions $viewL$ which returns the first
+Deletion of an element at the end or beginning of a tree is implemented
+similarly to $head$ for lists, the functions $viewL$ which returns the first
 element and the rest of the tree can be seen in \cref{fig:Viewl} \cite{fingertree}.
 
 \begin{figure}[h!]
@@ -316,8 +316,8 @@ Since the dangerous states propagate actions down the spine insertion and
 deletion will not take $O(1)$ time in the worst case. Since
 each new level will take at most $O(1)$ time the insertion or deletion of an
 element will in the worst case take $O(\log n)$ time. However since 3 of 4
-operations are safe for insertion and deletion respectivly the expected time
-consumption for an insertion or deletion at the begining or end of the tree will
+operations are safe for insertion and deletion respectively the expected time
+consumption for an insertion or deletion at the beginning or end of the tree will
 be $O(1)$. This is because each operation on a dangerous finger will render it
 safe for the next time it is accessed \cite{fingertree}.
 
@@ -350,10 +350,10 @@ the ``between'' elements \cite{fingertree}.
 \end{figure}
 
 In the last case two trees of more then one elements
-are concateneted. In this case, a new tree is created which has the first
+are concatenated. In this case, a new tree is created which has the first
 finger set as the first finger from the first tree and the last finger set as
 the last finger from the second tree. The spine will be created by calling
-$app3$ recursivly with the spine from the first tree as the first tree, the last
+$app3$ recursively with the spine from the first tree as the first tree, the last
 finger of the first tree plus ``between'' elements plus the first finger of the
 second tree as the new ``between'' elements and the spine from the second tree
 as the second tree \cite{fingertree}.
@@ -361,7 +361,7 @@ as the second tree \cite{fingertree}.
 \newpage
 
 The time complexity for concatenation can be reasoned as follows. As can be seen
-in \cref{fig:concat} the only operation that is run recursivly is $nodes$, \cref{fig:nodesHelp}. $nodes$
+in \cref{fig:concat} the only operation that is run recursively is $nodes$, \cref{fig:nodesHelp}. $nodes$
 will run in $O(1)$ time since the most amount of arguments passed to it will be
 12 in which case 4 $Node3$ elements will be returned. Since each recursive step
 takes at most $O(1)$ time and the function terminates when the bottom of the
@@ -373,8 +373,8 @@ concatenated \cite{fingertree}.
 To make fingertrees useful for a divide and conquer lexer a measure of the tree
 needs to be added. A measure of a tree may for example be how many elements is
 in the tree or as will be shown later in the report, the lexed tokens of the
-text in a tree. To implement measures time effiecently the data type that is
-choosen should be a monoid. A monoid is in abstract algebra a set $S$ and an
+text in a tree. To implement measures time efficiently the data type that is
+chosen should be a monoid. A monoid is in abstract algebra a set $S$ and an
 operator $(<>)$ which satisfies the rules in \cref{fig:monoid} \cite{fingertree}.
 
 \begin{figure}[h!]
@@ -390,7 +390,7 @@ An example of a monoid is the natural numbers which under addition form a monoid
 where the identity element is $0$.
 Using Haskells class system measures are defined as in \cref{fig:measure}.
 $mempty$ will henceforth be used as the identity element in examples and
-defenitions.
+definitions.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell, mathescape=true]{examples/ClassMeasure.hs}
@@ -410,10 +410,10 @@ Because of this the $Node$ $a$ data type is also measured as can be seen in
 \end{figure}
 
 \Cref{fig:measureFingerTree} shows the fingertree implementation with measures
-which is simliar to the implementation without measures,
+which is similar to the implementation without measures,
 \cref{fig:DataTypeFingertree}. For the new data type $deep$ is used as the
 constructor for trees with more then one element. Because of how fingertrees are
-implemented the type of the elements will change, in the begining it is $a$ at
+implemented the type of the elements will change, in the beginning it is $a$ at
 the second level it is $node$ $v$ $a$. However the measure will always be of
 type $v$ \cite{fingertree}.
 
@@ -571,11 +571,11 @@ length is a single character, for example ``os'' will be lexed as two tokens,
 \subsubsection{Longest Match}\label{longmatch}
 To ensure that only the longest token is returned some stricter rules for
 combinations are needed. Firstly, if two transitions can be combined without
-having the outgoing state $NoState$ then merge those transition. When two
+having the outgoing state $NoState$ then $merge$ those transition. When two
 transitions are merged the last token of the left transition is merged with
 the first token of the right transition into one token. Secondly, If the
-combination of two transtitions would yield $NoState$, the transitions are
-appended instead. When two transitions are appended the right transition
+combination of two transitions would yield $NoState$, the transitions are
+$appended$ instead. When two transitions are appended the right transition
 starting from the starting state is appended to the left transition. As can be
 seen in \cref{fig:longconq} 
 
@@ -598,13 +598,13 @@ $\left[\begin{array}{ccc}
 \end{center}
 \end{figure}
 
-When two transitions are appened another rule needs to be accounted for. If the
+When two transitions are appended another rule needs to be accounted for. If the
 last token of the first transition does not end in an accepting state a lexical
 error is found. How lexical errors are handled and stored is explained in
 \cref{sec:lexerr}.
 
 \subsection{Lexical Errors}\label{sec:lexerr}
-Even though lexical errors can not halt the lexer it is still usefull to keep
+Even though lexical errors can not halt the lexer it is still useful to keep
 them since they tell the user what is wrong. In an incremental lexer there are
 different ways this can be achieved. The simplest way is to store the lexical
 error, instead of the tokens and outgoing state, when an error is encountered.
@@ -627,10 +627,10 @@ errors for the lexeme that does not match anything else. With this approach the
 lexer would store all tokens up until a lexical error is encountered. When an
 error is encountered, the error is stored and the lexer tries to lex the rest of
 the text starting from the starting state. For this to work the sequence that
-stores the tokens needs to store the lexical errors aswell, see
+stores the tokens needs to store the lexical errors as well, see
 \cref{fig:error2}. With this approach the lexer will continue combining tokens
 after a lexical error is found, the drawback with this is that extra
-token computations needs to be made that may not be usefull in the final lexical
+token computations needs to be made that may not be useful in the final lexical
 analysis. If this approach is used in a text editor the user will see the minimal
 combination of characters that construct a lexical error. After that error,
 tokens that are lexed from the starting state is returned.
@@ -642,7 +642,7 @@ tokens that are lexed from the starting state is returned.
   \caption{Transition contains a sequence of tokens and errors\label{fig:error2}}
 \end{figure}
 
-\begin{example}[A java lette light lexer, see \cref{reglang}]
+\begin{example}[A Java lette light lexer, see \cref{reglang}]
 Lexical analysis is done on the string ``Hello /*World''. When global error
 handling, the transition contains one error or a sequence of tokens, is used the
 result of the lexical analysis will be as in \cref{fig:globerr}. When local
