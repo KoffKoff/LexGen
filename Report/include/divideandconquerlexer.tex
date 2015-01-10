@@ -1,6 +1,6 @@
 \chapter{Divide-and-Conquer Lexer \label{chap:divconqlexer}}
-An incremental divide and conquer lexer works by dividing the sequence to be
-lexically analyzed, into small parts and analyzes them; and then combines them.
+An incremental divide and conquer lexer works by dividing the sequence, to be
+lexically analyzed, into small parts; analyzes them and then combines them.
 In the base case the lexical analysis is done on a single character. The
 conquer step then combines the smaller tokens into as large tokens as possible.
 The end result is a sequence of tokens that represent the code. How this is done
@@ -15,8 +15,10 @@ laziness can be applied to these algorithms.
 \subsection{The Three Steps}
 The general idea of a divide and conquer algorithm is to divide a problem into
 smaller parts, solve them independently and then combine the results. A Divide
-and Conquer algorithm always consists of a pattern with these three steps
-\cite{Goodrich}.
+and Conquer algorithm always consists of a pattern with the steps described in
+\cref{fig:divconqsteps} \cite{Goodrich}.
+
+\begin{figure}
 \begin{description}
 \item[Divide:] If the input size is bigger than the base case then divide the
 input into subproblems. Otherwise solve the problem using a straightforward
@@ -26,6 +28,8 @@ sub-problem as argument.
 \item[Conquer:] Given the solutions to the subproblems, combine the results to
 solve the original problem.
 \end{description}
+\caption{The three steps of a Divide-and-Conquer algorithm \label{fig:divconqsteps}}
+\end{figure}
 
 \subsection{Associative Function}
 An associative function, or operator, is a function that does not care in what
@@ -130,6 +134,7 @@ $f(n) = 2 \cdot n/2 = n$.
 $T(n) = 2T(n/2) + n$\\
 $e=\log_\beta\alpha=\log_2 2=1$
 \end{center}
+\newpage
 Case 2 of the \cref{MasterTheo} applies, since
 \begin{center}
 $f(n) = \Theta(n)$
@@ -251,12 +256,7 @@ can look can be seen in \cref{fig:fingertree} \cite{fingertree}.
 \caption{Illustration of Fingertree \label{fig:fingertree}}
 \end{figure}
 
-\begin{figure}[h!]
-\lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
-\caption{Definition of the Fingertree data type \label{fig:DataTypeFingertree}\cite{fingertree}}
-\end{figure}
-
-As can be seen in figure \cref{fig:DataTypeFingertree} there are three constructors
+As can be seen in \cref{fig:DataTypeFingertree} there are three constructors
 for a fingertree, there are the trivial cases for an empty tree and for a tree
 with one element. The last constructor calls itself with $Node~a$ instead of
 just $a$. This is what determines the depth of the 2-3 tree on each side of the
@@ -268,6 +268,11 @@ is because the closer to the end of the fingertree the element is the closer the
 surface it is. This in turn gives the time complexity of accessing an element,
 which in worst case is $O(\log n)$ and for the first and last element is $O(1)$
 \cite{fingertree}.
+
+\begin{figure}[h!]
+\lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
+\caption{Definition of the Fingertree data type \label{fig:DataTypeFingertree}\cite{fingertree}}
+\end{figure}
 
 \subsection{Insertion and Deletion \label{insertDelete}}
 The fingertree described so far can only handle insertion and deletion to the
@@ -328,14 +333,15 @@ the ``between'' elements \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeConcatFunc.hs}
+\lstinputlisting[language=Haskell]{examples/FingerTreeAppend.hs}
 \caption{Concatenation function for Fingertree \label{fig:concat}\cite{fingertree}}
 \end{figure}
 
-\begin{figure}[h!]
-\lstinputlisting[language=Haskell]{examples/FingerTreeAppend.hs}
-\caption{Help function for inserting a list of element into a fingertree
-  \label{fig:reduceAppend}\cite{fingertree}}
-\end{figure}
+%\begin{figure}[h!]
+%\lstinputlisting[language=Haskell]{examples/FingerTreeAppend.hs}
+%\caption{Help function for inserting a list of element into a fingertree
+%  \label{fig:reduceAppend}\cite{fingertree}}
+%\end{figure}
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/FingerTreeNodesFunc.hs}
@@ -352,8 +358,10 @@ finger of the first tree plus ``between'' elements plus the first finger of the
 second tree as the new ``between'' elements and the spine from the second tree
 as the second tree \cite{fingertree}.
 
+\newpage
+
 The time complexity for concatenation can be reasoned as follows. As can be seen
-in \cref{app3 ref} the only operation that is run recursivly is $nodes$. $nodes$
+in \cref{fig:concat} the only operation that is run recursivly is $nodes$, \cref{fig:nodesHelp}. $nodes$
 will run in $O(1)$ time since the most amount of arguments passed to it will be
 12 in which case 4 $Node3$ elements will be returned. Since each recursive step
 takes at most $O(1)$ time and the function terminates when the bottom of the
@@ -367,13 +375,16 @@ needs to be added. A measure of a tree may for example be how many elements is
 in the tree or as will be shown later in the report, the lexed tokens of the
 text in a tree. To implement measures time effiecently the data type that is
 choosen should be a monoid. A monoid is in abstract algebra a set $S$ and an
-operator $(<>)$ which satisfies the following rules \cite{fingertree}:
+operator $(<>)$ which satisfies the rules in \cref{fig:monoid} \cite{fingertree}.
 
+\begin{figure}[h!]
 \begin{description}
 \item[Closure] $\forall a,b \in S: a <> b \in S$
 \item[Associativity] $\forall a,b,c \in S: (a <> b) <> c = a <> (b <> c)$
 \item[Identity element] $\exists e \in S: \forall a \in S: e <> a = a <> e = a$
 \end{description}
+\caption{Monoid rules over a set $S$ with operator $<>$ \label{fig:monoid}}
+\end{figure}
 
 An example of a monoid is the natural numbers which under addition form a monoid
 where the identity element is $0$.
@@ -398,17 +409,20 @@ Because of this the $Node$ $a$ data type is also measured as can be seen in
 \caption{Measure of the data type Node \label{fig:measureNode} \cite{fingertree}}
 \end{figure}
 
-With the measurement modifcation to the fingertree the datastructure is almost
-the same, with the addition of measures at certain places as can be seen in
-\cref{fig:measuredFingerTree} where $deep$ is used as the new constructor.
-Because of how fingertrees are implemented the type of the elements will change,
-in the begining it is $a$ at the second level it is $node$ $v$ $a$. However the
-measure will always be of type $v$ \cite{fingertree}.
+\Cref{fig:measureFingerTree} shows the fingertree implementation with measures
+which is simliar to the implementation without measures,
+\cref{fig:DataTypeFingertree}. For the new data type $deep$ is used as the
+constructor for trees with more then one element. Because of how fingertrees are
+implemented the type of the elements will change, in the begining it is $a$ at
+the second level it is $node$ $v$ $a$. However the measure will always be of
+type $v$ \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell, mathescape=true]{examples/FingerTreeMeasure.hs}
 \caption{Fingertrees Measure function \label{fig:measureFingerTree} \cite{fingertree}}
 \end{figure}
+
+\newpage
 
 Fingertrees offers a data structure where the time complexity for operations on
 the tree scales logarithmically with the size of the tree. Because of this and
@@ -433,18 +447,24 @@ root is a sequence of all tokens in the code.
 \subsection{Transition map}
 When storing a result of a lexed string it is a good idea to store more then
 just the tokens. In particular the in and out states are needed when combining
-the lexed string with another string. We will henceforth refer to this as a
-$transition$.
-\begin{lstlisting}[language=Haskell]
-type Transition = (State,[Token],State)
-\end{lstlisting}
+the lexed string with another string. The information needed can be bound to a
+type synonym like in \cref{fig:transitionMap}. The report will henceforth refer
+to this as a $transition$.
+
 Since the lexer does not know if the current string is a prefix of the entire
 code or not it can not make any assumptions on the in state. Because of this the
-lexer needs to store a transition for every possible in state, we will henceforth
-refer to this as a \emph{transition map}.
+lexer needs to store a transition for every possible in state,
+\cref{fig:transitionMap}. the report will henceforth refer to this as a
+\emph{transition map}.
+
+\begin{figure}[h!]
 \begin{lstlisting}[language=Haskell]
-type Transition_map = [Transition]
+type Transition = (State,[Token],State)
+type transitionMap = [Transition]
 \end{lstlisting}
+\caption{Type synonyms for the transition map \label{fig:transitionMap}}
+\end{figure}
+
 \subsubsection{The Base Case}
 When the lexer tries to lex one character it will create a transition
 map using the DFA for the language. It will for each state create a transition
@@ -482,7 +502,7 @@ refers to the first and second transition map.
 
 \begin{figure}
 \begin{lstlisting}
-merge :: Transition_map -> Transition_map -> Transition_map
+merge :: transitionMap -> transitionMap -> transitionMap
 merge map1 map2 = [(i,t1><t2,o) | (i,t1,o1) <- map1, (i2,t2,o) <- map2, o1==i2]
 \end{lstlisting}
 \caption{Function for merging two transition maps into one transition map
@@ -621,8 +641,6 @@ tokens that are lexed from the starting state is returned.
   \end{lstlisting}
   \caption{Transition contains a sequence of tokens and errors\label{fig:error2}}
 \end{figure}
-
-\newpage
 
 \begin{example}[A java lette light lexer, see \cref{reglang}]
 Lexical analysis is done on the string ``Hello /*World''. When global error
