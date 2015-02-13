@@ -11,41 +11,42 @@ concepts of the lexer in detail.
 
 \section{Lexing vs Parsing}
 It is common that a parser has a pre-step where the plain text is transformed
-in to some more computer readable form. This step is called a lexical analyzer.
+in to some more computer readable form. This step is performed by a lexical
+analyzer.
 The computer friendly output is then then given to the syntactical analyzer of
 the parser. Splitting up a parser into a number of different tasks have several
 benefits. Here follows some benefits from breaking out the lexical analyzer from
 the syntactical analyzer.
 
 To keep a clean design of the parser. If the lexical analysis is stripped out of
-a parser, the parsing step can be designed in a cleaner way. Also the lexical
-analyze can be designed in a cleaner and smarter way. A Lexer can ignore to pass
-along unneeded (for the parser) data, like white spaces and comments. This opens
-up for a cleaner design when defining a new programming language. The syntactical
-part of the parser will only receive the output from the lexer as input. The 
-output of the lexer is described in more detail further on in this chapter.
-\cite{Aho2006}.
+a parser, the parsing step can be designed in a cleaner way. The lexical
+analyzer can also be designed in a cleaner and smarter way. A lexer can for
+instance ignore to pass along unneeded (for the parser) data, like white spaces
+and comments. This opens up for a cleaner design when defining a new programming
+language. The syntactical part of the parser will only receive the output from
+the lexer as input. The output of the lexer is described in more detail further
+on in this chapter \cite{Aho2006}.
 
 \newpage
 
-Splitting a big problem into smaller specific sub-problems opens up
-for an efficient problem solving. In general to solve specific problems finalized techniques can be used, which are often optimized. This means that
-the parser can be more efficient \cite{Aho2006}.
+Splitting a big problem into smaller specific sub-problems enables Methods that
+are refined on specific tasks to be used. This can result in a more efficient
+parser \cite{Aho2006}.
 
-Breaking out the lexical part from the parser makes it possible for the
-syntactical part to solve its problem in a generic way. When changing language
+Breaking out the lexical analyzer from the parser makes it possible for the
+syntactical analyzer to solve its problem in a generic way. When changing language
 to parse, the only part that needs to be changed in the parser is the lexical
-part. This opens up for portability \cite{Aho2006}.
+analyzer. This opens up for portability \cite{Aho2006}.
 
 If there is an illegal character sequences inside the code it will be detected
 by the lexer and feedback will be given to the user \cite{sebesta2012}. Because
 the lexer can find and report these errors to the user, there is no need to go
-into the syntactical analysis part of the parser. Hence saving running time for
+into the syntactical analysis of the parser. Hence saving running time for
 giving the user feedback.
 
 \section{Token Specification}
 As mentioned earlier in this chapter, the responsibility of the lexical analyzer
-is to transform a human readable text to an abstract computer-readable list of
+is to transform a human readable text to an abstract computer readable list of
 tokens. There are different techniques a lexer can use when finding the
 abstract tokens representing a text. This section describes the techniques used
 when writing rules for the tokens patterns.
