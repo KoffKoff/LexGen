@@ -78,12 +78,12 @@ possible patterns. However, they are in most cases good enough for lexers.
 \end{definition}
 \end{figure}
 
-Given the definition of regular expressions seen in \cref{regexp},
-by introducing a priority level and associativity to the different operators,
+Consider the definition of regular expressions seen in \cref{regexp},
+by introducing a priority level and associativity to the different operators
 parentheses can be eliminated. The operator with the highest priority is the $*$
 operator. The second highest is the \emph{concat} operator $(r_1)(r_2)$ and the
 operator with the lowest level is the \emph{or} operator $|$. The $*$ operator
-can not have a associativity since it only takes one argument. The other two
+can not have a associativity since it only takes one argument. The two
 binary operators \emph{concat} and \emph{or} are left-associative
 \cite{Aho1990}.
 \newline
@@ -97,21 +97,21 @@ identifiers can be design in the following way: $letter (letter | digit)*$.
 \end{example}
 
 \subsection{Languages}
-A language is build up by an alphabet. An alphabet is represented by a finite
+A language is built up by an alphabet which is represented by a finite
 collection of characters. These symbols can build up strings and a language is
 a countable set of these different strings \cite{Aho2006}. For example the
 alphabet Unicode used by computers to represent text includes over $100,000$
 different symbols. This means that a language can be enormous.
 
-There are different types of languages. A lexer can work with a subset of all
-languages which can be described by a set of systematic rules, these are called
-formal languages. The lexer can however not work with all formal languages, only
+There are different types of languages. Formal languages are described by a set
+of systematic rules and they are a subset of all the languages. The lexer can
+however not work with all formal languages, only
 with the languages which can be described by regular expressions, these are
 called regular languages \cite{Ranta2012}.
 
 \subsection{Regular Definitions}
 To be able to reuse already written expression, an identifier $d$ can be
-assigned to an expression. $d$ can then be used in expressions. However
+assigned to an expression, $d$ can then be used in expressions. However
 this introduces the problem of recursive definitions. To counteract this
 the properties for the identifiers and expressions are defined as follows.
 
@@ -130,13 +130,16 @@ $d_n$ & $\to$ & $r_n$\\
 \end{center}
 \end{figure}
 
-The following property apply on the definition identifiers $d_1 ... d_n$: a
+The following property apply to the definition identifiers $d_1 ... d_n$: a
 definition identifier $d_i$ is a new symbol not already present in the alphabet
 $\Sigma$ and not equal to any other definition identifier
-$d_x \in {d_1 ... d_n}$ where $i \neq x$.
-The following property apply on the regular expressions $r_1 ... r_n$: a regular
-expression $r_i$ can work on the alphabet $\Sigma \cup {d_1 ... d_{i-1}}$
-\cite{Aho2006}.
+$d_x \in {d_1 ... d_n}$ where $i \neq x$. A new regular expression $r_i$ can work
+on the alphabet and all the previously defined identifiers,
+$\Sigma \cup {d_1 ... d_{i-1}}$ \cite{Aho2006}.
+
+%The following property apply on the regular expressions $r_1 ... r_n$: a regular
+%expression $r_i$ can work on the alphabet $\Sigma \cup {d_1 ... d_{i-1}}$
+%\cite{Aho2006}.
 
 \section{Tokens, Patterns and Lexemes}
 When rules have been defined for a language, the lexer needs structures to
@@ -148,14 +151,14 @@ forwarded to the syntactical analyzer.
 The following three different structural concepts are vital to the lexical
 analyzer:
 \begin{itemize}
-  \item A \textbf{token}, which is an abstract for representing an atomic code
+  \item A \textbf{token} is an abstract for representing an atomic code
   segment. The token is represented by a name and an optional attribute for
   holding the value of the token \cite{Aho2006}.
-  \item A \textbf{pattern}, which is the regular expression for describing the
+  \item A \textbf{pattern} is the regular expression for describing the
   text format on which a token can be represented \cite{Aho2006}. For example a
   string in most languages is represented by first a " character and zero or 
   more characters and finally ends with a " character.
-  \item A \textbf{lexeme}, which is the text fulfilling the pattern bound to 
+  \item A \textbf{lexeme} is the text that matches the pattern bound to 
   the token. Therefore a lexeme can be viewed as an instance of an abstract 
   token \cite{Aho2006}.
 \end{itemize}
@@ -163,7 +166,7 @@ As mentioned before, a token can carry an optional attribute. When a token can
 be represented by several different instances, lexemes, this attribute is used
 for giving the specific value. For example a string token can be represented by
 the different strings "", "a", "b" and so on. However different parts of the
-compiler may need to know the exact string token instance which was found
+compiler may need to know which token instance that was found.
 Therefore the lexer need to pass the information further on \cite{Aho2006}.
 
 To summarize, a lexer reads characters from a code and finds the largest 
@@ -316,7 +319,7 @@ and transition table. A transition diagram is a directed graph where the nodes
 are the states in the automata and the edges represent the symbol needed for the
 next state. A transition table is a table where the rows represents the current
 state, the columns the next symbol and the cell is the next state. Examples of
-how a NFA can be described by these can be seen in \label{regexp2td}
+how a NFA can be described by these can be seen in \cref{regexp2td}
 \cite{Aho2006}.
 
 \subsubsection{Non-deterministic Finite Automata}
@@ -402,7 +405,7 @@ DFA could be seen as a concrete algorithm for finding a specific string. As
 mentioned Finite Automata can be generated from regular expressions. That is, a
 NFA can be generated from regular expressions and a DFA can be generated from a
 NFA. This goes the other way as well, and DFA can be converted into a regular
-expression \cite{Aho2006}. A lexer uses a DFA as the algorithm for pattern a
+expression \cite{Aho2006}. A lexer uses a DFA as the algorithm to match a
 lexeme to a specific token.
 
 The formal definition of a deterministic finite automaton follows:
