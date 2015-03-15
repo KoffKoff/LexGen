@@ -61,10 +61,10 @@ possible patterns. However, they are in most cases good enough for lexers.
 \newline
 \begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
 A valid C identifier must start with a letter character and then have zero or more characters or digits. To describe this an element $letter
-\in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$ is intruduced and
+\in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$ is introduced and
 another element $digit \in \{0 \dots 9\}$.
 
-Then by using these elements the regular expression for describing all leagual C
+Then by using these elements the regular expression for describing all legal C
 identifiers can be design in the following way: $letter (letter | digit)*$.
 \end{example}
 \newpage
