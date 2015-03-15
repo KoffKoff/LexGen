@@ -23,7 +23,7 @@ and Conquer algorithm always consists of a pattern with the steps described in
 \item[Divide:] If the input size is bigger than the base case then divide the
 input into subproblems. Otherwise solve the problem using a straightforward
 method.
-\item[Recur:] Solve the subproblems by recursively call itself with each
+\item[Recur:] Solve the subproblems by recursively calling itself with each
 sub-problem as argument.
 \item[Conquer:] Given the solutions to the subproblems, combine the results to
 solve the original problem.
@@ -38,7 +38,7 @@ which is associative since it has the property in \cref{assprop}, that is,
 $a+(b+c)=(a+b)+c$.
 
 In divide and conquer algorithms this is essential. In the divide step of the
-divide and conquer algorithm, there is no certain order of how the subproblems
+divide and conquer algorithm there is no certain order of how the subproblems
 are going to be divided. This means that the order the subproblems are being
 conquered can not have an impact on the algorithm, hence the conquer step must be
 associative.
@@ -146,8 +146,8 @@ $T(n) = \Theta(n^{\log_2 2} \cdot \log n) = \Theta(n \cdot \log n)$
 
 \subsection{Incremental Computing}
 For an algorithm to be incremental means that when a point in the data source
-is updated, the algorithm tries to save time by only update the direct effected
-path in the data source \cite{incrementalDef}. The \cref{fig:incUp} illustrate
+is updated, the algorithm tries to save time by only updating the directly effected
+path in the data source \cite{incrementalDef}. \cref{fig:incUp} illustrate
 the updated nodes in a tree structured data source.
 
 \begin{figure}[!htp]
