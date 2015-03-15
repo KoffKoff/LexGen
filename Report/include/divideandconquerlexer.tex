@@ -86,7 +86,7 @@ If we let $e = \log_\beta \alpha$, then
 \subsection{Hands on Example}
 The divide and conquer pattern can be performed on algorithms that solves
 different problems. A general problem is sorting, or more precisely sorting a
-sequence of integers. This example shows merge-sort.
+sequence of integers. This example shows merge-sort \cite{Goodrich}.
 
 \begin{description}
 \item[Divide:] The algorithm starts with the divide step. Given the input $S$
@@ -146,7 +146,7 @@ $T(n) = \Theta(n^{\log_2 2} \cdot \log n) = \Theta(n \cdot \log n)$
 
 \subsection{Incremental Computing}
 For an algorithm to be incremental means that when a point in the data source
-is updated, the algorithm tries to save time by only updating the directly effected
+is updated, the algorithm only need to update the directly effected
 path in the data source \cite{incrementalDef}. \cref{fig:incUp} illustrate
 the updated nodes in a tree structured data source.
 
