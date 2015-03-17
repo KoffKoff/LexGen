@@ -2,7 +2,7 @@
 This chapter describes the concepts of a lexer, lexical analyzer, in detail. A
 lexer can be seen as a pattern matcher and is the first part of a syntactical
 analyzer. A lexer has the responsibility to translate a text into abstract
-tokens. Abstract tokens typically tell if a part of the text belongs to for
+tokens. Abstract tokens typically tell what a part of the text belongs to, for
 example classes of words, numbers or symbols. The resulting tokens of the lexer
 is given to the syntactical analyzer which is responsible for identifying
 expressions and statements which the tokens represent \cite{sebesta2012}.
@@ -64,8 +64,8 @@ A valid C identifier must start with a letter character and then have zero or mo
 \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$ is introduced and
 another element $digit \in \{0 \dots 9\}$.
 
-Then by using these elements the regular expression for describing all legal C
-identifiers can be design in the following way: $letter (letter | digit)*$.
+By using these elements the regular expression for describing all legal C
+identifiers can be expressed in the following way: $letter (letter | digit)*$.
 \end{example}
 \newpage
 \begin{figure}[ht!]
