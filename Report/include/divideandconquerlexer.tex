@@ -1,5 +1,5 @@
 \chapter{Divide-and-Conquer Lexer \label{chap:divconqlexer}}
-An incremental divide and conquer lexer works by dividing the sequence, to be
+An incremental divide and conquer lexer works by dividing the sequence to be
 lexically analyzed, into small parts; analyzes them and then combines them.
 In the base case the lexical analysis is done on a single character. The
 conquer step then combines the smaller tokens into as large tokens as possible.
@@ -37,11 +37,11 @@ order it is applied. An example of such a function is addition $(+)$ of numbers,
 which is associative since it has the property in \cref{assprop}, that is,
 $a+(b+c)=(a+b)+c$.
 
-In divide and conquer algorithms this is essential. In the divide step of the
-divide and conquer algorithm there is no certain order of how the subproblems
-are going to be divided. This means that the order the subproblems are being
-conquered can not have an impact on the algorithm, hence the conquer step must be
-associative.
+In divide and conquer algorithms working on sequences this is essential. In the
+divide step of the divide and conquer algorithm there is no certain order of how
+the subproblems are going to be divided. This means that the order the
+subproblems are being conquered can not have an impact on the algorithm, hence
+the conquer step must be associative.
 \newline
 \begin{example}[Associativity of the conquer step]\label{assprop}
 Let $f(x,y)$ be the conquer function, where $x$ and $y$ are of the same type as
@@ -49,7 +49,8 @@ the result of $f$, then:
 \begin{center}
 $f(x,f(y,z)) = f(f(x,y),z)$
 \end{center}
-Otherwise the algorithm can give different results for the same data.
+Otherwise the algorithm can give different results for different division of the
+input, but for the same data.
 \end{example}
 
 \subsection{Time Complexity}
@@ -105,7 +106,9 @@ $S_1$ and $S_2$ as arguments respectively.
 sequence is trivial. This process is what is referred to as merge in merge-sort.
 The resulting sequence of the merge is returned.
 \end{description}
-Algorithm~\ref{Alg:MergSort} shows a more formal definition of merge-sort.
+Algorithm~\ref{Alg:MergSort} shows a more formal definition of merge-sort. The
+merging step is associative which ensures that the algorithm always returns the
+same result for the same input.
 
 \begin{algorithm}
 \DontPrintSemicolon
@@ -146,7 +149,7 @@ $T(n) = \Theta(n^{\log_2 2} \cdot \log n) = \Theta(n \cdot \log n)$
 
 \subsection{Incremental Computing}
 For an algorithm to be incremental means that when a point in the data source
-is updated, the algorithm only need to update the directly effected
+is updated, the algorithm only needs to update the directly effected
 path in the data source \cite{incrementalDef}. \cref{fig:incUp} illustrate
 the updated nodes in a tree structured data source.
 
@@ -263,11 +266,11 @@ just $a$. This is what determines the depth of the 2-3 tree on each side of the
 spine. The reasons for the first level of the tree having fingers of size 1-4 is
 because of insertion and deletion which is covered in \cref{insertDelete} \cite{fingertree}.
 
-Accessing an element at place $d$ in the tree will take $O(\log(min(d,n-d)))$. This
-is because the closer to the end of the fingertree the element is the closer the
-surface it is. This in turn gives the time complexity of accessing an element,
-which in worst case is $O(\log n)$ and for the first and last element is $O(1)$
-\cite{fingertree}.
+Accessing an element at place $d$ in the tree will take $O(\log(min(d,n-d)))$
+time. This is because the closer to the end of the fingertree the element is the
+closer the surface it is. This in turn gives the time complexity of accessing an
+element, which in worst case is $O(\log n)$ and for the first and last element
+is $O(1)$ \cite{fingertree}.
 
 \begin{figure}[h!]
 \lstinputlisting[language=Haskell]{examples/HaskellFingerTree.hs}
@@ -276,8 +279,8 @@ which in worst case is $O(\log n)$ and for the first and last element is $O(1)$
 
 \subsection{Insertion and Deletion \label{insertDelete}}
 The fingertree described so far can only handle insertion and deletion to the
-beginning and end of the tree, for more functionality, measurements are needed
-which is covered in \cref{sub:measurement}.
+beginning and end of the tree.%, for more functionality, measurements are needed
+%which is covered in \cref{sub:measurement}.
 The fingers in a tree have two different states called dangerous and safe. The
 safe states is when there are 2 to 3 elements in the finger and when the finger
 is safe an insertion or deletion from the tree will not be anything more then an
@@ -315,7 +318,7 @@ element and the rest of the tree can be seen in \cref{fig:Viewl} \cite{fingertre
 Since the dangerous states propagate actions down the spine insertion and
 deletion will not take $O(1)$ time in the worst case. Since
 each new level will take at most $O(1)$ time the insertion or deletion of an
-element will in the worst case take $O(\log n)$ time. However since 3 of 4
+element will in the worst case take $O(\log n)$ time. However since 3 out of 4
 operations are safe for insertion and deletion respectively the expected time
 consumption for an insertion or deletion at the beginning or end of the tree will
 be $O(1)$. This is because each operation on a dangerous finger will render it
@@ -386,7 +389,7 @@ operator $(<>)$ which satisfies the rules in \cref{fig:monoid} \cite{fingertree}
 \caption{Monoid rules over a set $S$ with operator $<>$ \label{fig:monoid}}
 \end{figure}
 
-An example of a monoid is the natural numbers which under addition form a monoid
+An example of a monoid is the natural numbers, which under addition form a monoid
 where the identity element is $0$.
 Using Haskells class system measures are defined as in \cref{fig:measure}.
 $mempty$ will henceforth be used as the identity element in examples and
@@ -411,7 +414,7 @@ Because of this the $Node$ $a$ data type is also measured as can be seen in
 
 \Cref{fig:measureFingerTree} shows the fingertree implementation with measures
 which is similar to the implementation without measures,
-\cref{fig:DataTypeFingertree}. For the new data type $deep$ is used as the
+\cref{fig:DataTypeFingertree}. The new data type, $deep$, is used as the
 constructor for trees with more then one element. Because of how fingertrees are
 implemented the type of the elements will change, in the beginning it is $a$ at
 the second level it is $node$ $v$ $a$. However the measure will always be of
@@ -448,7 +451,7 @@ root is a sequence of all tokens in the code.
 When storing a result of a lexed string it is a good idea to store more then
 just the tokens. In particular the in and out states are needed when combining
 the lexed string with another string. The information needed can be bound to a
-type synonym like in \cref{fig:transitionMap}. The report will henceforth refer
+type synonym like in \cref{fig:transitionMap}. This report will henceforth refer
 to this as a $transition$.
 
 Since the lexer does not know if the current string is a prefix of the entire
@@ -467,7 +470,7 @@ type transitionMap = [Transition]
 
 \subsubsection{The Base Case}
 When the lexer tries to lex one character it will create a transition
-map using the DFA for the language. It will for each state create a transition
+map using the DFA for the language. It will, for each state, create a transition
 that has the state as in state, a list containing the character as the only
 token and by using the DFA, lookup what out state the transition should have.
 For the character 'o' part of a transition map might look like \cref{fig:bascas}.

@@ -14,13 +14,13 @@ sets and finite automata \cite{Aho1990}.
 It is common that a parser has a pre-step where the plain text is transformed
 in to some more computer readable form. This step is performed by a lexical
 analyzer.
-The computer friendly output is then then given to the syntactical analyzer of
+The computer-friendly output is then then given to the syntactical analyzer of
 the parser. Splitting up a parser into a number of different tasks have several
 benefits \cite{sebesta2012}. Here follows some benefits from breaking out the
 lexical analyzer from the syntactical analyzer.
 
-To keep a clean design of the parser. If the lexical analysis is stripped out of
-a parser, the parsing step can be designed in a cleaner way. The lexical
+If the lexical analysis is stripped out of
+the parser, the parsing step can be designed in a cleaner way. The lexical
 analyzer can also be designed in a cleaner and smarter way. A lexer can for
 instance ignore to pass along unneeded (for the parser) data, like white spaces
 and comments. This opens up for a cleaner design when defining a new programming
