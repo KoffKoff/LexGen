@@ -10,7 +10,7 @@ To implement a lexer several fundamental concepts of
 formal language theory can be used. Concepts like regular expressions, regular
 sets and finite automata \cite{Aho1990}.
 
-\section{Lexing vs Parsing}
+\section{Benefits of Disjointed Parsing}
 It is common that a parser has a pre-step where the plain text is transformed
 in to some more computer readable form. This step is performed by a lexical
 analyzer.
@@ -47,7 +47,7 @@ the lexer can find and report these errors to the user, there is no need to go
 into the syntactical analysis of the parser. Hence saving running time for
 giving the user feedback.
 
-\section{Token Specification}
+\section{Fundamentals of Lexical Analysis}
 As mentioned earlier in this chapter, the responsibility of the lexical analyzer
 is to transform a human readable text to an abstract computer readable list of
 tokens. There are different techniques a lexer can use when finding the
@@ -60,7 +60,8 @@ pattern. Due to the definition of regular expressions they cannot describe all
 possible patterns. However, they are in most cases good enough for lexers.
 \newline
 \begin{example}[Valid C Idents \cite{Aho2006}]\label{regexpEx}
-A valid C identifier must start with a letter character and then have zero or more characters or digits. To describe this an element $letter
+A valid C identifier must start with a letter character and then have zero or
+more characters or digits. To describe this an element $letter
 \in \{$a$ \dots $z$\} \cup \{$A$ \dots $Z$\} \cup \{$\_$\}$ is introduced and
 another element $digit \in \{0 \dots 9\}$.
 
@@ -144,7 +145,7 @@ $\Sigma \cup {d_1 ... d_{i-1}}$ \cite{Aho2006}.
 %expression $r_i$ can work on the alphabet $\Sigma \cup {d_1 ... d_{i-1}}$
 %\cite{Aho2006}.
 
-\section{Tokens, Patterns and Lexemes}
+\section{Tokens, Atoms of a Language}
 When rules have been defined for a language, the lexer needs structures to
 represent the rules and the result from lexing the text.
 This section describes the structures which the lexical analyzer uses
@@ -229,7 +230,7 @@ Reserved & ;
 \end{example}
 
 \newpage
-\section{Recognition of Tokens}
+\section{From a Text to Tokens}
 The previous section show how Regular expressions can be used
 to express patterns for tokens. In this section the different techniques on how
 to transform a sequence of characters into abstract tokens using these patterns
